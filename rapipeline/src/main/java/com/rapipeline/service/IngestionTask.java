@@ -75,17 +75,18 @@ public class IngestionTask extends Task {
             return;
         }
         String plmTicketId = raFileMetaDataDetails.getPlmTicketId();
+        String fileName = raFileMetaDataDetails.getFileName();
         String standardizedFileName = getStandardizedFileName(raFileMetaDataDetails);
-        String sourceFilePath = fileSystemUtilService.getSourceFilePath(raFileMetaDataDetails.getFileName());
+        String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);
         String destinationFilePath = fileSystemUtilService.getDestinationFilePath(standardizedFileName);
-        String archiveFilePath = fileSystemUtilService.getArchiveFilePath(raFileMetaDataDetails.getFileName());
+        String archiveFilePath = fileSystemUtilService.getArchiveFilePath(fileName);
         String password = raFileMetaDataDetails.getPassword();
         //Copy file to destination
         if (!copyToDestAndArchive(sourceFilePath, destinationFilePath, archiveFilePath, password)) {
             log.warn("Copying files failed for raFileMetaDataDetails {}", gson.toJson(raFileMetaDataDetails));
             return;
         }
-        raFileDetailsService.insertRAFileDetails(raProvDetails.getId(), sourceFilePath, standardizedFileName, plmTicketId, destinationFilePath, null, PROCESS_USER_ID, PROCESS_USER_ID);
+        raFileDetailsService.insertRAFileDetails(raProvDetails.getId(), fileName, standardizedFileName, plmTicketId, destinationFilePath, null, PROCESS_USER_ID, PROCESS_USER_ID);
         //Updating final status
         if (!raFileMetaDataDetailsService.updateStatusForRAFileMetaDataDetails(raFileMetaDataDetails, 1)) {
             log.warn("Error updating ingestion status - raFileMetaDataDetails {}", gson.toJson(raFileMetaDataDetails));

@@ -13,6 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.anthem.rostertracker.model.RosterFileProcessStatus.SUCCEEDED;
+
 public class RosterUtils {
     public static List<RAProvDetails> removeDuplicateRAProvList(List<RAProvDetails> raProvDetailsList) {
         Set<Long> ids = new HashSet<>();
@@ -73,9 +75,9 @@ public class RosterUtils {
         return raFileAndStats;
     }
 
-    //TODO demo
+
+    //TODO
     public static boolean isSpsLoadComplete(RASheetDetails raSheetDetails) {
-        //TODO manikanta
-        return raSheetDetails.getId() % 2 == 0;
+        return raSheetDetails.getStatus() == SUCCEEDED;
     }
 }
