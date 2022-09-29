@@ -1,6 +1,7 @@
 package com.rapipeline.repository;
 
 import com.rapipeline.entity.RAFileDetails;
+import com.rapipeline.entity.RAProvDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface RAFileDetailsRepository extends JpaRepository<RAFileDetails, Long> {
     @Modifying
@@ -24,4 +26,9 @@ public interface RAFileDetailsRepository extends JpaRepository<RAFileDetails, Lo
                              @Param("fileSystem") String fileSystem,
                              @Param("createdUserId") Long createdUserId,
                              @Param("lastUpdateUserId") Long lastUpdateUserId);
+
+    //TODO is fileName unique
+    @Query(value = "select * from ra_file_details where orgnl_file_nm = :fileName order by creat_dt desc fetch next 1 rows only",
+            nativeQuery = true)
+    Optional<RAFileDetails> findByFileName(@Param("fileName") String fileName);
 }

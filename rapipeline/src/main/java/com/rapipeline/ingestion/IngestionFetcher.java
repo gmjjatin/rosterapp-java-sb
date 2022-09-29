@@ -3,11 +3,10 @@ package com.rapipeline.ingestion;
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.JobRetriever;
 import com.hilabs.mcheck.model.Task;
-import com.rapipeline.entity.RAFileMetaDataDetails;
+import com.rapipeline.dto.RAFileMetaData;
 import com.rapipeline.repository.RAProvDetailsRepository;
 import com.rapipeline.service.RAFileDetailsService;
 import com.rapipeline.service.RAFileMetaDataDetailsService;
-import com.rapipeline.service.IngestionTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -37,12 +36,12 @@ public class IngestionFetcher implements JobRetriever {
     @Override
     public List<Task> refillQueue(Integer tasks) {
         List<Task> executors = new ArrayList<>();
-        List<RAFileMetaDataDetails> raFileMetaDataDetailsList = raFileMetaDataDetailsService
-                .getUnIngestedRAFileMetaDataDetails(MAX_RETRY_NO);
-        for (RAFileMetaDataDetails raFileMetaDataDetails : raFileMetaDataDetailsList) {
+        List<RAFileMetaData> raFileMetaDataList = raFileMetaDataDetailsService
+                .getUnIngestedRAFileMetaDataDetails();
+        for (RAFileMetaData raFileMetaData : raFileMetaDataList) {
             Map<String, Object> taskData = new HashMap<>();
 //            taskData.put("id", String.valueOf(raFileMetaDataDetails.getId()));
-            taskData.put("data", raFileMetaDataDetails);
+            taskData.put("data", raFileMetaData);
             IngestionTask ingestionTask = new IngestionTask(taskData);
             ingestionTask.setApplicationContext(applicationContext);
             executors.add(ingestionTask);
