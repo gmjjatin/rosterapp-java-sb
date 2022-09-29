@@ -33,6 +33,7 @@ public class IngestionFetcher implements JobRetriever {
     @Autowired
     private ApplicationContext applicationContext;
 
+    //TODO validate metadata
     @Override
     public List<Task> refillQueue(Integer tasks) {
         List<Task> executors = new ArrayList<>();

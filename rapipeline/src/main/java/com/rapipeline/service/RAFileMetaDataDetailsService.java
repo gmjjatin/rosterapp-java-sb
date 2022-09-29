@@ -7,6 +7,7 @@ import com.rapipeline.entity.RAPlmRoProfData;
 import com.rapipeline.entity.RAProvDetails;
 import com.rapipeline.repository.RAPlmRoFileDataRepository;
 import com.rapipeline.repository.RAPlmRoProfDataRepository;
+import com.rapipeline.repository.RAProvDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class RAFileMetaDataDetailsService {
     private RAPlmRoProfDataRepository raPlmRoProfDataRepository;
 
     @Autowired
-    private RAProviderService raProviderService;
+    private RAProvDetailsRepository raProvDetailsRepository;
     public List<RAFileMetaData> getUnIngestedRAFileMetaDataDetails() {
         List<RAPlmRoFileData> raPlmRoFileDataList = raPlmRoFileDataRepository.getNewRAPlmRoFileDataList();
         List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
@@ -67,7 +68,7 @@ public class RAFileMetaDataDetailsService {
         if (!raFileMetaData.getFileName().endsWith(".xlsx")) {
             errorList.add("File name doesn't end with .xlsx");
         }
-        Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
+        Optional<RAProvDetails> optionalRAProvDetails = raProvDetailsRepository.findByProvider(raFileMetaData.getOrgName());
         if (!optionalRAProvDetails.isPresent()) {
             errorList.add("Unknown provider");
         }

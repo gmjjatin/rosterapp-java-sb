@@ -3,7 +3,6 @@ package com.rapipeline.entity;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
 @Table(name = "ra_file_x_status")

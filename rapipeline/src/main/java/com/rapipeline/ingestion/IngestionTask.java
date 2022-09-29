@@ -1,12 +1,16 @@
 package com.rapipeline.ingestion;
 
-
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
 import com.rapipeline.dto.RAFileMetaData;
 import com.rapipeline.entity.RAFileDetails;
 import com.rapipeline.entity.RAProvDetails;
-import com.rapipeline.service.*;
+import com.rapipeline.service.RAFileXStatusService;
+import com.rapipeline.service.RAFileMetaDataDetailsService;
+import com.rapipeline.service.FileSystemUtilService;
+import com.rapipeline.service.RAProviderService;
+import com.rapipeline.service.RAFileDetailsService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -16,7 +20,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.rapipeline.util.PipelineStatusCodeUtil.*;
 
 @Slf4j
 @Component
@@ -25,14 +34,6 @@ import java.util.*;
 //TODO DCN id in standarized name
 //TODO handle market and lob in ra_file_details
 public class IngestionTask extends Task {
-    //TODO later fix it
-    public static Long PROCESS_USER_ID = 1L;
-    public static String REJECTED_STATUS = "REJECTED";
-
-    //TODO
-    public static int REJECTED_STATUS_CODE = 2;
-    public static int INGESTED_STATUS_CODE = 1;
-    public static String IN_PROGRESS_STATUS = "IN-PROGRESS";
 
     private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
     private FileSystemUtilService fileSystemUtilService;
@@ -171,15 +172,14 @@ public class IngestionTask extends Task {
             String plmTicketId = raFileMetaData.getRoId();
             Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
             if (!optionalRAFileDetails.isPresent()) {
-                raFileDetailsService.insertRAFileDetails(raProvDetailsId, fileName, standardizedFileName,
+                raFileDetailsService.insertRAFileDetails(raProvDetailsId, raFileMetaData.getCntState(), raFileMetaData.getPlmNetwork(),fileName, standardizedFileName,
                         plmTicketId, destinationFilePath, null, PROCESS_USER_ID, PROCESS_USER_ID);
                 optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
             } else {
-                //TODO update the file details
+                raFileDetailsService.updateRAFileDetails(optionalRAFileDetails.get(), raProvDetailsId, raFileMetaData.getCntState(), raFileMetaData.getPlmNetwork(),fileName, standardizedFileName,
+                        plmTicketId, destinationFilePath, null, PROCESS_USER_ID);
             }
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
-            raFileDetailsService.insertRAFileDetails(raProvDetailsId, fileName, standardizedFileName,
-                    plmTicketId, destinationFilePath, null, PROCESS_USER_ID, PROCESS_USER_ID);
             raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, status);
             raFileXStatusService.insertOrUpdateRAFileXStatus(raFileDetails.getId(), statusCode);
             return true;

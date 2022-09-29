@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,5 +23,9 @@ public class RAFileXStatusService {
         } else {
             raFileXStatusRepository.insertRAFileXStatus(raFileDetailsId, statusCode);
         }
+    }
+
+    public List<RAFileXStatus> findRAFileXStatusWithCode(int statusCode) {
+        return raFileXStatusRepository.findRAFileXStatusWithCode(statusCode);
     }
 }
