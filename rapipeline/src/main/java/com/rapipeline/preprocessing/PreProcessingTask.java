@@ -5,20 +5,14 @@ import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
 import com.rapipeline.entity.RAFileDetails;
 import com.rapipeline.entity.RAFileXStatus;
-import com.rapipeline.service.RAFileXStatusService;
-import com.rapipeline.service.RAFileMetaDataDetailsService;
-import com.rapipeline.service.FileSystemUtilService;
-import com.rapipeline.service.RAProviderService;
-import com.rapipeline.service.RAFileDetailsService;
+import com.rapipeline.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
-@Component
 public class PreProcessingTask extends Task {
     private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
     private FileSystemUtilService fileSystemUtilService;

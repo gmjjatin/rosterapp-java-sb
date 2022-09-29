@@ -2,18 +2,14 @@ package com.rapipeline.ingestion;
 
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
+import com.rapipeline.dto.ErrorDetails;
 import com.rapipeline.dto.RAFileMetaData;
 import com.rapipeline.entity.RAFileDetails;
 import com.rapipeline.entity.RAProvDetails;
-import com.rapipeline.service.RAFileXStatusService;
-import com.rapipeline.service.RAFileMetaDataDetailsService;
-import com.rapipeline.service.FileSystemUtilService;
-import com.rapipeline.service.RAProviderService;
-import com.rapipeline.service.RAFileDetailsService;
-
+import com.rapipeline.model.ErrorCategory;
+import com.rapipeline.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,19 +24,16 @@ import java.util.Optional;
 import static com.rapipeline.util.PipelineStatusCodeUtil.*;
 
 @Slf4j
-@Component
 //TODO what if same file is placed again???
 //TODO handle Reject files not in 6 states/GBD markets/white glove providers??
-//TODO DCN id in standarized name
-//TODO handle market and lob in ra_file_details
 public class IngestionTask extends Task {
-
     private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
     private FileSystemUtilService fileSystemUtilService;
     private RAFileDetailsService raFileDetailsService;
     private RAProviderService raProviderService;
 
     private RAFileXStatusService raFileXStatusService;
+    private RASystemErrorsService raSystemErrorsService;
 
     private static final Gson gson = new Gson();
 
@@ -54,12 +47,14 @@ public class IngestionTask extends Task {
         this.raFileDetailsService = (RAFileDetailsService) applicationContext.getBean("RAFileDetailsService");
         this.raProviderService = (RAProviderService) applicationContext.getBean("RAProviderService");
         this.raFileXStatusService = (RAFileXStatusService) applicationContext.getBean("RAFileXStatusService");
+        this.raSystemErrorsService = (RASystemErrorsService) applicationContext.getBean("RASystemErrorsService");
     }
 
     @Override
     public void run() {
         log.info("IngestionTask stared for {}", gson.toJson(getTaskData()));
         Map<String, Object> taskData = getTaskData();
+        //Core framework level errors should change anything related to file
         if (!taskData.containsKey("data")) {
             log.warn("taskData doesn't have key data - taskData {}", gson.toJson(taskData));
             return;
@@ -69,25 +64,27 @@ public class IngestionTask extends Task {
                     gson.toJson(taskData));
             return;
         }
+        RAFileMetaData raFileMetaData = (RAFileMetaData) taskData.get("data");
 
         //Meta data validation
-        RAFileMetaData raFileMetaData = (RAFileMetaData) taskData.get("data");
-        Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
         List<String> validationErrorList = raFileMetaDataDetailsService.validateMetaDataAndGetErrorList(raFileMetaData);
         if (validationErrorList.size() > 0) {
             log.warn("raFileMetaDataDetails {} has these errors {} in metadata", gson.toJson(raFileMetaData), gson.toJson(validationErrorList));
+            Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
             upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
-                    optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null, null);
+                    optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null, null
+            , new ErrorDetails(ErrorCategory.INGESTION_MISSING_DATA, gson.toJson(validationErrorList), null));
             return;
         }
 
         //Already checked in validateMetaDataAndGetErrorList
+        Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
         RAProvDetails raProvDetails = optionalRAProvDetails.get();
         //File validation
         if (!validateFile(raFileMetaData)) {
-            raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, REJECTED_STATUS);
             upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
-                    optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null, null);
+                    optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null, null,
+                    new ErrorDetails(ErrorCategory.INGESTION_FILE_MISSING, "File missing from source folder", null));
             return;
         }
         //TODO fix plm ticket id
@@ -105,7 +102,8 @@ public class IngestionTask extends Task {
             log.warn("Copying files failed for raFileMetaDataDetails {}", gson.toJson(raFileMetaData));
             upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
                     optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
-                    standardizedFileName, destinationFilePath);
+                    standardizedFileName, destinationFilePath,
+                    new ErrorDetails());
             return;
         }
         boolean updated = upsertIngestionStatus(raFileMetaData, IN_PROGRESS_STATUS, INGESTED_STATUS_CODE, raProvDetails.getId(),
@@ -166,7 +164,7 @@ public class IngestionTask extends Task {
 
     public boolean upsertIngestionStatus(RAFileMetaData raFileMetaData, String status, int statusCode,
                                          Long raProvDetailsId, String standardizedFileName,
-                                         String destinationFilePath) {
+                                         String destinationFilePath, ErrorDetails errorDetails) {
         try {
             String fileName = raFileMetaData.getFileName();
             String plmTicketId = raFileMetaData.getRoId();
@@ -182,6 +180,9 @@ public class IngestionTask extends Task {
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
             raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, status);
             raFileXStatusService.insertOrUpdateRAFileXStatus(raFileDetails.getId(), statusCode);
+            raSystemErrorsService.insertRASystemErrors(raFileDetails.getId(), "INGESTION",
+                    statusCode, errorDetails.getErrorCategory(), errorDetails.getErrorDescription(), errorDetails.getErrorStackTrace(),
+                    PROCESS_USER_ID, PROCESS_USER_ID);
             return true;
         } catch (Exception ex) {
             log.error("Error in upsertIngestionStatus - raFileMetaData {} ex {}", gson.toJson(raFileMetaData), ex.getMessage());

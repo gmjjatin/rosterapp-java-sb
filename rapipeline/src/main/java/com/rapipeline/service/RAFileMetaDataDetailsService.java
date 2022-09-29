@@ -74,18 +74,6 @@ public class RAFileMetaDataDetailsService {
         }
         return errorList;
     }
-
-//    public boolean updateStatusForRAFileMetaDataDetails(RAFileMetaDataDetails raFileMetaDataDetails, int ingestionStatus) {
-//        try {
-//            raFileMetaDataDetailsRepository.updateStatusForRAFileMetaDataDetails(raFileMetaDataDetails.getId(), ingestionStatus);
-//            return true;
-//        } catch (Exception ex) {
-//            log.error("Error in updateRAFileMetaDataDetails - raFileMetaDataDetails {} ingestionStatus {} ex {}", gson.toJson(raFileMetaDataDetails),
-//                    ingestionStatus, ex.getMessage());
-//            return false;
-//        }
-//    }
-//
     public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, String status) {
         raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status);
     }

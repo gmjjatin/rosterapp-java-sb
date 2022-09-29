@@ -3,7 +3,6 @@ package com.rapipeline.preprocessing;
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.JobRetriever;
 import com.hilabs.mcheck.model.Task;
-import com.rapipeline.dto.RAFileMetaData;
 import com.rapipeline.entity.RAFileXStatus;
 import com.rapipeline.repository.RAProvDetailsRepository;
 import com.rapipeline.service.RAFileDetailsService;

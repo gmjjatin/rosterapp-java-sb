@@ -17,6 +17,12 @@ public class RAFileDetails extends BaseEntity {
     @Column(name = "ra_prov_details_id")
     private Long raProvDetailsId;
 
+    @Column(name = "market")
+    private String market;
+
+    @Column(name = "lob")
+    private String lineOfBusiness;
+
     @Column(name = "orgnl_file_nm")
     private String originalFileName;
 
