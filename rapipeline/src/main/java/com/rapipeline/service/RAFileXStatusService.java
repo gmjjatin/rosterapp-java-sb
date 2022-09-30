@@ -1,6 +1,7 @@
 package com.rapipeline.service;
 
-import com.rapipeline.entity.RAFileXStatus;
+
+import com.hilabs.roster.entity.RAFileXStatus;
 import com.rapipeline.repository.RAFileXStatusRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

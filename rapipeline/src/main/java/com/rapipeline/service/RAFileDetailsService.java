@@ -1,6 +1,6 @@
 package com.rapipeline.service;
 
-import com.rapipeline.entity.RAFileDetails;
+import com.hilabs.roster.entity.RAFileDetails;
 import com.rapipeline.repository.RAFileDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ public class RAFileDetailsService {
         raFileDetailsRepository.insertRAFileDetails(raProvDetailsId, market, lob, originalFileName, standardizedFileName, plmTicketId, fileLocation, fileSystem, createdUserId, lastUpdateUserId);
     }
 
-    public void updateRAFileDetails(RAFileDetails raFileDetails, Long raProvDetailsId, String market, String lob, String originalFileName, String standardizedFileName,String plmTicketId, String fileLocation,String fileSystem, Long lastUpdateUserId) {
+    public void updateRAFileDetails(RAFileDetails raFileDetails, Long raProvDetailsId, String market, String lob, String originalFileName, String standardizedFileName, String plmTicketId, String fileLocation, String fileSystem, Long lastUpdateUserId) {
         raProvDetailsId = raProvDetailsId == null ? raFileDetails.getRaProvDetailsId() : raProvDetailsId;
         market = market == null ? raFileDetails.getMarket() : market;
         lob = lob == null ? raFileDetails.getLineOfBusiness() : lob;

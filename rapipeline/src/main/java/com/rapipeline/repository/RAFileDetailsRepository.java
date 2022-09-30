@@ -1,6 +1,6 @@
 package com.rapipeline.repository;
 
-import com.rapipeline.entity.RAFileDetails;
+import com.hilabs.roster.entity.RAFileDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

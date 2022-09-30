@@ -3,8 +3,8 @@ package com.rapipeline.preprocessing;
 
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
-import com.rapipeline.entity.RAFileDetails;
-import com.rapipeline.entity.RAFileXStatus;
+import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RAFileXStatus;
 import com.rapipeline.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;

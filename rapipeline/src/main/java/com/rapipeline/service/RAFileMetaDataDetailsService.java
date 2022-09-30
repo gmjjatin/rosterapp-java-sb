@@ -1,11 +1,11 @@
 package com.rapipeline.service;
 
 import com.google.gson.Gson;
+import com.hilabs.roster.entity.RAPlmRoFileData;
+import com.hilabs.roster.entity.RAPlmRoProfData;
+import com.hilabs.roster.entity.RAProvDetails;
 import com.rapipeline.dto.ErrorDetails;
 import com.rapipeline.dto.RAFileMetaData;
-import com.rapipeline.entity.RAPlmRoFileData;
-import com.rapipeline.entity.RAPlmRoProfData;
-import com.rapipeline.entity.RAProvDetails;
 import com.rapipeline.model.ErrorCategory;
 import com.rapipeline.repository.RAPlmRoFileDataRepository;
 import com.rapipeline.repository.RAPlmRoProfDataRepository;

@@ -1,7 +1,7 @@
 package com.rapipeline.dto;
 
-import com.rapipeline.entity.RAPlmRoFileData;
-import com.rapipeline.entity.RAPlmRoProfData;
+import com.hilabs.roster.entity.RAPlmRoFileData;
+import com.hilabs.roster.entity.RAPlmRoProfData;
 import lombok.Data;
 
 import java.util.Date;

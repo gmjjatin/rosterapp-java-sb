@@ -1,4 +1,4 @@
-package com.rapipeline.entity;
+package com.hilabs.roster.entity;
 
 import lombok.Data;
 
