@@ -1,10 +1,12 @@
 package com.rapipeline.service;
 
 import com.google.gson.Gson;
+import com.rapipeline.dto.ErrorDetails;
 import com.rapipeline.dto.RAFileMetaData;
 import com.rapipeline.entity.RAPlmRoFileData;
 import com.rapipeline.entity.RAPlmRoProfData;
 import com.rapipeline.entity.RAProvDetails;
+import com.rapipeline.model.ErrorCategory;
 import com.rapipeline.repository.RAPlmRoFileDataRepository;
 import com.rapipeline.repository.RAPlmRoProfDataRepository;
 import com.rapipeline.repository.RAProvDetailsRepository;
@@ -43,7 +45,7 @@ public class RAFileMetaDataDetailsService {
     }
 
     //TODO later - need to add more checks
-    public List<String> validateMetaDataAndGetErrorList(RAFileMetaData raFileMetaData) {
+    public ErrorDetails validateMetaDataAndGetErrorList(RAFileMetaData raFileMetaData) {
         List<String> missingFields = new ArrayList<>();
         if (raFileMetaData.getOrgName() == null) {
             missingFields.add("Organization Name");
@@ -72,7 +74,10 @@ public class RAFileMetaDataDetailsService {
         if (!optionalRAProvDetails.isPresent()) {
             errorList.add("Unknown provider");
         }
-        return errorList;
+        if (errorList.size() > 0) {
+            return new ErrorDetails(ErrorCategory.INGESTION_MISSING_DATA, gson.toJson(errorList), null);
+        }
+        return null;
     }
     public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, String status) {
         raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status);

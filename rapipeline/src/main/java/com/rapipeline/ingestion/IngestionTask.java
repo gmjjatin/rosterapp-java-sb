@@ -66,57 +66,65 @@ public class IngestionTask extends Task {
         }
         RAFileMetaData raFileMetaData = (RAFileMetaData) taskData.get("data");
 
-        //Meta data validation
-        List<String> validationErrorList = raFileMetaDataDetailsService.validateMetaDataAndGetErrorList(raFileMetaData);
-        if (validationErrorList.size() > 0) {
-            log.warn("raFileMetaDataDetails {} has these errors {} in metadata", gson.toJson(raFileMetaData), gson.toJson(validationErrorList));
-            Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
-            upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
-                    optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null, null
-            , new ErrorDetails(ErrorCategory.INGESTION_MISSING_DATA, gson.toJson(validationErrorList), null));
-            return;
-        }
+        try {
+            //Step 1 - Meta data validation
+            ErrorDetails validationErrorDetails = raFileMetaDataDetailsService.validateMetaDataAndGetErrorList(raFileMetaData);
+            if (validationErrorDetails != null) {
+                log.warn("raFileMetaDataDetails {} has these errors {} in metadata",
+                        gson.toJson(raFileMetaData), gson.toJson(validationErrorDetails));
+                Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
+                upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
+                        optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
+                        null, null, validationErrorDetails);
+                return;
+            }
 
-        //Already checked in validateMetaDataAndGetErrorList
-        Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
-        RAProvDetails raProvDetails = optionalRAProvDetails.get();
-        //File validation
-        if (!validateFile(raFileMetaData)) {
-            upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
-                    optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null, null,
-                    new ErrorDetails(ErrorCategory.INGESTION_FILE_MISSING, "File missing from source folder", null));
-            return;
-        }
-        //TODO fix plm ticket id
-        String plmTicketId = raFileMetaData.getRoId();
-        String fileName = raFileMetaData.getFileName();
-        String standardizedFileName = getStandardizedFileName(raFileMetaData);
-        String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);
-        String destinationFilePath = fileSystemUtilService.getDestinationFilePath(standardizedFileName);
-        String archiveFilePath = fileSystemUtilService.getArchiveFilePath(fileName);
-        //TODO fix password
-        String password = "123456";
+            //Already checked in validateMetaDataAndGetErrorList
+            Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
+            RAProvDetails raProvDetails = optionalRAProvDetails.get();
+            //Step 2 - File validation
+            ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
+            if (validateFileErrorDetails != null) {
+                upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
+                        optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
+                        null, null, validateFileErrorDetails);
+                return;
+            }
+            //TODO fix plm ticket id
+            String plmTicketId = raFileMetaData.getRoId();
+            String fileName = raFileMetaData.getFileName();
+            String standardizedFileName = getStandardizedFileName(raFileMetaData);
+            String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);
+            String destinationFilePath = fileSystemUtilService.getDestinationFilePath(standardizedFileName);
+            String archiveFilePath = fileSystemUtilService.getArchiveFilePath(fileName);
+            //TODO fix password
+            String password = "123456";
 //        String password = raFileMetaData.getPassword();
-        //Copy file to destination
-        if (!copyToDestAndArchive(sourceFilePath, destinationFilePath, archiveFilePath, password)) {
-            log.warn("Copying files failed for raFileMetaDataDetails {}", gson.toJson(raFileMetaData));
-            upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
-                    optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
-                    standardizedFileName, destinationFilePath,
-                    new ErrorDetails());
-            return;
+            //Copy file to destination
+            if (!copyToDestAndArchive(sourceFilePath, destinationFilePath, archiveFilePath, password)) {
+                String errorDescription = String.format("Copying files failed for raFileMetaDataDetails %s",
+                        gson.toJson(raFileMetaData));
+                log.warn(errorDescription);
+                upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
+                        optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
+                        standardizedFileName, destinationFilePath,
+                        new ErrorDetails(ErrorCategory.INGESTION_SYSTEM_ERROR, errorDescription, null));
+                return;
+            }
+            upsertIngestionStatus(raFileMetaData, IN_PROGRESS_STATUS, INGESTED_STATUS_CODE, raProvDetails.getId(),
+                    standardizedFileName, destinationFilePath, null);
+            if (!deleteFileIfExists(sourceFilePath)) {
+                //TODO later do we need to stop process here???
+                log.warn("Error deleting sourceFilePath {} - raFileMetaDataDetails {}", sourceFilePath, gson.toJson(raFileMetaData));
+            }
+            log.debug("IngestionTask done for {}", gson.toJson(getTaskData()));
+        } catch (Exception ex) {
+            log.error("Error in IngestionTask raFileMetaData {} ex {}", gson.toJson(raFileMetaData),
+                    ex.getMessage());
+            //TODO fix it
+            upsertIngestionStatus(raFileMetaData, NEW_STATUS, READY_FOR_INGESTED_STATUS_CODE,
+                    null, null, null, null);
         }
-        boolean updated = upsertIngestionStatus(raFileMetaData, IN_PROGRESS_STATUS, INGESTED_STATUS_CODE, raProvDetails.getId(),
-                standardizedFileName, destinationFilePath);
-        if (!updated) {
-            log.warn("upsertIngestionStatus is not successful - raFileMetaDataDetails {}", gson.toJson(raFileMetaData));
-            return;
-        }
-        if (!deleteFileIfExists(sourceFilePath)) {
-            //TODO later do we need to stop process here???
-            log.warn("Error deleting sourceFilePath {} - raFileMetaDataDetails {}", sourceFilePath, gson.toJson(raFileMetaData));
-        }
-        log.debug("IngestionTask done for {}", gson.toJson(getTaskData()));
     }
 
     public boolean deleteFileIfExists(String sourceFilePath) {
@@ -140,14 +148,15 @@ public class IngestionTask extends Task {
         return plmTicketId + "-" + dcnId + "-" + strDate + ".xlsx";
     }
 
-    public boolean validateFile(RAFileMetaData raFileMetaData) {
+    public ErrorDetails validateFile(RAFileMetaData raFileMetaData) {
         String sourceFilePath = fileSystemUtilService.getSourceFilePath(raFileMetaData.getFileName());
         File file = new File(sourceFilePath);
         if (!file.exists()) {
             log.warn("File with name {} doesn't exists - raFileMetaDataDetails {}", raFileMetaData.getFileName(), gson.toJson(raFileMetaData));
-            return false;
+            return new ErrorDetails(ErrorCategory.INGESTION_FILE_MISSING,
+                    String.format("File with name %s doesn't exists", raFileMetaData.getFileName()), null);
         }
-        return true;
+        return null;
     }
 
     public boolean copyToDestAndArchive(String sourceFilePath, String destinationFilePath, String archiveFilePath, String password) {
@@ -162,31 +171,27 @@ public class IngestionTask extends Task {
         return copied;
     }
 
-    public boolean upsertIngestionStatus(RAFileMetaData raFileMetaData, String status, int statusCode,
+    public void upsertIngestionStatus(RAFileMetaData raFileMetaData, String status, int statusCode,
                                          Long raProvDetailsId, String standardizedFileName,
                                          String destinationFilePath, ErrorDetails errorDetails) {
-        try {
-            String fileName = raFileMetaData.getFileName();
-            String plmTicketId = raFileMetaData.getRoId();
-            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
-            if (!optionalRAFileDetails.isPresent()) {
-                raFileDetailsService.insertRAFileDetails(raProvDetailsId, raFileMetaData.getCntState(), raFileMetaData.getPlmNetwork(),fileName, standardizedFileName,
-                        plmTicketId, destinationFilePath, null, PROCESS_USER_ID, PROCESS_USER_ID);
-                optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
-            } else {
-                raFileDetailsService.updateRAFileDetails(optionalRAFileDetails.get(), raProvDetailsId, raFileMetaData.getCntState(), raFileMetaData.getPlmNetwork(),fileName, standardizedFileName,
-                        plmTicketId, destinationFilePath, null, PROCESS_USER_ID);
-            }
-            RAFileDetails raFileDetails = optionalRAFileDetails.get();
-            raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, status);
-            raFileXStatusService.insertOrUpdateRAFileXStatus(raFileDetails.getId(), statusCode);
+        String fileName = raFileMetaData.getFileName();
+        String plmTicketId = raFileMetaData.getRoId();
+        Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
+        if (!optionalRAFileDetails.isPresent()) {
+            raFileDetailsService.insertRAFileDetails(raProvDetailsId, raFileMetaData.getCntState(), raFileMetaData.getPlmNetwork(),fileName, standardizedFileName,
+                    plmTicketId, destinationFilePath, null, PROCESS_USER_ID, PROCESS_USER_ID);
+            optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
+        } else {
+            raFileDetailsService.updateRAFileDetails(optionalRAFileDetails.get(), raProvDetailsId, raFileMetaData.getCntState(), raFileMetaData.getPlmNetwork(),fileName, standardizedFileName,
+                    plmTicketId, destinationFilePath, null, PROCESS_USER_ID);
+        }
+        RAFileDetails raFileDetails = optionalRAFileDetails.get();
+        raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, status);
+        raFileXStatusService.insertOrUpdateRAFileXStatus(raFileDetails.getId(), statusCode);
+        if (errorDetails != null) {
             raSystemErrorsService.insertRASystemErrors(raFileDetails.getId(), "INGESTION",
-                    statusCode, errorDetails.getErrorCategory(), errorDetails.getErrorDescription(), errorDetails.getErrorStackTrace(),
+                    statusCode, errorDetails.getErrorCategory().name(), errorDetails.getErrorDescription(), errorDetails.getErrorStackTrace(),
                     PROCESS_USER_ID, PROCESS_USER_ID);
-            return true;
-        } catch (Exception ex) {
-            log.error("Error in upsertIngestionStatus - raFileMetaData {} ex {}", gson.toJson(raFileMetaData), ex.getMessage());
-            return false;
         }
     }
 }
