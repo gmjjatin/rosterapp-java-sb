@@ -223,15 +223,15 @@ public class IngestionTask extends Task {
                                          Long raProvDetailsId, String standardizedFileName,
                                          String destinationFilePath, ErrorDetails errorDetails) {
         String fileName = raFileMetaData.getFileName();
-        String plmTicketId = raFileMetaData.getRoId();
+        String ticketId = raFileMetaData.getRoId() + raFileMetaData.getDcnId();
         Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
         if (!optionalRAFileDetails.isPresent()) {
             raFileDetailsService.insertRAFileDetails(raProvDetailsId, raFileMetaData.getCntState(), raFileMetaData.getPlmNetwork(),fileName, standardizedFileName,
-                    plmTicketId, destinationFilePath, null, PROCESS_USER_ID, PROCESS_USER_ID);
+                    ticketId, destinationFilePath, null, PROCESS_USER_ID, PROCESS_USER_ID);
             optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
         } else {
             raFileDetailsService.updateRAFileDetails(optionalRAFileDetails.get(), raProvDetailsId, raFileMetaData.getCntState(), raFileMetaData.getPlmNetwork(),fileName, standardizedFileName,
-                    plmTicketId, destinationFilePath, null, PROCESS_USER_ID);
+                    ticketId, destinationFilePath, null, PROCESS_USER_ID);
         }
         RAFileDetails raFileDetails = optionalRAFileDetails.get();
         raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, status);

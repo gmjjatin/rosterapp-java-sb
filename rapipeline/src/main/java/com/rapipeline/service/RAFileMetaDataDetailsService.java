@@ -60,6 +60,9 @@ public class RAFileMetaDataDetailsService {
         if (raFileMetaData.getRoId() == null) {
             missingFields.add("RO ID");
         }
+        if (raFileMetaData.getDcnId() == null) {
+            missingFields.add("DCN ID");
+        }
         if (raFileMetaData.getFileName() == null) {
             missingFields.add("File Name");
         }
