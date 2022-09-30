@@ -1,5 +1,6 @@
 package com.anthem.rostertracker.model;
 
+//TODO confirm the statuses
 public enum RosterFileProcessStatus {
     NOT_YET_STARTED,
     RUNNING_HEADER_MAPPING,

@@ -1,73 +1,85 @@
 package com.rapipeline.service;
 
 import com.google.gson.Gson;
-import com.rapipeline.entity.RAFileMetaDataDetails;
-import com.rapipeline.repository.RAFileMetaDataDetailsRepository;
+import com.rapipeline.dto.ErrorDetails;
+import com.rapipeline.dto.RAFileMetaData;
+import com.rapipeline.entity.RAPlmRoFileData;
+import com.rapipeline.entity.RAPlmRoProfData;
+import com.rapipeline.entity.RAProvDetails;
+import com.rapipeline.model.ErrorCategory;
+import com.rapipeline.repository.RAPlmRoFileDataRepository;
+import com.rapipeline.repository.RAPlmRoProfDataRepository;
+import com.rapipeline.repository.RAProvDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
 public class RAFileMetaDataDetailsService {
     private static final Gson gson = new Gson();
     @Autowired
-    private RAFileMetaDataDetailsRepository raFileMetaDataDetailsRepository;
+    private RAPlmRoFileDataRepository raPlmRoFileDataRepository;
 
-    public List<RAFileMetaDataDetails> getUnIngestedRAFileMetaDataDetails(int maxRetryNo) {
-        return raFileMetaDataDetailsRepository.getUnIngestedRAFileMetaDataDetails(maxRetryNo);
+    @Autowired
+    private RAPlmRoProfDataRepository raPlmRoProfDataRepository;
+
+    @Autowired
+    private RAProvDetailsRepository raProvDetailsRepository;
+    public List<RAFileMetaData> getUnIngestedRAFileMetaDataDetails() {
+        List<RAPlmRoFileData> raPlmRoFileDataList = raPlmRoFileDataRepository.getNewRAPlmRoFileDataList();
+        List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
+        for (RAPlmRoFileData raPlmRoFileData : raPlmRoFileDataList) {
+            Optional<RAPlmRoProfData> optionalRAPlmRoProfData = raPlmRoProfDataRepository.findById(raPlmRoFileData.getRaPlmRoProfDataId());
+            if (!optionalRAPlmRoProfData.isPresent()) {
+                log.error("RAPlmRoProfData missing for raPlmRoFileData {}", gson.toJson(raPlmRoFileData));
+                continue;
+            }
+            raFileMetaDataList.add(new RAFileMetaData(optionalRAPlmRoProfData.get(), raPlmRoFileData));
+        }
+        return raFileMetaDataList;
     }
 
     //TODO later - need to add more checks
-    public List<String> validateMetaDataAndGetErrorList(RAFileMetaDataDetails raFileMetaDataDetails) {
+    public ErrorDetails validateMetaDataAndGetErrorList(RAFileMetaData raFileMetaData) {
         List<String> missingFields = new ArrayList<>();
-        if (raFileMetaDataDetails.getProviderName() == null) {
-            missingFields.add("Provider Name");
+        if (raFileMetaData.getOrgName() == null) {
+            missingFields.add("Organization Name");
         }
-        if (raFileMetaDataDetails.getMarket() == null) {
-            missingFields.add("market");
+        if (raFileMetaData.getCntState() == null) {
+            missingFields.add("Cnt State");
         }
-        if (raFileMetaDataDetails.getLineOfBusiness() == null) {
-            missingFields.add("Line Of Business");
+        if (raFileMetaData.getPlmNetwork() == null) {
+            missingFields.add("PLM Network");
         }
-        if (raFileMetaDataDetails.getPlmTicketId() == null) {
-            missingFields.add("PLM Ticket Id");
+        //TODO fix it. Is it plm ticket id??
+        if (raFileMetaData.getRoId() == null) {
+            missingFields.add("RO ID");
         }
-        if (raFileMetaDataDetails.getFileName() == null) {
+        if (raFileMetaData.getFileName() == null) {
             missingFields.add("File Name");
         }
         List<String> errorList = new ArrayList<>();
         if (missingFields.size() > 0) {
             errorList.add("Missing fields - " + String.join(", ", missingFields));
         }
-        if (!raFileMetaDataDetails.getFileName().endsWith(".xlsx")) {
+        if (!raFileMetaData.getFileName().endsWith(".xlsx")) {
             errorList.add("File name doesn't end with .xlsx");
         }
-        return errorList;
-    }
-
-    public boolean updateStatusForRAFileMetaDataDetails(RAFileMetaDataDetails raFileMetaDataDetails, int ingestionStatus) {
-        try {
-            raFileMetaDataDetailsRepository.updateStatusForRAFileMetaDataDetails(raFileMetaDataDetails.getId(), ingestionStatus);
-            return true;
-        } catch (Exception ex) {
-            log.error("Error in updateRAFileMetaDataDetails - raFileMetaDataDetails {} ingestionStatus {} ex {}", gson.toJson(raFileMetaDataDetails),
-                    ingestionStatus, ex.getMessage());
-            return false;
+        Optional<RAProvDetails> optionalRAProvDetails = raProvDetailsRepository.findByProvider(raFileMetaData.getOrgName());
+        if (!optionalRAProvDetails.isPresent()) {
+            errorList.add("Unknown provider");
         }
-    }
-
-    public boolean incrementRetryNoForRAFileMetaDataDetails(RAFileMetaDataDetails raFileMetaDataDetails) {
-        try {
-            raFileMetaDataDetailsRepository.incrementRetryNoForRAFileMetaDataDetails(raFileMetaDataDetails.getId());
-            return true;
-        } catch (Exception ex) {
-            log.error("Error in incrementRetryNoForRAFileMetaDataDetails - raFileMetaDataDetails {} ex {}", gson.toJson(raFileMetaDataDetails),
-                    ex.getMessage());
-            return false;
+        if (errorList.size() > 0) {
+            return new ErrorDetails(ErrorCategory.INGESTION_MISSING_DATA, gson.toJson(errorList), null);
         }
+        return null;
+    }
+    public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, String status) {
+        raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status);
     }
 }
