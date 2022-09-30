@@ -66,9 +66,12 @@ public class IngestionTask extends Task {
         Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
         if (optionalRAFileDetails.isPresent()) {
             Optional<RAFileXStatus> optionalRAFileXStatus = raFileXStatusService.findRAFileXStatusForFileId(optionalRAFileDetails.get().getId());
-            if (optionalRAFileXStatus.isPresent() && optionalRAFileXStatus.get().getStatusCode() == INGESTED_STATUS_CODE) {
+            if (optionalRAFileXStatus.isPresent() && optionalRAFileXStatus.get().getStatusCode() == INGESTED_STATUS_CODE
+                    && (raFileMetaData.getReprocess() == null || raFileMetaData.getReprocess() != 1)) {
+                //TODO check for reprocess flag
                 log.warn("raFileMetaData {} already ingested into the system", gson.toJson(raFileMetaData));
                 //This means file already ingested. Don't do anything
+                raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, REPETITION_FAILURE);
                 return false;
             }
         }
@@ -97,12 +100,11 @@ public class IngestionTask extends Task {
             return;
         }
 
-        if (!shouldRun(raFileMetaData)) {
-            return;
-        }
-
-        runningMap.put(fileName, fileName);
         try {
+            if (!shouldRun(raFileMetaData)) {
+                return;
+            }
+            runningMap.put(fileName, fileName);
             //Step 1 - Meta data validation
             ErrorDetails validationErrorDetails = raFileMetaDataDetailsService.validateMetaDataAndGetErrorList(raFileMetaData);
             if (validationErrorDetails != null) {
@@ -126,6 +128,16 @@ public class IngestionTask extends Task {
                         null, null, validateFileErrorDetails);
                 return;
             }
+
+            if (!isSupported(raFileMetaData)) {
+                upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
+                        optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
+                        null, null, new ErrorDetails(ErrorCategory.INGESTION_UNSUPPORTED,
+                                "Unsupported Network", null));
+                return;
+            }
+
+
             String standardizedFileName = getStandardizedFileName(raFileMetaData);
             String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);
             String destinationFilePath = fileSystemUtilService.getDestinationFilePath(standardizedFileName);
@@ -229,5 +241,9 @@ public class IngestionTask extends Task {
                     statusCode, errorDetails.getErrorCategory().name(), errorDetails.getErrorDescription(), errorDetails.getErrorStackTrace(),
                     PROCESS_USER_ID, PROCESS_USER_ID);
         }
+    }
+
+    public boolean isSupported(RAFileMetaData raFileMetaData) {
+        return true;
     }
 }

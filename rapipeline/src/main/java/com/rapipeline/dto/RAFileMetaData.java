@@ -25,6 +25,7 @@ public class RAFileMetaData  {
     String dcnId;
     String fileSize;
     String rAFileProcessingStatus;
+    Integer reprocess;
     Date depositDate;
     String fileDocumentNumber;
     public RAFileMetaData(RAPlmRoProfData raPlmRoProfData, RAPlmRoFileData raPlmRoFileData) {
@@ -45,6 +46,7 @@ public class RAFileMetaData  {
         this.dcnId = raPlmRoFileData.getDcnId();
         this.fileSize = raPlmRoFileData.getFileSize();
         this.rAFileProcessingStatus = raPlmRoFileData.getRaFileProcessingStatus();
+        this.reprocess = raPlmRoFileData.getReprocess();
         this.depositDate = raPlmRoFileData.getDepositDate();
         this.fileDocumentNumber = raPlmRoFileData.getFileDocumentNumber();
     }
