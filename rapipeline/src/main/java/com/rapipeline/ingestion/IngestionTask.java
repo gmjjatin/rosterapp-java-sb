@@ -18,11 +18,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.rapipeline.util.PipelineStatusCodeUtil.*;
+
 
 @Slf4j
 //TODO what if same file is placed again???
@@ -35,6 +37,9 @@ public class IngestionTask extends Task {
 
     private RAFileXStatusService raFileXStatusService;
     private RASystemErrorsService raSystemErrorsService;
+
+    //TODO this approach won't work for multiple files.
+    public static ConcurrentHashMap<String, String> runningMap = new ConcurrentHashMap<>();
 
     private static final Gson gson = new Gson();
 
@@ -49,6 +54,25 @@ public class IngestionTask extends Task {
         this.raProviderService = (RAProviderService) applicationContext.getBean("RAProviderService");
         this.raFileXStatusService = (RAFileXStatusService) applicationContext.getBean("RAFileXStatusService");
         this.raSystemErrorsService = (RASystemErrorsService) applicationContext.getBean("RASystemErrorsService");
+    }
+
+    public boolean shouldRun(RAFileMetaData raFileMetaData) {
+        //TODO confirm
+        String fileName = raFileMetaData.getFileName();
+        if (runningMap.containsKey(fileName)) {
+            log.warn("Ingestion task in progress for raFileMetaData {}", gson.toJson(raFileMetaData));
+            return false;
+        }
+        Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
+        if (optionalRAFileDetails.isPresent()) {
+            Optional<RAFileXStatus> optionalRAFileXStatus = raFileXStatusService.findRAFileXStatusForFileId(optionalRAFileDetails.get().getId());
+            if (optionalRAFileXStatus.isPresent() && optionalRAFileXStatus.get().getStatusCode() == INGESTED_STATUS_CODE) {
+                log.warn("raFileMetaData {} already ingested into the system", gson.toJson(raFileMetaData));
+                //This means file already ingested. Don't do anything
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -66,23 +90,18 @@ public class IngestionTask extends Task {
             return;
         }
         RAFileMetaData raFileMetaData = (RAFileMetaData) taskData.get("data");
-        if (raFileMetaData.getFileName() == null) {
+        String fileName = raFileMetaData.getFileName();
+        if (fileName == null) {
             log.warn("raFileMetaDataDetails {} has these no file name", gson.toJson(raFileMetaData));
             //TODO handle
             return;
         }
 
-        //TODO confirm
-        String fileName = raFileMetaData.getFileName();
-        Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
-        if (optionalRAFileDetails.isPresent()) {
-            Optional<RAFileXStatus> optionalRAFileXStatus = raFileXStatusService.findRAFileXStatusForFileId(optionalRAFileDetails.get().getId());
-            if (optionalRAFileXStatus.isPresent() && optionalRAFileXStatus.get().getStatusCode() == INGESTED_STATUS_CODE) {
-                //This means file already ingested. Don't do anything
-                return;
-            }
+        if (!shouldRun(raFileMetaData)) {
+            return;
         }
 
+        runningMap.put(fileName, fileName);
         try {
             //Step 1 - Meta data validation
             ErrorDetails validationErrorDetails = raFileMetaDataDetailsService.validateMetaDataAndGetErrorList(raFileMetaData);
@@ -139,6 +158,8 @@ public class IngestionTask extends Task {
             //TODO fix it
             upsertIngestionStatus(raFileMetaData, NEW_STATUS, READY_FOR_INGESTED_STATUS_CODE,
                     null, null, null, null);
+        } finally {
+            runningMap.remove(fileName);
         }
     }
 

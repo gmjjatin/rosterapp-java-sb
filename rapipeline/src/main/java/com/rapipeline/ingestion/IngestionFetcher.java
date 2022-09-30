@@ -41,8 +41,7 @@ public class IngestionFetcher implements JobRetriever {
                 .getUnIngestedRAFileMetaDataDetails();
         for (RAFileMetaData raFileMetaData : raFileMetaDataList) {
             Map<String, Object> taskData = new HashMap<>();
-            //TODO need to think about reporcessing
-            taskData.put("id", raFileMetaData.getFileName());
+//            taskData.put("id", raFileMetaData.getFileName());
             taskData.put("data", raFileMetaData);
             IngestionTask ingestionTask = new IngestionTask(taskData);
             ingestionTask.setApplicationContext(applicationContext);
