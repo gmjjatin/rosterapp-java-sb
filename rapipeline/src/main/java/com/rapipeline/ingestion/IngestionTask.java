@@ -5,6 +5,7 @@ import com.hilabs.mcheck.model.Task;
 import com.rapipeline.dto.ErrorDetails;
 import com.rapipeline.dto.RAFileMetaData;
 import com.rapipeline.entity.RAFileDetails;
+import com.rapipeline.entity.RAFileXStatus;
 import com.rapipeline.entity.RAProvDetails;
 import com.rapipeline.model.ErrorCategory;
 import com.rapipeline.service.*;
@@ -65,6 +66,22 @@ public class IngestionTask extends Task {
             return;
         }
         RAFileMetaData raFileMetaData = (RAFileMetaData) taskData.get("data");
+        if (raFileMetaData.getFileName() == null) {
+            log.warn("raFileMetaDataDetails {} has these no file name", gson.toJson(raFileMetaData));
+            //TODO handle
+            return;
+        }
+
+        //TODO confirm
+        String fileName = raFileMetaData.getFileName();
+        Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileName(fileName);
+        if (optionalRAFileDetails.isPresent()) {
+            Optional<RAFileXStatus> optionalRAFileXStatus = raFileXStatusService.findRAFileXStatusForFileId(optionalRAFileDetails.get().getId());
+            if (optionalRAFileXStatus.isPresent() && optionalRAFileXStatus.get().getStatusCode() == INGESTED_STATUS_CODE) {
+                //This means file already ingested. Don't do anything
+                return;
+            }
+        }
 
         try {
             //Step 1 - Meta data validation
@@ -90,16 +107,14 @@ public class IngestionTask extends Task {
                         null, null, validateFileErrorDetails);
                 return;
             }
-            //TODO fix plm ticket id
-            String plmTicketId = raFileMetaData.getRoId();
-            String fileName = raFileMetaData.getFileName();
             String standardizedFileName = getStandardizedFileName(raFileMetaData);
             String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);
             String destinationFilePath = fileSystemUtilService.getDestinationFilePath(standardizedFileName);
             String archiveFilePath = fileSystemUtilService.getArchiveFilePath(fileName);
-            //TODO fix password
-            String password = "123456";
-//        String password = raFileMetaData.getPassword();
+            //TODO fix password. Confirm if it is always null
+            String password = null;
+
+//
             //Copy file to destination
             if (!copyToDestAndArchive(sourceFilePath, destinationFilePath, archiveFilePath, password)) {
                 String errorDescription = String.format("Copying files failed for raFileMetaDataDetails %s",

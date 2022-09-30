@@ -32,4 +32,8 @@ public interface RAFileXStatusRepository extends JpaRepository<RAFileXStatus, Lo
     @Query(value = "select * from ra_file_x_status where status_code = :statusCode",
             nativeQuery = true)
     List<RAFileXStatus> findRAFileXStatusWithCode(@Param("statusCode") int statusCode);
+
+    @Query(value = "select * from ra_file_x_status where ra_file_details_id = :raFileDetailsId",
+            nativeQuery = true)
+    Optional<RAFileXStatus> findRAFileXStatusForFileId(@Param("raFileDetailsId") Long raFileDetailsId);
 }

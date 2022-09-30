@@ -22,5 +22,5 @@ public interface RASystemErrorsRepository extends JpaRepository<RASystemErrors, 
                              @Param("errorDescription") String errorDescription,
                              @Param("errorStackTrace") String errorStackTrace,
                              @Param("createdUserId") Long createdUserId,
-                             @Param("lastUpdateUserId") Long lastUpdateUserId);
+                             @Param("lastUpdatedUserId") Long lastUpdatedUserId);
 }

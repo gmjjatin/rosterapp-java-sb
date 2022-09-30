@@ -28,4 +28,8 @@ public class RAFileXStatusService {
     public List<RAFileXStatus> findRAFileXStatusWithCode(int statusCode) {
         return raFileXStatusRepository.findRAFileXStatusWithCode(statusCode);
     }
+
+    public Optional<RAFileXStatus> findRAFileXStatusForFileId(long raFileDetailsId) {
+        return raFileXStatusRepository.findRAFileXStatusForFileId(raFileDetailsId);
+    }
 }
