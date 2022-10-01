@@ -1,4 +1,4 @@
-package com.rapipeline.mcheck;
+package com.hilabs.rapipeline.mcheck;
 
 import com.hilabs.mcheck.model.ContainerConfig;
 import com.hilabs.mcheck.model.Period;
