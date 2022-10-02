@@ -2,6 +2,7 @@ package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
+import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.repository.RAPlmRoFileDataRepository;
 import com.hilabs.rapipeline.repository.RAPlmRoProfDataRepository;
 import com.hilabs.roster.entity.*;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.NEW;
 
 @Service
 @Slf4j
@@ -39,6 +42,9 @@ public class RAFileMetaDataDetailsService {
     @Autowired
     private RARTFileAltIdsRepository rartFileAltIdsRepository;
 
+    @Autowired
+    private RAStatusCDMasterRepository raStatusCDMasterRepository;
+
     public Long insertRAProvMarketLobMap(Long raProvDetailsId, String market, String lob, Integer isActive) {
         RAProvMarketLobMap raProvMarketLobMap = new RAProvMarketLobMap(raProvDetailsId, market, lob, isActive);
         raProvMarketLobMap = raProvMarketLobMapRepository.save(raProvMarketLobMap);
@@ -64,7 +70,7 @@ public class RAFileMetaDataDetailsService {
         return rartFileAltIds.getId();
     }
     public List<RAFileMetaData> getUnIngestedRAFileMetaDataDetails() {
-        List<RAPlmRoFileData> raPlmRoFileDataList = raPlmRoFileDataRepository.getNewRAPlmRoFileDataList();
+        List<RAPlmRoFileData> raPlmRoFileDataList = raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name());
         List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
         for (RAPlmRoFileData raPlmRoFileData : raPlmRoFileDataList) {
             Optional<RAPlmRoProfData> optionalRAPlmRoProfData = raPlmRoProfDataRepository.findById(raPlmRoFileData.getRaPlmRoProfDataId());
@@ -80,7 +86,13 @@ public class RAFileMetaDataDetailsService {
     public Optional<RAPlmRoFileData> findById(Long raPlmRoFileDataId) {
         return raPlmRoFileDataRepository.findById(raPlmRoFileDataId);
     }
-    public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, String status) {
-        raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status);
+    public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status) {
+        raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status != null ? status.name() : null);
     }
+
+    //TODO move to right file
+//    public List<RAStatusCDMaster> getIngestionStatuses() {
+//        //TODO optimize
+//        return raStatusCDMasterRepository.getRAStatusCDMasterListForStage("INGESTION");
+//    }
 }

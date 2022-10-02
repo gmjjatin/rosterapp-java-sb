@@ -15,20 +15,8 @@ import java.util.Optional;
 public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, Long> {
 
     @Modifying
-    @Query(value = "insert into ra_file_details(ra_prov_details_id,  orgnl_file_nm," +
-            " stndrdzd_file_nm, creat_user_id, last_updt_user_id) " +
-            "VALUES (:raProvDetailsId, :originalFileName, :standardizedFileName," +
-            " :createdUserId, :lastUpdateUserId)", nativeQuery = true)
     @Transactional
-    void insertRAFileDetails(@Param("raProvDetailsId") Long raProvDetailsId,
-                             @Param("originalFileName") String originalFileName,
-                             @Param("standardizedFileName") String standardizedFileName,
-                             @Param("createdUserId") Long createdUserId,
-                             @Param("lastUpdateUserId") Long lastUpdateUserId);
-
-    @Modifying
-    @Transactional
-    @Query(value = "update ra_file_details set ra_prov_details_id = :raProvDetailsId, market = :market, lob = :lob," +
+    @Query(value = "update RA_RT_FILE_DETAILS set ra_provider_details_id = :raProvDetailsId, market = :market, lob = :lob," +
             " orgnl_file_nm = :originalFileName, stndrdzd_file_nm = :standardizedFileName, plm_ticket_id = :plmTicketId," +
             " file_location = :fileLocation, file_system = :fileSystem, last_updt_user_id = :lastUpdateUserId," +
             " last_updt_dt = sysdate " +
@@ -44,14 +32,19 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
                              @Param("lastUpdateUserId") Long lastUpdateUserId);
 
     //TODO is fileName unique
-    @Query(value = "select * from ra_file_details where orgnl_file_nm = :fileName order by creat_dt desc fetch next 1 rows only",
+    @Query(value = "select * from RA_RT_FILE_DETAILS where orgnl_file_nm = :fileName order by creat_dt desc fetch next 1 rows only",
             nativeQuery = true)
     Optional<RAFileDetails> findByFileName(@Param("fileName") String fileName);
 
-    @Query(value = "select * from ra_file_details where id = :raFileDetailsId", nativeQuery = true)
+    @Query(value = "select * from RA_RT_FILE_DETAILS where id = :raFileDetailsId", nativeQuery = true)
     Optional<RAFileDetails> findByRAFileDetailsId(@Param("raFileDetailsId") Long raFileDetailsId);
 
-    @Query(value = "select * from ra_file_details where ra_prov_details_id in (:raProvDetailsIds) " +
-            "and creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
-    List<RAFileDetails> findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(Date startDate, Date endDate, List<Long> raProvDetailsIds, @Param("limit") int limit, @Param("offset") int offset);
+    //TODO
+//    @Query(value = "select * from RA_RT_FILE_DETAILS where ra_provider_details_id in (:raProvDetailsIds) " +
+//            "and creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
+//    List<RAFileDetails> findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(Date startDate, Date endDate, List<Long> raProvDetailsIds, @Param("limit") int limit, @Param("offset") int offset);
+
+    //TODO
+    @Query(value = "select * from RA_RT_FILE_DETAILS where ra_provider_details_id in (:raProvDetailsIds) offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(List<Long> raProvDetailsIds, @Param("limit") int limit, @Param("offset") int offset);
 }

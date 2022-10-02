@@ -4,9 +4,11 @@ import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
 import com.hilabs.rapipeline.dto.ErrorDetails;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
+import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.service.*;
 import com.hilabs.roster.entity.RAPlmRoFileData;
 import com.hilabs.roster.entity.RAProvDetails;
+import com.hilabs.roster.entity.RAStatusCDMaster;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -17,12 +19,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
+import static com.hilabs.rapipeline.ingestion.Constants.*;
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.*;
+import static com.hilabs.rapipeline.util.Utils.trimToNChars;
+
 @Slf4j
 //TODO what if same file is placed again???
 //TODO handle Reject files not in 6 states/GBD markets/white glove providers??
@@ -65,7 +69,7 @@ public class IngestionTask extends Task {
         Optional<RAPlmRoFileData> raPlmRoFileDataOptional = raFileMetaDataDetailsService
                 .findById(raFileMetaData.getRaPlmRoFileDataId());
         return raPlmRoFileDataOptional.isPresent() && raPlmRoFileDataOptional.get().getRaFileProcessingStatus()
-                .equalsIgnoreCase("NEW");
+                .equalsIgnoreCase(NEW.name());
     }
 
     public RAFileMetaData getRAFileMetaDataFromTaskData() {
@@ -107,7 +111,8 @@ public class IngestionTask extends Task {
                 log.warn("raFileMetaDataDetails {} has these errors {} in metadata",
                         gson.toJson(raFileMetaData), gson.toJson(validationErrorDetails));
                 Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
-                upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
+                //TODO fix status code
+                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED,
                         optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),null,
                         validationErrorDetails);
                 return;
@@ -119,7 +124,8 @@ public class IngestionTask extends Task {
             //Step 2 - File validation
             ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
             if (validateFileErrorDetails != null) {
-                upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
+
+                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_FAILED,
                         optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null,
                         validateFileErrorDetails);
                 return;
@@ -139,13 +145,14 @@ public class IngestionTask extends Task {
                 String errorDescription = String.format("Copying files failed for raFileMetaDataDetails %s",
                         gson.toJson(raFileMetaData));
                 log.warn(errorDescription);
-                upsertIngestionStatus(raFileMetaData, REJECTED_STATUS, REJECTED_STATUS_CODE,
+                //TODO fix status code
+                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_FAILED,
                         optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
                         standardizedFileName,
                         new ErrorDetails("System error for copying files", errorDescription));
                 return;
             }
-            upsertIngestionStatus(raFileMetaData, IN_PROGRESS_STATUS, INGESTED_STATUS_CODE, raProvDetails.getId(),
+            upsertIngestionStatus(raFileMetaData, IN_PROGRESS, ROSTER_INGESTION_COMPLETED, raProvDetails.getId(),
                     standardizedFileName, null);
             if (!deleteFileIfExists(sourceFilePath)) {
                 //TODO later do we need to stop process here???
@@ -156,9 +163,10 @@ public class IngestionTask extends Task {
             log.error("Error in IngestionTask raFileMetaData {} ex {}", gson.toJson(raFileMetaData),
                     ex.getMessage());
             //TODO fix it
-            String stacktrace = ExceptionUtils.getStackTrace(ex);
-            upsertIngestionStatus(raFileMetaData, NEW_STATUS, READY_FOR_INGESTED_STATUS_CODE,
-                    null, null, null);
+            String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 1000);
+            String message = trimToNChars(ex.getMessage(), 1000);
+            upsertIngestionStatus(raFileMetaData, NEW, ROSTER_INGESTION_FAILED,
+                    null, null, new ErrorDetails(message, stacktrace));
         } finally {
             runningMap.remove(raFileMetaData.getRaPlmRoFileDataId());
         }
@@ -208,7 +216,7 @@ public class IngestionTask extends Task {
         return copied;
     }
 
-    public void upsertIngestionStatus(RAFileMetaData raFileMetaData, String status, int statusCode,
+    public void upsertIngestionStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status, int statusCode,
                                       Long raProvDetailsId, String standardizedFileName, ErrorDetails errorDetails) {
         String fileName = raFileMetaData.getFileName();
         //TODO insert ticket ids
@@ -217,8 +225,12 @@ public class IngestionTask extends Task {
         Long raFileDetailsId = raFileDetailsService.insertRAFileDetails(raProvDetailsId, fileName,
                 standardizedFileName, market, statusCode, null, null);
         raFileMetaDataDetailsService.insertRAFileDetailsLob(raFileDetailsId, lob, 1);
-        raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getDcnId(), "DCN_ID", 1);
-        raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getRoId(), "RO_ID", 1);
+        if (raFileMetaData.getDcnId() != null) {
+            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getDcnId(), "DCN_ID", 1);
+        }
+        if (raFileMetaData.getRoId() != null) {
+            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getRoId(), "RO_ID", 1);
+        }
         //TODO need to get contact from file
 //        raFileMetaDataDetailsService.insertRARTContactDetails(raFileDetailsId, null,
 //                contact, contactType, isActive)

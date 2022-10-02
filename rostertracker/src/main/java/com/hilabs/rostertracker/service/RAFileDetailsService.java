@@ -43,8 +43,8 @@ public class RAFileDetailsService {
         Date startDate = new Date(startTime);
         Date endDate = new Date(endTime);
         List<RAProvDetails> raProvDetailsList = getRAProvDetailsList(providerId, market, lineOfBusiness);
-        return raFileDetailsRepository.findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(startDate, endDate,
-                raProvDetailsList.stream().map(RAProvDetails::getId).collect(Collectors.toList()), limit, offset);
+        //TODO demo
+        return raFileDetailsRepository.findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(raProvDetailsList.stream().map(RAProvDetails::getId).collect(Collectors.toList()), limit, offset);
     }
 
     public List<RAProvDetails> getTopRAProvDetailsList() {

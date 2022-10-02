@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface RAPlmRoFileDataRepository extends JpaRepository<RAPlmRoFileData, Long> {
-    @Query(value = "select * from ra_plm_ro_file_data where ra_file_prcs_stts = 'NEW'", nativeQuery = true)
-    List<RAPlmRoFileData> getNewRAPlmRoFileDataList();
+    @Query(value = "select * from ra_plm_ro_file_data where ra_file_prcs_stts = :status", nativeQuery = true)
+    List<RAPlmRoFileData> getNewRAPlmRoFileDataListWithStatus(@Param("status") String status);
 
     @Modifying
     @Transactional
