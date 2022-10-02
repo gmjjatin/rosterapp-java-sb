@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Data
 public class RAConvStatusStageMappingInfo extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Enumerated(EnumType.STRING)

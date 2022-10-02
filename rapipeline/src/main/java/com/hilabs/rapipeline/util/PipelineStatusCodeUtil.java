@@ -5,8 +5,6 @@ public class PipelineStatusCodeUtil {
     //TODO
     public static String IN_PROGRESS_STATUS = "IN-PROGRESS";
 
-    public static String REPETITION_FAILURE = "REPETITION_FAILURE";
-
     public static String NEW_STATUS = "NEW";
 
     public static int REJECTED_STATUS_CODE = 2;

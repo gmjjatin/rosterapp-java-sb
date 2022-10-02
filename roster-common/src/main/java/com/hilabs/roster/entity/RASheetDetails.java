@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Data
 public class RASheetDetails extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "ra_file_details_id")

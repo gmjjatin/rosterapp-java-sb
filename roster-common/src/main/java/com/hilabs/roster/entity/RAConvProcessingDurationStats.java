@@ -11,7 +11,7 @@ import java.util.Date;
 @Data
 public class RAConvProcessingDurationStats extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "ra_sheet_details_id")
