@@ -1,6 +1,7 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAProvDetails;
+import com.hilabs.roster.repository.RAProvDetailsRepository;
 import com.hilabs.rostertracker.service.RAProviderService;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
@@ -22,6 +23,9 @@ import java.util.List;
 public class RAProviderController {
     @Autowired
     RAProviderService raProviderService;
+
+    @Autowired
+    RAProvDetailsRepository raProvDetailsRepository;
 
     public ConcurrentLruCache<String, List<RAProvDetails>> raProviderListFromSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
         return raProviderService.getRAProvListFromSearchStr(p);

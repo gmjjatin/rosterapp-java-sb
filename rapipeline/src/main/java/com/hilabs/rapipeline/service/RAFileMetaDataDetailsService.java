@@ -1,15 +1,11 @@
 package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
-import com.hilabs.roster.entity.RAPlmRoFileData;
-import com.hilabs.roster.entity.RAPlmRoProfData;
-import com.hilabs.roster.entity.RAProvDetails;
-import com.hilabs.rapipeline.dto.ErrorDetails;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
-import com.hilabs.rapipeline.model.ErrorCategory;
 import com.hilabs.rapipeline.repository.RAPlmRoFileDataRepository;
 import com.hilabs.rapipeline.repository.RAPlmRoProfDataRepository;
-import com.hilabs.roster.repository.RAProvDetailsRepository;
+import com.hilabs.roster.entity.*;
+import com.hilabs.roster.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +26,43 @@ public class RAFileMetaDataDetailsService {
 
     @Autowired
     private RAProvDetailsRepository raProvDetailsRepository;
+
+    @Autowired
+    private RAProvMarketLobMapRepository raProvMarketLobMapRepository;
+
+    @Autowired
+    private RAFileDetailsLobRepository raFileDetailsLobRepository;
+
+    @Autowired
+    private RARTContactDetailsRepository raRTContactDetailsRepository;
+
+    @Autowired
+    private RARTFileAltIdsRepository rartFileAltIdsRepository;
+
+    public Long insertRAProvMarketLobMap(Long raProvDetailsId, String market, String lob, Integer isActive) {
+        RAProvMarketLobMap raProvMarketLobMap = new RAProvMarketLobMap(raProvDetailsId, market, lob, isActive);
+        raProvMarketLobMap = raProvMarketLobMapRepository.save(raProvMarketLobMap);
+        return raProvMarketLobMap.getId();
+    }
+
+    public Long insertRAFileDetailsLob(Long raFileDetailsId, String lob, Integer isActive) {
+        RAFileDetailsLob raFileDetailsLob = new RAFileDetailsLob(raFileDetailsId, lob, isActive);
+        raFileDetailsLob = raFileDetailsLobRepository.save(raFileDetailsLob);
+        return raFileDetailsLob.getId();
+    }
+
+    public Long insertRARTContactDetails(Long raFileDetailsId, Long raSheetDetailsId, String contact, String contactType, Integer isActive) {
+        RARTContactDetails rartContactDetails = new RARTContactDetails(raFileDetailsId, raSheetDetailsId,
+                contact, contactType, isActive);
+        rartContactDetails = raRTContactDetailsRepository.save(rartContactDetails);
+        return rartContactDetails.getId();
+    }
+
+    public Long insertRARTFileAltIds(Long raFileDetailsId, String altId, String altIdType, Integer isActive) {
+        RARTFileAltIds rartFileAltIds = new RARTFileAltIds(raFileDetailsId, altId, altIdType, isActive);
+        rartFileAltIds = rartFileAltIdsRepository.save(rartFileAltIds);
+        return rartFileAltIds.getId();
+    }
     public List<RAFileMetaData> getUnIngestedRAFileMetaDataDetails() {
         List<RAPlmRoFileData> raPlmRoFileDataList = raPlmRoFileDataRepository.getNewRAPlmRoFileDataList();
         List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
@@ -44,43 +77,8 @@ public class RAFileMetaDataDetailsService {
         return raFileMetaDataList;
     }
 
-    //TODO later - need to add more checks
-    public ErrorDetails validateMetaDataAndGetErrorList(RAFileMetaData raFileMetaData) {
-        List<String> missingFields = new ArrayList<>();
-        if (raFileMetaData.getOrgName() == null) {
-            missingFields.add("Organization Name");
-        }
-        if (raFileMetaData.getCntState() == null) {
-            missingFields.add("Cnt State");
-        }
-        if (raFileMetaData.getPlmNetwork() == null) {
-            missingFields.add("PLM Network");
-        }
-        //TODO fix it. Is it plm ticket id??
-        if (raFileMetaData.getRoId() == null) {
-            missingFields.add("RO ID");
-        }
-        if (raFileMetaData.getDcnId() == null) {
-            missingFields.add("DCN ID");
-        }
-        if (raFileMetaData.getFileName() == null) {
-            missingFields.add("File Name");
-        }
-        List<String> errorList = new ArrayList<>();
-        if (missingFields.size() > 0) {
-            errorList.add("Missing fields - " + String.join(", ", missingFields));
-        }
-        if (!raFileMetaData.getFileName().endsWith(".xlsx")) {
-            errorList.add("File name doesn't end with .xlsx");
-        }
-        Optional<RAProvDetails> optionalRAProvDetails = raProvDetailsRepository.findByProvider(raFileMetaData.getOrgName());
-        if (!optionalRAProvDetails.isPresent()) {
-            errorList.add("Unknown provider");
-        }
-        if (errorList.size() > 0) {
-            return new ErrorDetails(ErrorCategory.INGESTION_MISSING_DATA, gson.toJson(errorList), null);
-        }
-        return null;
+    public Optional<RAPlmRoFileData> findById(Long raPlmRoFileDataId) {
+        return raPlmRoFileDataRepository.findById(raPlmRoFileDataId);
     }
     public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, String status) {
         raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status);

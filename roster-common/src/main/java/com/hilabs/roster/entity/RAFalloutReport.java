@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Data
 public class RAFalloutReport extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "ra_sheet_details_id")

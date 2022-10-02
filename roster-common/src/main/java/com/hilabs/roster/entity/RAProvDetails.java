@@ -6,24 +6,18 @@ import javax.persistence.*;
 
 
 @Entity
-@Table(name = "ra_prov_details")
+@Table(name = "RA_RT_PROVIDER_DETAILS")
 @Data
 public class RAProvDetails extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "src_nm")
+    @Column(name = "source_nm")
     private String sourceName;
-
-    @Column(name = "market")
-    private String market;
 
     @Column(name = "is_active")
     private Integer isActive;
-
-    @Column(name = "lob")
-    private String lineOfBusiness;
 
     public RAProvDetails() {}
 
