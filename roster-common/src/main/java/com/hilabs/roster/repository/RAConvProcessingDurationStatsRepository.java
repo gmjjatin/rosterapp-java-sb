@@ -1,12 +1,12 @@
 package com.hilabs.roster.repository;
 
-import com.hilabs.roster.entity.RAConvProcessingDurationStats;
+import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-public interface RAConvProcessingDurationStatsRepository extends JpaRepository<RAConvProcessingDurationStats, Long> {
-    @Query(value = "select * from ra_conv_processing_duration_stats where ra_sheet_details_id = :raSheetDetailsId",
+public interface RAConvProcessingDurationStatsRepository extends JpaRepository<RARTConvProcessingDurationStats, Long> {
+    @Query(value = "select * from RA_RT_CONV_PROCESSING_DURATION_STATS where ra_sheet_details_id = :raSheetDetailsId",
             nativeQuery = true)
-    List<RAConvProcessingDurationStats> getRAConvProcessingDurationStatsList(long raSheetDetailsId);
+    List<RARTConvProcessingDurationStats> getRAConvProcessingDurationStatsList(long raSheetDetailsId);
 }

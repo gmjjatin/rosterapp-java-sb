@@ -8,7 +8,6 @@ import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.service.*;
 import com.hilabs.roster.entity.RAPlmRoFileData;
 import com.hilabs.roster.entity.RAProvDetails;
-import com.hilabs.roster.entity.RAStatusCDMaster;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -23,9 +22,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hilabs.rapipeline.ingestion.Constants.*;
 import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.*;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
+import static com.hilabs.roster.util.Constants.*;
+//import static com.hilabs.roster.util.Constants.*;
 
 @Slf4j
 //TODO what if same file is placed again???
@@ -35,8 +35,6 @@ public class IngestionTask extends Task {
     private FileSystemUtilService fileSystemUtilService;
     private RAFileDetailsService raFileDetailsService;
     private RAProviderService raProviderService;
-
-    private RAFileXStatusService raFileXStatusService;
     private RAErrorLogsService raErrorLogsService;
     private IngestionValidationService ingestionValidationService;
 
@@ -54,7 +52,6 @@ public class IngestionTask extends Task {
         this.raFileMetaDataDetailsService = (RAFileMetaDataDetailsService) applicationContext.getBean("RAFileMetaDataDetailsService");
         this.raFileDetailsService = (RAFileDetailsService) applicationContext.getBean("RAFileDetailsService");
         this.raProviderService = (RAProviderService) applicationContext.getBean("RAProviderService");
-        this.raFileXStatusService = (RAFileXStatusService) applicationContext.getBean("RAFileXStatusService");
         this.raErrorLogsService = (RAErrorLogsService) applicationContext.getBean("RAErrorLogsService");
         this.ingestionValidationService = (IngestionValidationService) applicationContext.getBean("ingestionValidationService");
     }
@@ -66,10 +63,20 @@ public class IngestionTask extends Task {
             log.warn("Ingestion task in progress for raFileMetaData {}", gson.toJson(raFileMetaData));
             return false;
         }
+        return isShouldReprocess(raFileMetaData);
+    }
+
+    public boolean isShouldReprocess(RAFileMetaData raFileMetaData) {
         Optional<RAPlmRoFileData> raPlmRoFileDataOptional = raFileMetaDataDetailsService
                 .findById(raFileMetaData.getRaPlmRoFileDataId());
-        return raPlmRoFileDataOptional.isPresent() && raPlmRoFileDataOptional.get().getRaFileProcessingStatus()
-                .equalsIgnoreCase(NEW.name());
+        if (raPlmRoFileDataOptional.isPresent()) {
+            RAPlmRoFileData raPlmRoFileData = raPlmRoFileDataOptional.get();
+            if (raPlmRoFileData.getRaFileProcessingStatus() != null && raPlmRoFileData.getRaFileProcessingStatus().equalsIgnoreCase(NEW.name())) {
+                return true;
+            }
+            return raPlmRoFileData.getReProcess() != null && raPlmRoFileData.getReProcess().toUpperCase().startsWith("Y");
+        }
+        return false;
     }
 
     public RAFileMetaData getRAFileMetaDataFromTaskData() {
@@ -114,7 +121,7 @@ public class IngestionTask extends Task {
                 //TODO fix status code
                 upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED,
                         optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),null,
-                        validationErrorDetails);
+                        validationErrorDetails, false);
                 return;
             }
 
@@ -124,10 +131,9 @@ public class IngestionTask extends Task {
             //Step 2 - File validation
             ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
             if (validateFileErrorDetails != null) {
-
                 upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_FAILED,
                         optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null,
-                        validateFileErrorDetails);
+                        validateFileErrorDetails, false);
                 return;
             }
 
@@ -149,11 +155,11 @@ public class IngestionTask extends Task {
                 upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_FAILED,
                         optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
                         standardizedFileName,
-                        new ErrorDetails("System error for copying files", errorDescription));
+                        new ErrorDetails("System error for copying files", errorDescription), false);
                 return;
             }
             upsertIngestionStatus(raFileMetaData, IN_PROGRESS, ROSTER_INGESTION_COMPLETED, raProvDetails.getId(),
-                    standardizedFileName, null);
+                    standardizedFileName, null, false);
             if (!deleteFileIfExists(sourceFilePath)) {
                 //TODO later do we need to stop process here???
                 log.warn("Error deleting sourceFilePath {} - raFileMetaDataDetails {}", sourceFilePath, gson.toJson(raFileMetaData));
@@ -165,8 +171,10 @@ public class IngestionTask extends Task {
             //TODO fix it
             String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 1000);
             String message = trimToNChars(ex.getMessage(), 1000);
-            upsertIngestionStatus(raFileMetaData, NEW, ROSTER_INGESTION_FAILED,
-                    null, null, new ErrorDetails(message, stacktrace));
+            upsertIngestionStatus(raFileMetaData, FileMetaDataTableStatus.valueOf(raFileMetaData.getRAFileProcessingStatus()),
+                    ROSTER_INGESTION_FAILED,
+                    null, null, new ErrorDetails(message, stacktrace),
+                    raFileMetaData.getReprocess() != null && raFileMetaData.getReprocess().toUpperCase().startsWith("Y"));
         } finally {
             runningMap.remove(raFileMetaData.getRaPlmRoFileDataId());
         }
@@ -217,7 +225,8 @@ public class IngestionTask extends Task {
     }
 
     public void upsertIngestionStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status, int statusCode,
-                                      Long raProvDetailsId, String standardizedFileName, ErrorDetails errorDetails) {
+                                      Long raProvDetailsId, String standardizedFileName, ErrorDetails errorDetails,
+                                      boolean reProcess) {
         String fileName = raFileMetaData.getFileName();
         //TODO insert ticket ids
         String market = raFileMetaData.getCntState();
@@ -234,7 +243,7 @@ public class IngestionTask extends Task {
         //TODO need to get contact from file
 //        raFileMetaDataDetailsService.insertRARTContactDetails(raFileDetailsId, null,
 //                contact, contactType, isActive)
-        raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, status);
+        raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, status, reProcess);
         if (errorDetails != null) {
             //TODO what should be errorCodeDetailsId
             raErrorLogsService.insertRASystemErrors(raFileDetailsId, null, "INGESTION",

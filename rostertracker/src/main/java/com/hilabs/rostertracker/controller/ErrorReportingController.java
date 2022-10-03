@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.hilabs.roster.util.Constants.ROSTER_INGESTION_COMPLETED;
+
 @RestController
 @RequestMapping("/api/v1/error-reporting")
 @Log4j2
@@ -60,7 +62,8 @@ public class ErrorReportingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness, startTime, endTime, limit, offset);
+                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, ROSTER_INGESTION_COMPLETED);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(raFileAndErrorStatsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -89,7 +92,8 @@ public class ErrorReportingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness, startTime, endTime, limit, offset);
+                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, ROSTER_INGESTION_COMPLETED);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {

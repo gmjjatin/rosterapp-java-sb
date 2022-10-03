@@ -3,6 +3,7 @@ package com.hilabs.rostertracker.service;
 import com.hilabs.roster.entity.RAProvDetails;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
 import com.hilabs.roster.repository.RAProvDetailsRepository;
+import com.hilabs.roster.repository.RAProvMarketLobMapRepository;
 import com.hilabs.rostertracker.utils.RosterUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class RAProviderService {
 
     @Autowired
     private RAProvDetailsRepository raProvDetailsRepository;
+
+    @Autowired
+    private RAProvMarketLobMapRepository raProvMarketLobMapRepository;
 
     public List<RAProvDetails> getAllProviders() {
         return raProvDetailsRepository.getAllProviders();
@@ -154,7 +158,7 @@ public class RAProviderService {
     List<String> allMarkets = null;
     public List<String> findAllMarkets() {
         if (allMarkets == null) {
-            allMarkets = raProvDetailsRepository.findAllMarkets();
+            allMarkets = raProvMarketLobMapRepository.findAllMarkets();
         }
         return allMarkets;
     }
@@ -162,7 +166,7 @@ public class RAProviderService {
     private List<String> allLineOfBusiness = null;
     public List<String> findAllLineOfBusiness() {
         if (allLineOfBusiness == null) {
-            allLineOfBusiness = raProvDetailsRepository.findAllLineOfBusinesses();
+            allLineOfBusiness = raProvMarketLobMapRepository.findAllLineOfBusinesses();
         }
         return allLineOfBusiness;
     }

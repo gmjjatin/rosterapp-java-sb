@@ -12,14 +12,16 @@ public class RAFileAndStats extends RosterStats {
     private String fileName;
     private int noOfSheets;
     private long fileReceivedTime;
-    private boolean isSPSLoadComplete;
+
+    private String status;
+//    private boolean isSPSLoadComplete;
     private List<RASheetAndStats> sheetStatsList;
 
-    public RAFileAndStats(long raFileDetailsId, String fileName, long fileReceivedTime) {
+    public RAFileAndStats(long raFileDetailsId, String fileName, long fileReceivedTime, String status) {
         this.raFileDetailsId = raFileDetailsId;
         this.fileName = fileName;
         this.fileReceivedTime = fileReceivedTime;
-        this.isSPSLoadComplete = true;
+        this.status = status;
         this.sheetStatsList = new ArrayList<>();
     }
 
@@ -27,6 +29,5 @@ public class RAFileAndStats extends RosterStats {
         noOfSheets += 1;
         sheetStatsList.add(raSheetAndStats);
         increment(raSheetAndStats);
-        isSPSLoadComplete = isSPSLoadComplete & raSheetAndStats.isSPSLoadComplete();
     }
 }

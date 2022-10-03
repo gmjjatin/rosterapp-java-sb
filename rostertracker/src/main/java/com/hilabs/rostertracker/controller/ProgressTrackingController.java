@@ -26,6 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
+import static com.hilabs.roster.util.Constants.ROSTER_INGESTION_COMPLETED;
+
 @RestController
 @RequestMapping("/api/v1/progress-tracking")
 @Log4j2
@@ -60,7 +62,8 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness, startTime, endTime, limit, offset);
+                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, ROSTER_INGESTION_COMPLETED);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(raFileAndStatsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -87,7 +90,8 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness, startTime, endTime, limit, offset);
+                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, ROSTER_INGESTION_COMPLETED);
             Map<Long, RAFileDetails> raFileDetailsMap = raFileDetailsListAndSheetList.getRAFileDetailsMap();
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
             for (RASheetDetails raSheetDetails : raFileDetailsListAndSheetList.getRaSheetDetailsList()) {
@@ -132,16 +136,16 @@ public class ProgressTrackingController {
         raSheetReport.setPeContact("-");
         raSheetReport.setTablesIdentifiedInRosterSheetCount(1);
         raSheetReport.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
-        if (raSheetDetails.getName().contains("terms")) {
+        if (raSheetDetails.getTabName().contains("terms")) {
             return raSheetReport;
         }
-        raSheetReport.setIsfRowCount(raSheetDetails.getDartRowCount() / 2);
-        raSheetReport.setDartRowCount(raSheetDetails.getDartRowCount());
-        raSheetReport.setSpsLoadTransactionCount(raSheetDetails.getSpsLoadTransactionCount());
-        raSheetReport.setSuccessCount((int) (raSheetDetails.getSpsLoadTransactionCount() * 0.75));
-        raSheetReport.setWarningCount((int) (raSheetDetails.getSpsLoadTransactionCount() * 0.10));
-        raSheetReport.setFailedCount((int) (raSheetDetails.getSpsLoadTransactionCount() * 0.15));
-        raSheetReport.setSpsLoadSuccessTransactionCount(raSheetDetails.getSpsLoadSuccessTransactionCount());
+        raSheetReport.setIsfRowCount(raSheetDetails.getOutRowCount() / 2);
+        raSheetReport.setDartRowCount(raSheetDetails.getOutRowCount());
+        raSheetReport.setSpsLoadTransactionCount(raSheetDetails.getTargetLoadTransactionCount());
+        raSheetReport.setSuccessCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.75));
+        raSheetReport.setWarningCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.10));
+        raSheetReport.setFailedCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.15));
+        raSheetReport.setSpsLoadSuccessTransactionCount(raSheetDetails.getTargetLoadSuccessTransactionCount());
         return raSheetReport;
     }
 }

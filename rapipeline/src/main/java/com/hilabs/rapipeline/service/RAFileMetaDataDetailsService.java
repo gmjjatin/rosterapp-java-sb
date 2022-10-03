@@ -11,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.NEW;
 
@@ -69,10 +67,16 @@ public class RAFileMetaDataDetailsService {
         rartFileAltIds = rartFileAltIdsRepository.save(rartFileAltIds);
         return rartFileAltIds.getId();
     }
-    public List<RAFileMetaData> getUnIngestedRAFileMetaDataDetails() {
-        List<RAPlmRoFileData> raPlmRoFileDataList = raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name());
+    public List<RAFileMetaData> getNewAndReProcessFileMetaDataDetails() {
+        List<RAPlmRoFileData> raPlmRoFileDataList = new ArrayList<>(raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name()));
+        raPlmRoFileDataList.addAll(raPlmRoFileDataRepository.getReprocessRAPlmRoFileDataListWithStatus());
         List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
+        Set<Long> set = new HashSet<>();
         for (RAPlmRoFileData raPlmRoFileData : raPlmRoFileDataList) {
+            if (set.contains(raPlmRoFileData.getRaPlmRoFileDataId())) {
+                continue;
+            }
+            set.add(raPlmRoFileData.getRaPlmRoFileDataId());
             Optional<RAPlmRoProfData> optionalRAPlmRoProfData = raPlmRoProfDataRepository.findById(raPlmRoFileData.getRaPlmRoProfDataId());
             if (!optionalRAPlmRoProfData.isPresent()) {
                 log.error("RAPlmRoProfData missing for raPlmRoFileData {}", gson.toJson(raPlmRoFileData));
@@ -86,8 +90,9 @@ public class RAFileMetaDataDetailsService {
     public Optional<RAPlmRoFileData> findById(Long raPlmRoFileDataId) {
         return raPlmRoFileDataRepository.findById(raPlmRoFileDataId);
     }
-    public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status) {
-        raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status != null ? status.name() : null);
+    public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status, boolean reProcess) {
+        raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status != null ? status.name() : null,
+                reProcess ? "Y" : "N");
     }
 
     //TODO move to right file

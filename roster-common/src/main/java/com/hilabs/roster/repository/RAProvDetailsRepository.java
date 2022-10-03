@@ -39,12 +39,6 @@ public interface RAProvDetailsRepository extends JpaRepository<RAProvDetails, Lo
     @Query(value = "select * from RA_RT_PROVIDER_DETAILS where id in (:raProvIds)", nativeQuery = true)
     List<RAProvDetails> findRAProvDetailsFromIds(List<Long> raProvIds);
 
-    @Query(value = "select distinct(market) from RA_RT_PROVIDER_DETAILS", nativeQuery = true)
-    List<String> findAllMarkets();
-
-    @Query(value = "select distinct(lob) from RA_RT_PROVIDER_DETAILS", nativeQuery = true)
-    List<String> findAllLineOfBusinesses();
-
     @Query(value = "select * from RA_RT_PROVIDER_DETAILS", nativeQuery = true)
     List<RAProvDetails> getAllProviders();
 }

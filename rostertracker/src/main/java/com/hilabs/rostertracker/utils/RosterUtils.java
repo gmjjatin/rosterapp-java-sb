@@ -29,22 +29,24 @@ public class RosterUtils {
         return uniqueRAProvDetailsList;
     }
 
-    public static RASheetAndErrorStats getRASheetAndErrorStats(RASheetDetails raSheetDetails, boolean isSpsLoadComplete) {
-        RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, isSpsLoadComplete);
-        RASheetAndErrorStats raSheetAndErrorStats = new RASheetAndErrorStats(raSheetDetails.getId(), raSheetDetails.getName(), raSheetAndStats);
-        raSheetAndErrorStats.setSpsLoadTransactionCount(raSheetDetails.getSpsLoadTransactionCount());
-        raSheetAndErrorStats.setSpsLoadSuccessTransactionCount(raSheetDetails.getSpsLoadSuccessTransactionCount());
-        raSheetAndErrorStats.setSpsLoadFailedTransactionCount(raSheetDetails.getSpsLoadTransactionCount() - raSheetDetails.getSpsLoadSuccessTransactionCount());
-        double percent = raSheetDetails.getSpsLoadTransactionCount() > 0 ? (raSheetDetails.getSpsLoadSuccessTransactionCount() * 100.0 / raSheetDetails.getSpsLoadTransactionCount()) : 0;
+    public static RASheetAndErrorStats getRASheetAndErrorStats(RASheetDetails raSheetDetails, String status) {
+        RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, status);
+        RASheetAndErrorStats raSheetAndErrorStats = new RASheetAndErrorStats(raSheetDetails.getId(),
+                raSheetDetails.getTabName(), raSheetAndStats);
+        raSheetAndErrorStats.setSpsLoadTransactionCount(raSheetDetails.getTargetLoadTransactionCount());
+        raSheetAndErrorStats.setSpsLoadSuccessTransactionCount(raSheetDetails.getTargetLoadSuccessTransactionCount());
+        raSheetAndErrorStats.setSpsLoadFailedTransactionCount(raSheetDetails.getTargetLoadTransactionCount() - raSheetDetails.getTargetLoadSuccessTransactionCount());
+        double percent = raSheetDetails.getTargetLoadTransactionCount() > 0 ? (raSheetDetails.getTargetLoadSuccessTransactionCount() * 100.0 / raSheetDetails.getTargetLoadTransactionCount()) : 0;
         raSheetAndErrorStats.setSpsLoadSuccessTransactionPercent(percent);
         return raSheetAndErrorStats;
     }
 
 
-    public static RASheetAndStats getRASheetAndStats(RASheetDetails raSheetDetails, boolean isSpsLoadComplete) {
-        RASheetAndStats raSheetAndStats = new RASheetAndStats(raSheetDetails.getId(), raSheetDetails.getName(), isSpsLoadComplete);
+    public static RASheetAndStats getRASheetAndStats(RASheetDetails raSheetDetails, String status) {
+        RASheetAndStats raSheetAndStats = new RASheetAndStats(raSheetDetails.getId(),
+                raSheetDetails.getTabName(), status);
         raSheetAndStats.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
-        raSheetAndStats.setSuccessfulRecordCount(raSheetDetails.getSuccessfulRecordCount());
+        raSheetAndStats.setSuccessfulRecordCount(raSheetDetails.getTargetSuccessfulRecordCount());
         raSheetAndStats.setFalloutRecordCount(computeFalloutRecordCount(raSheetDetails));
         raSheetAndStats.setManualReviewRecordCount(raSheetDetails.getManualReviewRecordCount());
         return raSheetAndStats;
@@ -52,14 +54,15 @@ public class RosterUtils {
 
     //TODO confirm??
     public static int computeFalloutRecordCount(RASheetDetails raSheetDetails) {
-        return raSheetDetails.getRosterRecordCount() - raSheetDetails.getSuccessfulRecordCount() - raSheetDetails.getManualReviewRecordCount();
+        return raSheetDetails.getRosterRecordCount() - raSheetDetails.getTargetSuccessfulRecordCount() - raSheetDetails.getManualReviewRecordCount();
     }
 
     public static RAFileAndErrorStats getRAFileAndErrorStatsFromSheetDetailsList(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
         RAFileAndErrorStats raFileAndErrorStats = new RAFileAndErrorStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
                 raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1);
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            RASheetAndErrorStats raSheetAndErrorStats = getRASheetAndErrorStats(raSheetDetails, isSpsLoadComplete(raSheetDetails));
+            RASheetAndErrorStats raSheetAndErrorStats = getRASheetAndErrorStats(raSheetDetails,
+                    getStatus(raSheetDetails));
             raFileAndErrorStats.addSheetDetails(raSheetAndErrorStats);
         }
         return raFileAndErrorStats;
@@ -67,17 +70,21 @@ public class RosterUtils {
 
     public static RAFileAndStats getRAFileAndStatsFromSheetDetailsList(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
         RAFileAndStats raFileAndStats = new RAFileAndStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
-                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1);
+                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1, getStatus(raFileDetails));
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, isSpsLoadComplete(raSheetDetails));
+            RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, getStatus(raSheetDetails));
             raFileAndStats.addSheetDetails(raSheetAndStats);
         }
         return raFileAndStats;
     }
 
 
-    //TODO
-    public static boolean isSpsLoadComplete(RASheetDetails raSheetDetails) {
-        return raSheetDetails.getStatus() == SUCCEEDED;
+    //TODO demo move to common
+    public static String getStatus(RASheetDetails raSheetDetails) {
+        return "INGESTION COMPLETE";
+    }
+
+    public static String getStatus(RAFileDetails raFileDetails) {
+        return "INGESTION COMPLETE";
     }
 }

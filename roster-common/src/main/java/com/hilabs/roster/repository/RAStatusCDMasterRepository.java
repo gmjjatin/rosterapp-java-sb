@@ -1,6 +1,5 @@
 package com.hilabs.roster.repository;
 
-import com.hilabs.roster.entity.RAConvProcessingDurationStats;
 import com.hilabs.roster.entity.RAStatusCDMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

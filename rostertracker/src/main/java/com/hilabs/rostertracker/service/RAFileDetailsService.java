@@ -26,14 +26,14 @@ public class RAFileDetailsService {
     RASheetDetailsRepository raSheetDetailsRepository;
 
     public RAFileDetailsListAndSheetList getRosterSourceListAndFilesList(Long raFileDetailsId, Integer providerId, String market, String lineOfBusiness,
-                                                                         long startTime, long endTime, int limit, int offset) {
-        List<RAFileDetails> raFileDetailsList = getRAFileDetailsList(raFileDetailsId, providerId, market, lineOfBusiness, startTime, endTime, limit, offset);
+                                                                         long startTime, long endTime, int limit, int offset, int statusCode) {
+        List<RAFileDetails> raFileDetailsList = getRAFileDetailsList(raFileDetailsId, providerId, market, lineOfBusiness, startTime, endTime, limit, offset, statusCode);
         List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(RAFileDetails::getId).collect(Collectors.toList()));
         return new RAFileDetailsListAndSheetList(raFileDetailsList, raSheetDetailsList);
     }
 
     public List<RAFileDetails> getRAFileDetailsList(Long raFileDetailsId, Integer providerId, String market, String lineOfBusiness, long startTime, long endTime,
-                                                   int limit, int offset) {
+                                                   int limit, int offset, int statusCode) {
         if (raFileDetailsId != null && raFileDetailsId > 0) {
             Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository.findById(raFileDetailsId);
             if (optionalRAFileDetails.isPresent()) {
@@ -43,8 +43,9 @@ public class RAFileDetailsService {
         Date startDate = new Date(startTime);
         Date endDate = new Date(endTime);
         List<RAProvDetails> raProvDetailsList = getRAProvDetailsList(providerId, market, lineOfBusiness);
-        //TODO demo
-        return raFileDetailsRepository.findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(raProvDetailsList.stream().map(RAProvDetails::getId).collect(Collectors.toList()), limit, offset);
+        List<RAFileDetails> raFileDetailsList = raFileDetailsRepository.findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(startDate, endDate,
+                raProvDetailsList.stream().map(RAProvDetails::getId).collect(Collectors.toList()), limit, offset);
+        return raFileDetailsList.stream().filter(p -> p.getStatusCode() != null && p.getStatusCode() == statusCode).collect(Collectors.toList());
     }
 
     public List<RAProvDetails> getTopRAProvDetailsList() {
