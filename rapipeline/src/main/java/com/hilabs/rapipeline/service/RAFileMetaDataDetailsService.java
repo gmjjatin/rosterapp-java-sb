@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.NEW;
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.PENDING;
 
 @Service
 @Slf4j
@@ -69,7 +70,7 @@ public class RAFileMetaDataDetailsService {
     }
     public List<RAFileMetaData> getNewAndReProcessFileMetaDataDetails() {
         List<RAPlmRoFileData> raPlmRoFileDataList = new ArrayList<>(raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name()));
-        raPlmRoFileDataList.addAll(raPlmRoFileDataRepository.getReprocessRAPlmRoFileDataListWithStatus());
+        raPlmRoFileDataList.addAll(raPlmRoFileDataRepository.getReprocessRAPlmRoFileDataListWithStatus(PENDING.name()));
         List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
         Set<Long> set = new HashSet<>();
         for (RAPlmRoFileData raPlmRoFileData : raPlmRoFileDataList) {
@@ -95,9 +96,19 @@ public class RAFileMetaDataDetailsService {
                 reProcess ? "Y" : "N");
     }
 
+    public boolean isReprocess(RAFileMetaData raFileMetaData) {
+        if (raFileMetaData == null || raFileMetaData.getReprocess() == null) {
+            return false;
+        }
+        String reProcess = raFileMetaData.getReprocess();
+        if (!reProcess.toUpperCase().startsWith("Y")) {
+            return false;
+        }
+        return raFileMetaData.getRAFileProcessingStatus() != null
+                && raFileMetaData.getRAFileProcessingStatus().equalsIgnoreCase(PENDING.name());
+
+    }
+
     //TODO move to right file
-//    public List<RAStatusCDMaster> getIngestionStatuses() {
-//        //TODO optimize
-//        return raStatusCDMasterRepository.getRAStatusCDMasterListForStage("INGESTION");
-//    }
+
 }

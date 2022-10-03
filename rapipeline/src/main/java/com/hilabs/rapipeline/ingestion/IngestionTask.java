@@ -131,7 +131,7 @@ public class IngestionTask extends Task {
             //Step 2 - File validation
             ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
             if (validateFileErrorDetails != null) {
-                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_FAILED,
+                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED,
                         optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null,
                         validateFileErrorDetails, false);
                 return;

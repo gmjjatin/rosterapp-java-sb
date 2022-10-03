@@ -8,13 +8,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+//NEW  + N
+//Y
 public interface RAPlmRoFileDataRepository extends JpaRepository<RAPlmRoFileData, Long> {
     @Query(value = "select * from ra_plm_ro_file_data where ra_file_prcs_stts = :status", nativeQuery = true)
     List<RAPlmRoFileData> getNewRAPlmRoFileDataListWithStatus(@Param("status") String status);
 
-    @Query(value = "select * from ra_plm_ro_file_data where UPPER(reprcs_yn) like 'Y%'", nativeQuery = true)
-    List<RAPlmRoFileData> getReprocessRAPlmRoFileDataListWithStatus();
+    @Query(value = "select * from ra_plm_ro_file_data where UPPER(reprcs_yn) like 'Y%' and ra_file_prcs_stts = :status", nativeQuery = true)
+    List<RAPlmRoFileData> getReprocessRAPlmRoFileDataListWithStatus(@Param("status") String status);
 
     @Modifying
     @Transactional
