@@ -1,7 +1,6 @@
 package com.hilabs.rostertracker.model;
 
 import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RAProvDetails;
 import com.hilabs.roster.entity.RASheetDetails;
 import lombok.Data;
 

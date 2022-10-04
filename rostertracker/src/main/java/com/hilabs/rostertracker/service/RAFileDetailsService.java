@@ -1,36 +1,35 @@
 package com.hilabs.rostertracker.service;
 
 import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RAProvDetails;
 import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.repository.RAFileDetailsLobRepository;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
+import com.hilabs.rostertracker.utils.RosterUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ConcurrentLruCache;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hilabs.rostertracker.service.RAProviderService.getAdjustedString;
+import static com.hilabs.roster.util.FileUtils.getAdjustedString;
 
 @Service
 @Log4j2
 public class RAFileDetailsService {
-    @Autowired
-    RAProviderService raProviderService;
 
     @Autowired
     RAFileDetailsRepository raFileDetailsRepository;
 
     @Autowired
     RASheetDetailsRepository raSheetDetailsRepository;
+
+    @Autowired
+    RAFileDetailsLobRepository raFileDetailsLobRepository;
 
     public RAFileDetailsListAndSheetList getRosterSourceListAndFilesList(Long raFileDetailsId, String market, String lineOfBusiness,
                                                                          long startTime, long endTime, int limit, int offset, List<Integer> statusCodes) {
@@ -64,19 +63,14 @@ public class RAFileDetailsService {
         return raFileDetailsList.stream().filter(p -> p.getStatusCode() != null && statusCodes.stream().anyMatch(ss -> p.getStatusCode() == ss)).collect(Collectors.toList());
     }
 
-    public List<RAProvDetails> getTopRAProvDetailsList() {
-        //TODO manikanta
-        return raProviderService.getAllProviders();
-    }
-
     public List<RAFileDetails> getRAFileDetailsList(String market, String lineOfBusiness, Date startDate, Date endDate, int limit, int offset) {
         //TODO handle limit and offset
         if ((market != null && !market.isEmpty()) && (lineOfBusiness != null && !lineOfBusiness.isEmpty())) {
-            return raProviderService.getRosterSourceListFromMarketAndState(market, lineOfBusiness);
+            return getRosterSourceListFromMarketAndState(market, lineOfBusiness);
         } else if (market != null && !market.isEmpty()) {
-            return raProviderService.getRosterSourceListFromMarket(market);
+            return getRosterSourceListFromMarket(market);
         } else if (lineOfBusiness != null && !lineOfBusiness.isEmpty()) {
-            return raProviderService.getRosterSourceListFromLineOfBusiness(lineOfBusiness);
+            return getRosterSourceListFromLineOfBusiness(lineOfBusiness);
         } else {
 //            return getTopRAProvDetailsList();
             return raFileDetailsRepository.findRAFileDetailsListBetweenDates(startDate, endDate, limit, offset);
@@ -114,5 +108,98 @@ public class RAFileDetailsService {
             log.error("Error in populateProviderSearchStrCache searchStr {} ex {}", searchStr,
                     ex.getMessage());
         }
+    }
+
+    public ConcurrentLruCache<String, List<RAFileDetails>> marketSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
+        return raFileDetailsRepository.findByMarketSearchStr(p);
+    });
+    public List<RAFileDetails> findByMarketSearchStr(String searchStr) {
+        try {
+            if (marketSearchStrCache.contains(searchStr)) {
+                return marketSearchStrCache.get(searchStr);
+            }
+            String adjustedKey = getAdjustedString(searchStr, 3);
+            populateMarketSearchStrCache(searchStr);
+            return marketSearchStrCache.get(adjustedKey);
+        } catch (Exception ex) {
+            return raFileDetailsRepository.findByMarketSearchStr(searchStr);
+        }
+    }
+
+    @Async
+    public void populateMarketSearchStrCache(String marketSearchStr) {
+        try {
+            marketSearchStrCache.get(marketSearchStr);
+        } catch (Exception ex) {
+            log.error("Error in populateMarketSearchStrCache marketSearchStr {} ex {}", marketSearchStr, ex.getMessage());
+        }
+    }
+
+    public ConcurrentLruCache<String, List<RAFileDetails>> lineOfBusinessSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
+        return raFileDetailsRepository.findByLineOfBusinessSearchStr(p);
+    });
+    public List<RAFileDetails> findByLineOfBusinessSearchStr(String searchStr) {
+        try {
+            if (lineOfBusinessSearchStrCache.contains(searchStr)) {
+                return lineOfBusinessSearchStrCache.get(searchStr);
+            }
+            String adjustedKey = getAdjustedString(searchStr, 3);
+            populateLineOfBusinessSearchStrCache(searchStr);
+            return lineOfBusinessSearchStrCache.get(adjustedKey);
+        } catch (Exception ex) {
+            return raFileDetailsRepository.findByLineOfBusinessSearchStr(searchStr);
+        }
+    }
+
+    public List<RAFileDetails> getRosterSourceListFromMarketAndState(String market, String lineOfBusiness) {
+        return raFileDetailsRepository.findByMarketAndLineOfBusiness(market, lineOfBusiness);
+    }
+
+    public List<RAFileDetails> getRosterSourceListFromMarket(String market) {
+        return raFileDetailsRepository.findByMarket(market);
+    }
+
+    public List<RAFileDetails> getRosterSourceListFromLineOfBusiness(String lineOfBusiness) {
+        return raFileDetailsRepository.findByLineOfBusiness(lineOfBusiness);
+    }
+
+    @Async
+    public void populateLineOfBusinessSearchStrCache(String lineOfBusinessSearchStr) {
+        try {
+            raFileDetailsRepository.findByLineOfBusinessSearchStr(lineOfBusinessSearchStr);
+        } catch (Exception ex) {
+            log.error("Error in populateLineOfBusinessSearchStrCache lineOfBusinessSearchStr {} ex {}", lineOfBusinessSearchStr, ex.getMessage());
+        }
+    }
+
+    List<String> allMarkets = null;
+    public List<String> findAllMarkets() {
+        if (allMarkets == null) {
+            allMarkets = raFileDetailsRepository.findAllMarkets();
+        }
+        return allMarkets;
+    }
+
+    private List<String> allLineOfBusiness = null;
+    public List<String> findAllLineOfBusiness() {
+        if (allLineOfBusiness == null) {
+            allLineOfBusiness = raFileDetailsLobRepository.findAllLineOfBusinesses();
+        }
+        return allLineOfBusiness;
+    }
+
+    public List<RAFileDetails> getRAProvListFromSearchStr(String searchStr) {
+        if (searchStr == null || searchStr.isEmpty()) {
+//            return findTopEntriesOrderBySourceName(DEFAULT_NO_OF_ENTRIES);
+            return new ArrayList<>();
+        }
+//        List<RAFileDetails> raProvDetailsDetailsByProvider = findByProviderSearchStr(searchStr);
+        List<RAFileDetails> raProvDetailsDetailsByMarket = findByMarketSearchStr(searchStr);
+        List<RAFileDetails> raProvDetailsDetailsByLineOfBusiness = findByLineOfBusinessSearchStr(searchStr);
+        List<RAFileDetails> allRAProvDetailsList = new ArrayList<>();
+
+        allRAProvDetailsList.addAll(raProvDetailsDetailsByMarket);
+        allRAProvDetailsList.addAll(raProvDetailsDetailsByLineOfBusiness);
+        return RosterUtils.removeDuplicateRAProvList(allRAProvDetailsList);
     }
 }

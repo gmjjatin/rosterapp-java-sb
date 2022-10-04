@@ -71,4 +71,6 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select * from RA_RT_FILE_DETAILS where creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findRAFileDetailsListBetweenDates(Date startDate, Date endDate, @Param("limit") int limit, @Param("offset") int offset);
 
+    @Query(value = "select distinct(market) from RA_RT_FILE_DETAILS", nativeQuery = true)
+    List<String> findAllMarkets();
 }
