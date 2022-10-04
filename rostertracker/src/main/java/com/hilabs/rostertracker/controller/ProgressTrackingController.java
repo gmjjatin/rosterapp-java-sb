@@ -93,9 +93,10 @@ public class ProgressTrackingController {
                             startTime, endTime, limit, offset, Arrays.asList(ROSTER_INGESTION_COMPLETED));
             Map<Long, RAFileDetails> raFileDetailsMap = raFileDetailsListAndSheetList.getRAFileDetailsMap();
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
-            for (RASheetDetails raSheetDetails : raFileDetailsListAndSheetList.getRaSheetDetailsList()) {
-                raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetailsMap.get(raSheetDetails.getRaFileDetailsId()), raSheetDetails));
-            }
+            //TODO demo
+//            for (RASheetDetails raSheetDetails : raFileDetailsListAndSheetList.getRaSheetDetailsList()) {
+//                raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetailsMap.get(raSheetDetails.getRaFileDetailsId()), raSheetDetails));
+//            }
             return new ResponseEntity<>(raSheetProgressInfoList, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRosterFileProgressInfoList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",

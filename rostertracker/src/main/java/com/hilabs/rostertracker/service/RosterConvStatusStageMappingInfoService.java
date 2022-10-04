@@ -31,13 +31,11 @@ public class RosterConvStatusStageMappingInfoService {
 //                .filter(p -> p.getProcessingStatus() == rosterFileProcessStatus).findAny();
 //        return rosterConvStatusStageMappingInfoOptional.isPresent() ? rosterConvStatusStageMappingInfoOptional.get().getStage() : RosterFileProcessStage.UNKNOWN;
 //    }
-
 //    public Optional<RAConvStatusStageMappingInfo> getRosterConvStatusStageMappingInfo(RosterFileProcessStatus rosterFileProcessStatus) {
 //        List<RAConvStatusStageMappingInfo> RAConvStatusStageMappingInfoList = getAllRosterConvMappingInfoList();
 //        return RAConvStatusStageMappingInfoList.stream()
 //                .filter(p -> p.getProcessingStatus() == rosterFileProcessStatus).findAny();
 //    }
-
 //    public List<RAConvStatusStageMappingInfo> getAllRosterConvMappingInfoList(RosterFileProcessStage rosterFileProcessStage) {
 //        List<RAConvStatusStageMappingInfo> RAConvStatusStageMappingInfoList = getAllRosterConvMappingInfoList();
 //        return RAConvStatusStageMappingInfoList.stream().filter(p -> p.getStage() == rosterFileProcessStage).collect(Collectors.toList());
@@ -56,7 +54,6 @@ public class RosterConvStatusStageMappingInfoService {
 //        }
 //        return rosterFileStatusStagingMap;
 //    }
-
 //    public Optional<RAConvStatusStageMappingInfo> getRosterConvStatusStageMappingInfoForStatus(RosterFileProcessStatus rosterFileProcessStatus) {
 //        List<RAConvStatusStageMappingInfo> allRosterConvMappingInfoList = getAllRosterConvMappingInfoList();
 //        return allRosterConvMappingInfoList.stream()

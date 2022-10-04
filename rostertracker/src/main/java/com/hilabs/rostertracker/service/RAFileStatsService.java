@@ -32,8 +32,8 @@ public class RAFileStatsService {
     @Autowired
     private RAConvProcessingDurationStatsRepository raConvProcessingDurationStatsRepository;
 
-    @Autowired
-    private RosterConvStatusStageMappingInfoService rosterConvStatusStageMappingInfoService;
+//    @Autowired
+//    private RosterConvStatusStageMappingInfoService rosterConvStatusStageMappingInfoService;
 
     public List<RAFileAndErrorStats> getRAFileAndErrorStats(RAFileDetailsListAndSheetList raFileDetailsListAndSheetList) {
         List<RAFileDetails> raFileDetailsList = raFileDetailsListAndSheetList.getRaFileDetailsList();
