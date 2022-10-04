@@ -21,20 +21,6 @@ public class Constants {
     public static int AI_Mapping_Post_review_validation_Completed = 139;
     public static int AI_Mapping_Post_review_validation_Failed = 141;
 
-    //TODO demo move to common
-    public static String getSheetDisplayStatus(int statusCode) {
-        return "INGESTION COMPLETE";
-    }
-
-    public static String getFileDisplayStatus(Integer statusCode) {
-        if (statusCode == null || statusCode == ROSTER_INGESTION_IN_PROGRESS) {
-            return "Ingestion In Progress";
-        } else if (statusCode == ROSTER_INGESTION_COMPLETED) {
-            return "Roster Received";
-        } else {
-            return "Roster Failed";
-        }
-    }
     //TODO complete
     public static RosterStageState getRosterStageState(RosterFileProcessStage rosterFileProcessStage,
                                                        Integer statusCode) {

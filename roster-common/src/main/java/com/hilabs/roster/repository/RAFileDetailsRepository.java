@@ -49,16 +49,20 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     List<RAFileDetails> findByFileSearchStr(@Param("searchStr") String searchStr);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
-            " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%'", nativeQuery = true)
-    List<RAFileDetails> findByLineOfBusiness(String lineOfBusiness);
+            " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
+            "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate" +
+            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' order by RA_RT_FILE_DETAILS.creat_dt desc", nativeQuery = true)
+    List<RAFileDetails> findByLineOfBusiness(String lineOfBusiness, Date startDate, Date endDate);
 
-    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB " +
+    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB and " +
+            "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate" +
             "where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and market= :market " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%'", nativeQuery = true)
-    List<RAFileDetails> findByMarketAndLineOfBusiness(String market, String lineOfBusiness);
+            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' order by RA_RT_FILE_DETAILS.creat_dt desc", nativeQuery = true)
+    List<RAFileDetails> findByMarketAndLineOfBusiness(String market, String lineOfBusiness, Date startDate, Date endDate);
 
-    @Query(value = "select * from RA_RT_FILE_DETAILS where market= :market", nativeQuery = true)
-    List<RAFileDetails> findByMarket(String market);
+    //TODO demo handle limit and offset
+    @Query(value = "select * from RA_RT_FILE_DETAILS where market= :market and creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc", nativeQuery = true)
+    List<RAFileDetails> findByMarket(String market, Date startDate, Date endDate);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB where " +
             " RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id " +

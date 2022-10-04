@@ -35,7 +35,7 @@ public class RAProviderController {
     public ResponseEntity<List<RAFileDetails>> getFileDetailsFromSearchStr(@RequestParam(defaultValue = "") String searchStr,
                                                                            @RequestParam(defaultValue = "true", name = "isCompatible") String isCompatibleStr) {
         try {
-            final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.toLowerCase().equals("false");
+            final boolean   isCompatible = isCompatibleStr == null || !isCompatibleStr.toLowerCase().equals("false");
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByProviderSearchStr(searchStr);
             raFileDetailsList = raFileDetailsList.stream().filter(p -> {
                 if (isCompatible) {

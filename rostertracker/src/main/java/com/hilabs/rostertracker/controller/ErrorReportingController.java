@@ -141,10 +141,15 @@ public class ErrorReportingController {
     }
 
     //TODO remove
-    @RequestMapping(path = "/downloadSampleReport", method = RequestMethod.GET)
-    public ResponseEntity<InputStreamResource> downloadSampleReport() throws IOException {
+    @RequestMapping(path = "/downloadRoster", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> downloadSampleReport(@RequestParam() Long raFileDetailsId) throws IOException {
         try {
-            File file = new File(rosterConfig.getDownloadFolder(), "sample.xls");
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raFileDetailsId);
+            if (!optionalRAFileDetails.isPresent()) {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+            RAFileDetails raFileDetails = optionalRAFileDetails.get();
+            File file = new File(rosterConfig.getRaArchiveFolder(), raFileDetails.getOriginalFileName());
             return getDownloadFileResponseEntity(file);
         } catch (Exception ex) {
             log.error("Error in downloadSampleReport - ex {}", ex.getMessage());

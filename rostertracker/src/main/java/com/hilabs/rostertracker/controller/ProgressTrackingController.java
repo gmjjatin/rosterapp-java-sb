@@ -1,5 +1,7 @@
 package com.hilabs.rostertracker.controller;
 
+import com.hilabs.roster.entity.RAErrorLogs;
+import com.hilabs.roster.repository.RAErrorLogsRepository;
 import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
 import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
@@ -44,6 +46,9 @@ public class ProgressTrackingController {
 
     @Autowired
     RAFalloutReportService raFalloutReportService;
+
+    @Autowired
+    RAErrorLogsRepository raErrorLogsRepository;
 
 
     @GetMapping("/file-stats-list")
@@ -171,7 +176,15 @@ public class ProgressTrackingController {
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
             for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
-                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(), raFileAndStats.getRosterRecordCount(), "Sample Error", "Sample error code");
+                List<RAErrorLogs> raErrorLogs = raErrorLogsRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
+                //TODO need to fix it
+                String errorCode = "RI_ERR_MD_1";
+                String error = "-";
+                if (raErrorLogs.size() > 0) {
+                    error = raErrorLogs.get(0).getErrorDescription();
+                }
+                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(), raFileAndStats.getRosterRecordCount(),
+                        error, errorCode);
                 inCompatibleRosterDetails.add(details);
             }
             return new ResponseEntity<>(inCompatibleRosterDetails, HttpStatus.OK);

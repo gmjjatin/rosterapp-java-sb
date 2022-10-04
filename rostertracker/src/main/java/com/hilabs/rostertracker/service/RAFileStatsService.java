@@ -2,10 +2,14 @@ package com.hilabs.rostertracker.service;
 
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.entity.RAStatusCDMaster;
 import com.hilabs.roster.model.RosterFileProcessStage;
 import com.hilabs.roster.repository.RAConvProcessingDurationStatsRepository;
+import com.hilabs.roster.repository.RAStatusCDMasterRepository;
 import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
+import com.hilabs.rostertracker.dto.RASheetAndErrorStats;
+import com.hilabs.rostertracker.dto.RASheetAndStats;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.model.RASheetProgressInfo;
 import com.hilabs.rostertracker.utils.RosterUtils;
@@ -13,10 +17,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.hilabs.roster.util.Constants.ROSTER_INGESTION_COMPLETED;
+import static com.hilabs.roster.util.Constants.ROSTER_INGESTION_IN_PROGRESS;
+import static com.hilabs.rostertracker.utils.RosterUtils.computeFalloutRecordCount;
 
 @Service
 @Log4j2
@@ -26,6 +31,9 @@ public class RAFileStatsService {
 
     @Autowired
     private RAConvProcessingDurationStatsRepository raConvProcessingDurationStatsRepository;
+
+    @Autowired
+    private RAStatusCDMasterRepository raStatusCDMasterRepository;
 
 //    @Autowired
 //    private RosterConvStatusStageMappingInfoService rosterConvStatusStageMappingInfoService;
@@ -61,11 +69,11 @@ public class RAFileStatsService {
     }
 
     public RAFileAndErrorStats getRAFileAndErrorStats(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
-        return RosterUtils.getRAFileAndErrorStatsFromSheetDetailsList(raFileDetails, raSheetDetailsList);
+        return getRAFileAndErrorStatsFromSheetDetailsList(raFileDetails, raSheetDetailsList);
     }
 
     public RAFileAndStats getRAFileAndStats(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
-        return RosterUtils.getRAFileAndStatsFromSheetDetailsList(raFileDetails, raSheetDetailsList);
+        return getRAFileAndStatsFromSheetDetailsList(raFileDetails, raSheetDetailsList);
     }
 
 //    public RosterSourceAndErrorStats getRosterSourceAndErrorStats(RAProvDetails raProvDetails, List<RAFileDetails> raFileDetailsList) {
@@ -277,4 +285,60 @@ public class RAFileStatsService {
 //                && p.getCompletionDate() != null);
 //        return isStatusCompleted ? RosterStageState.COMPLETED : RosterFileStageState.STARTED;
 //    }
+
+    //TODO demo move to common
+    public String getDisplayStatus(Integer statusCode) {
+        if (statusCode == null) {
+            return "-";
+        }
+        Optional<RAStatusCDMaster> optionalRAStatusCDMaster =  raStatusCDMasterRepository.getRAStatusCDMasterListForCode(statusCode);
+        if (!optionalRAStatusCDMaster.isPresent() || optionalRAStatusCDMaster.get().getBusinessStatus() == null) {
+            return "-";
+        }
+        return optionalRAStatusCDMaster.get().getBusinessStatus();
+    }
+
+    public RAFileAndErrorStats getRAFileAndErrorStatsFromSheetDetailsList(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
+        RAFileAndErrorStats raFileAndErrorStats = new RAFileAndErrorStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
+                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1);
+        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
+            RASheetAndErrorStats raSheetAndErrorStats = getRASheetAndErrorStats(raSheetDetails,
+                    getDisplayStatus(raSheetDetails.getStatusCode()));
+            raFileAndErrorStats.addSheetDetails(raSheetAndErrorStats);
+        }
+        return raFileAndErrorStats;
+    }
+
+    public RAFileAndStats getRAFileAndStatsFromSheetDetailsList(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
+        RAFileAndStats raFileAndStats = new RAFileAndStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
+                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1, getDisplayStatus(raFileDetails.getStatusCode()));
+        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
+            RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, getDisplayStatus(raSheetDetails.getStatusCode()));
+            raFileAndStats.addSheetDetails(raSheetAndStats);
+        }
+        return raFileAndStats;
+    }
+
+    public RASheetAndErrorStats getRASheetAndErrorStats(RASheetDetails raSheetDetails, String status) {
+        RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, status);
+        RASheetAndErrorStats raSheetAndErrorStats = new RASheetAndErrorStats(raSheetDetails.getId(),
+                raSheetDetails.getTabName(), raSheetAndStats);
+        raSheetAndErrorStats.setSpsLoadTransactionCount(raSheetDetails.getTargetLoadTransactionCount());
+        raSheetAndErrorStats.setSpsLoadSuccessTransactionCount(raSheetDetails.getTargetLoadSuccessTransactionCount());
+        raSheetAndErrorStats.setSpsLoadFailedTransactionCount(raSheetDetails.getTargetLoadTransactionCount() - raSheetDetails.getTargetLoadSuccessTransactionCount());
+        double percent = raSheetDetails.getTargetLoadTransactionCount() > 0 ? (raSheetDetails.getTargetLoadSuccessTransactionCount() * 100.0 / raSheetDetails.getTargetLoadTransactionCount()) : 0;
+        raSheetAndErrorStats.setSpsLoadSuccessTransactionPercent(percent);
+        return raSheetAndErrorStats;
+    }
+
+
+    public RASheetAndStats getRASheetAndStats(RASheetDetails raSheetDetails, String status) {
+        RASheetAndStats raSheetAndStats = new RASheetAndStats(raSheetDetails.getId(),
+                raSheetDetails.getTabName(), status);
+        raSheetAndStats.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
+        raSheetAndStats.setSuccessfulRecordCount(raSheetDetails.getTargetSuccessfulRecordCount());
+        raSheetAndStats.setFalloutRecordCount(computeFalloutRecordCount(raSheetDetails));
+        raSheetAndStats.setManualReviewRecordCount(raSheetDetails.getManualReviewRecordCount());
+        return raSheetAndStats;
+    }
 }

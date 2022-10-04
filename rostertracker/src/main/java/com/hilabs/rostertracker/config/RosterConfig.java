@@ -17,4 +17,13 @@ public class RosterConfig implements Serializable {
 
     @Value("${templatesFolder}")
     private String templatesFolder;
+
+    @Value("${raSourceFolder}")
+    private String raSourceFolder;
+
+    @Value("${raDestinationFolder}")
+    private String raDestinationFolder;
+
+    @Value("${raArchiveFolder}")
+    private String raArchiveFolder;
 }
