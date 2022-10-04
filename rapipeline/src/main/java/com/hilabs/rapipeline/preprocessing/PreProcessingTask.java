@@ -18,7 +18,6 @@ public class PreProcessingTask extends Task {
     private FileSystemUtilService fileSystemUtilService;
     private RAFileDetailsService raFileDetailsService;
     private RAProviderService raProviderService;
-    private RAFileXStatusService raFileXStatusService;
 
     private static final Gson gson = new Gson();
 
@@ -31,7 +30,6 @@ public class PreProcessingTask extends Task {
         this.raFileMetaDataDetailsService = (RAFileMetaDataDetailsService) applicationContext.getBean("RAFileMetaDataDetailsService");
         this.raFileDetailsService = (RAFileDetailsService) applicationContext.getBean("RAFileDetailsService");
         this.raProviderService = (RAProviderService) applicationContext.getBean("RAProviderService");
-        this.raFileXStatusService = (RAFileXStatusService) applicationContext.getBean("RAFileXStatusService");
     }
 
     @Override

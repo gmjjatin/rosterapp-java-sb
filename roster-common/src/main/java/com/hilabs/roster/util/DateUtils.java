@@ -33,7 +33,7 @@ public class DateUtils {
                 day = "sat";
                 break;
             default:
-                day = "N/A";
+                day = "N/RosterStageState";
                 break;
         }
         return day;

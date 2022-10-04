@@ -2,6 +2,7 @@ package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
+import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.repository.RAPlmRoFileDataRepository;
 import com.hilabs.rapipeline.repository.RAPlmRoProfDataRepository;
 import com.hilabs.roster.entity.*;
@@ -10,9 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.NEW;
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.PENDING;
 
 @Service
 @Slf4j
@@ -39,6 +41,9 @@ public class RAFileMetaDataDetailsService {
     @Autowired
     private RARTFileAltIdsRepository rartFileAltIdsRepository;
 
+    @Autowired
+    private RAStatusCDMasterRepository raStatusCDMasterRepository;
+
     public Long insertRAProvMarketLobMap(Long raProvDetailsId, String market, String lob, Integer isActive) {
         RAProvMarketLobMap raProvMarketLobMap = new RAProvMarketLobMap(raProvDetailsId, market, lob, isActive);
         raProvMarketLobMap = raProvMarketLobMapRepository.save(raProvMarketLobMap);
@@ -63,10 +68,16 @@ public class RAFileMetaDataDetailsService {
         rartFileAltIds = rartFileAltIdsRepository.save(rartFileAltIds);
         return rartFileAltIds.getId();
     }
-    public List<RAFileMetaData> getUnIngestedRAFileMetaDataDetails() {
-        List<RAPlmRoFileData> raPlmRoFileDataList = raPlmRoFileDataRepository.getNewRAPlmRoFileDataList();
+    public List<RAFileMetaData> getNewAndReProcessFileMetaDataDetails() {
+        List<RAPlmRoFileData> raPlmRoFileDataList = new ArrayList<>(raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name()));
+        raPlmRoFileDataList.addAll(raPlmRoFileDataRepository.getReprocessRAPlmRoFileDataListWithStatus(PENDING.name()));
         List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
+        Set<Long> set = new HashSet<>();
         for (RAPlmRoFileData raPlmRoFileData : raPlmRoFileDataList) {
+            if (set.contains(raPlmRoFileData.getRaPlmRoFileDataId())) {
+                continue;
+            }
+            set.add(raPlmRoFileData.getRaPlmRoFileDataId());
             Optional<RAPlmRoProfData> optionalRAPlmRoProfData = raPlmRoProfDataRepository.findById(raPlmRoFileData.getRaPlmRoProfDataId());
             if (!optionalRAPlmRoProfData.isPresent()) {
                 log.error("RAPlmRoProfData missing for raPlmRoFileData {}", gson.toJson(raPlmRoFileData));
@@ -80,7 +91,24 @@ public class RAFileMetaDataDetailsService {
     public Optional<RAPlmRoFileData> findById(Long raPlmRoFileDataId) {
         return raPlmRoFileDataRepository.findById(raPlmRoFileDataId);
     }
-    public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, String status) {
-        raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status);
+    public void updateRAPlmRoFileDataStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status, boolean reProcess) {
+        raPlmRoFileDataRepository.updateRAPlmRoFileDataStatus(raFileMetaData.getRaPlmRoFileDataId(), status != null ? status.name() : null,
+                reProcess ? "Y" : "N");
     }
+
+    public boolean isReprocess(RAFileMetaData raFileMetaData) {
+        if (raFileMetaData == null || raFileMetaData.getReprocess() == null) {
+            return false;
+        }
+        String reProcess = raFileMetaData.getReprocess();
+        if (!reProcess.toUpperCase().startsWith("Y")) {
+            return false;
+        }
+        return raFileMetaData.getRAFileProcessingStatus() != null
+                && raFileMetaData.getRAFileProcessingStatus().equalsIgnoreCase(PENDING.name());
+
+    }
+
+    //TODO move to right file
+
 }

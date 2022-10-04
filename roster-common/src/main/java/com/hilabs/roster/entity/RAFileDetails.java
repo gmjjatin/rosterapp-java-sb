@@ -25,7 +25,7 @@ public class RAFileDetails extends BaseEntity {
     private String market;
 
     @Column(name = "status_cd")
-    private int statusCode;
+    private Integer statusCode;
 
     @Column(name = "is_active")
     private Integer isActive;

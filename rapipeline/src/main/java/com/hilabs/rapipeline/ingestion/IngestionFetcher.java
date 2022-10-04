@@ -38,7 +38,7 @@ public class IngestionFetcher implements JobRetriever {
     public List<Task> refillQueue(Integer tasks) {
         List<Task> executors = new ArrayList<>();
         List<RAFileMetaData> raFileMetaDataList = raFileMetaDataDetailsService
-                .getUnIngestedRAFileMetaDataDetails();
+                .getNewAndReProcessFileMetaDataDetails();
         for (RAFileMetaData raFileMetaData : raFileMetaDataList) {
             Map<String, Object> taskData = new HashMap<>();
 //            taskData.put("id", raFileMetaData.getFileName());
@@ -50,10 +50,4 @@ public class IngestionFetcher implements JobRetriever {
         return executors;
     }
 }
-
-
-//NEW
-//Task progress
-//NEW
-//Task progress
 

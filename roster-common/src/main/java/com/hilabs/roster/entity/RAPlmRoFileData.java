@@ -34,8 +34,8 @@ public class RAPlmRoFileData extends BaseEntity {
     @Column(name = "ra_file_prcs_stts")
     private String raFileProcessingStatus;
 
-    @Column(name = "reprocess")
-    private Integer reprocess;
+    @Column(name = "REPRCS_YN")
+    private String reProcess;
 
     //Deposit Date
     @Column(name = "deposit_dt")

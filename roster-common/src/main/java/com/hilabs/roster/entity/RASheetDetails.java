@@ -1,55 +1,64 @@
 package com.hilabs.roster.entity;
 
-import com.hilabs.roster.model.RosterFileProcessStatus;
 import lombok.Data;
 
 import javax.persistence.*;
 
 @Entity
-@Table(name = "ra_sheet_details")
+@Table(name = "RA_RT_SHEET_DETAILS")
 @Data
 public class RASheetDetails extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name = "ra_file_details_id")
-    private long raFileDetailsId;
+    private Long raFileDetailsId;
 
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private RosterFileProcessStatus status;
+    @Column(name = "status_cd")
+    private Integer statusCode;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "tab_nm")
+    private String tabName;
 
-    //TODO enum??
     @Column(name = "type")
     private String type;
 
     @Column(name = "roster_record_cnt")
-    private int rosterRecordCount;
+    private Integer rosterRecordCount;
 
     @Column(name = "auto_mapped_record_cnt")
-    private int autoMappedRecordCount;
+    private Integer autoMappedRecordCount;
 
-    @Column(name = "dart_record_cnt")
-    private int dartRecordCount;
+    @Column(name = "isf_record_cnt")
+    private Integer isfRecordCount;
 
-    @Column(name = "dart_row_cnt")
-    private int dartRowCount;
+    @Column(name = "isf_row_cnt")
+    private Integer isfRowCount;
 
-    @Column(name = "successful_record_cnt")
-    private int successfulRecordCount;
+    @Column(name = "out_row_cnt")
+    private Integer outRowCount;
+
+    @Column(name = "out_record_cnt")
+    private Integer outRecordCount;
+
+    @Column(name = "target_successful_record_cnt")
+    private Integer targetSuccessfulRecordCount;
 
     @Column(name = "manual_review_record_cnt")
-    private int manualReviewRecordCount;
+    private Integer manualReviewRecordCount;
 
-    @Column(name = "sps_load_trnsctn_cnt")
-    private int spsLoadTransactionCount;
+    @Column(name = "target_load_trnsctn_cnt")
+    private Integer targetLoadTransactionCount;
 
-    @Column(name = "sps_load_success_trnsctn_cnt")
-    private int spsLoadSuccessTransactionCount;
+    @Column(name = "target_load_success_trnsctn_cnt")
+    private Integer targetLoadSuccessTransactionCount;
+
+    @Column(name = "isf_file_nm")
+    private String isfFileName;
+
+    @Column(name = "out_file_nm")
+    private String outFileName;
 
     public RASheetDetails() {}
 
