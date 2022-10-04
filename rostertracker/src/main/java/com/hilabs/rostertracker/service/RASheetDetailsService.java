@@ -13,9 +13,6 @@ import java.util.*;
 @Log4j2
 public class RASheetDetailsService {
     @Autowired
-    RAProviderService raProviderService;
-
-    @Autowired
     RAFileDetailsRepository raFileDetailsRepository;
 
     @Autowired
