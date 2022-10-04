@@ -14,9 +14,8 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
-@EnableWebMvc
 @Configuration
-@ComponentScan
+@EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
     @Autowired
     private ApplicationContext applicationContext;
@@ -54,8 +53,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.viewResolver(resolver);
         return resolver;
     }
-
-    private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {  };
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry)
