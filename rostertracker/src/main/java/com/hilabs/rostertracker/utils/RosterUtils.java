@@ -14,12 +14,13 @@ import java.util.List;
 import java.util.Set;
 
 import static com.hilabs.roster.model.RosterFileProcessStatus.SUCCEEDED;
+import static com.hilabs.roster.util.Constants.*;
 
 public class RosterUtils {
-    public static List<RAProvDetails> removeDuplicateRAProvList(List<RAProvDetails> raProvDetailsList) {
+    public static List<RAFileDetails> removeDuplicateRAProvList(List<RAFileDetails> raProvDetailsList) {
         Set<Long> ids = new HashSet<>();
-        List<RAProvDetails> uniqueRAProvDetailsList = new ArrayList<>();
-        for (RAProvDetails raProvDetails : raProvDetailsList) {
+        List<RAFileDetails> uniqueRAProvDetailsList = new ArrayList<>();
+        for (RAFileDetails raProvDetails : raProvDetailsList) {
             if (ids.contains(raProvDetails.getId())) {
                 continue;
             }
@@ -62,7 +63,7 @@ public class RosterUtils {
                 raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1);
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
             RASheetAndErrorStats raSheetAndErrorStats = getRASheetAndErrorStats(raSheetDetails,
-                    getStatus(raSheetDetails));
+                    getSheetDisplayStatus(raSheetDetails.getStatusCode()));
             raFileAndErrorStats.addSheetDetails(raSheetAndErrorStats);
         }
         return raFileAndErrorStats;
@@ -70,21 +71,11 @@ public class RosterUtils {
 
     public static RAFileAndStats getRAFileAndStatsFromSheetDetailsList(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
         RAFileAndStats raFileAndStats = new RAFileAndStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
-                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1, getStatus(raFileDetails));
+                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1, getFileDisplayStatus(raFileDetails.getStatusCode()));
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, getStatus(raSheetDetails));
+            RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, getSheetDisplayStatus(raSheetDetails.getStatusCode()));
             raFileAndStats.addSheetDetails(raSheetAndStats);
         }
         return raFileAndStats;
-    }
-
-
-    //TODO demo move to common
-    public static String getStatus(RASheetDetails raSheetDetails) {
-        return "INGESTION COMPLETE";
-    }
-
-    public static String getStatus(RAFileDetails raFileDetails) {
-        return "INGESTION COMPLETE";
     }
 }

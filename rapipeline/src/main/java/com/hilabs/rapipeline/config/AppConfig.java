@@ -21,7 +21,7 @@ public class AppConfig {
     public void initialize() throws SchedulerException, ApplicationException {
         log.info("Initiate the scheduler");
 
-        new BatchConfig("src/main/resources/static/config.json")
+        new BatchConfig("./config.json")
                 .registerJobRetrievers(ingestionFetcher)
                 .build();
     }

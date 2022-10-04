@@ -1,6 +1,7 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
+import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
 import com.hilabs.rostertracker.dto.RASheetReport;
 import com.hilabs.roster.dto.RAFalloutErrorInfo;
@@ -26,7 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
-import static com.hilabs.roster.util.Constants.ROSTER_INGESTION_COMPLETED;
+import static com.hilabs.roster.util.Constants.*;
 
 @RestController
 @RequestMapping("/api/v1/progress-tracking")
@@ -50,7 +51,6 @@ public class ProgressTrackingController {
                                                                       @RequestParam(defaultValue = "10") Integer pageSize,
                                                                       @RequestParam(defaultValue = "") String market,
                                                                       @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                      @RequestParam(defaultValue = "-1") Integer providerId,
                                                                       @RequestParam(defaultValue = "-1") Long raFileDetailsId,
                                                                       @RequestParam(defaultValue = "-1") long startTime,
                                                                       @RequestParam(defaultValue = "-1") long endTime) {
@@ -62,13 +62,13 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, ROSTER_INGESTION_COMPLETED);
+                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, Arrays.asList(ROSTER_INGESTION_COMPLETED));
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(raFileAndStatsList, HttpStatus.OK);
         } catch (Exception ex) {
-            log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} providerId {} raFileDetailsId {} startTime {} endTime {}",
-                    pageNo, pageSize, market, lineOfBusiness, providerId, raFileDetailsId, startTime, endTime);
+            log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
+                    pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
             throw ex;
         }
     }
@@ -78,7 +78,6 @@ public class ProgressTrackingController {
                                                                                    @RequestParam(defaultValue = "10") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                                   @RequestParam(defaultValue = "-1") Integer providerId,
                                                                                    @RequestParam(defaultValue = "-1") Long raFileDetailsId,
                                                                                    @RequestParam(name = "startTime", defaultValue = "-1") long startTime,
                                                                                    @RequestParam(name = "endTime", defaultValue = "-1") long endTime) {
@@ -90,8 +89,8 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, ROSTER_INGESTION_COMPLETED);
+                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, Arrays.asList(ROSTER_INGESTION_COMPLETED));
             Map<Long, RAFileDetails> raFileDetailsMap = raFileDetailsListAndSheetList.getRAFileDetailsMap();
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
             for (RASheetDetails raSheetDetails : raFileDetailsListAndSheetList.getRaSheetDetailsList()) {
@@ -99,8 +98,8 @@ public class ProgressTrackingController {
             }
             return new ResponseEntity<>(raSheetProgressInfoList, HttpStatus.OK);
         } catch (Exception ex) {
-            log.error("Error in getRosterFileProgressInfoList pageNo {} pageSize {} market {} lineOfBusiness {} providerId {} startTime {} endTime {}",
-                    pageNo, pageSize, market, lineOfBusiness, providerId, startTime, endTime);
+            log.error("Error in getRosterFileProgressInfoList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",
+                    pageNo, pageSize, market, lineOfBusiness, startTime, endTime);
             throw ex;
         }
     }
@@ -147,5 +146,38 @@ public class ProgressTrackingController {
         raSheetReport.setFailedCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.15));
         raSheetReport.setSpsLoadSuccessTransactionCount(raSheetDetails.getTargetLoadSuccessTransactionCount());
         return raSheetReport;
+    }
+
+    @GetMapping("/non-compatible-file-list")
+    public ResponseEntity<List<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "1") Integer pageNo,
+                                                                                    @RequestParam(defaultValue = "10") Integer pageSize,
+                                                                                    @RequestParam(defaultValue = "") String market,
+                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
+                                                                                    @RequestParam(defaultValue = "-1") Long raFileDetailsId,
+                                                                                    @RequestParam(defaultValue = "-1") long startTime,
+                                                                                    @RequestParam(defaultValue = "-1") long endTime) {
+        try {
+            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
+            int limit = limitAndOffset.getLimit();
+            int offset = limitAndOffset.getOffset();
+            Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
+            startTime = startAndEndTime.startTime;
+            endTime = startAndEndTime.endTime;
+            RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
+                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, Arrays.asList(ROSTER_INGESTION_FAILED, ROSTER_INGESTION_VALIDATION_FAILED));
+            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
+            //TODO
+            List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
+            for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
+                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(), raFileAndStats.getRosterRecordCount(), "Sample Error", "Sample error code");
+                inCompatibleRosterDetails.add(details);
+            }
+            return new ResponseEntity<>(inCompatibleRosterDetails, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
+                    pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
+            throw ex;
+        }
     }
 }

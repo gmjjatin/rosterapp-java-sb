@@ -51,9 +51,3 @@ public class IngestionFetcher implements JobRetriever {
     }
 }
 
-
-//NEW
-//Task progress
-//NEW
-//Task progress
-

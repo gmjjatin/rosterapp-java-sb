@@ -5,13 +5,11 @@ import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.model.RosterFileProcessStage;
+import com.hilabs.roster.model.RosterStageState;
 import com.hilabs.roster.repository.RAConvProcessingDurationStatsRepository;
 import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
-import com.hilabs.rostertracker.model.BaseRosterFileProcessStageInfo;
-import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
-import com.hilabs.rostertracker.model.RASheetProgressInfo;
-import com.hilabs.rostertracker.model.RosterFileStageState;
+import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.utils.RosterUtils;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
@@ -22,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.hilabs.roster.util.Constants.getRosterStageState;
 
 @Service
 @Log4j2
@@ -160,7 +160,7 @@ public class RAFileStatsService {
 //                        raConvProcessingDurationStatsList, RosterFileStageState.COMPLETED);
 //                return new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo, noOfRecords, Utils.MILLIS_IN_HOUR);
 //            } else {
-//                RosterFileStageState rosterFileStageState;
+//                RosterStageState rosterFileStageState;
 //                if (lastFailedStage != processStage) {
 //                    rosterFileStageState = RosterFileStageState.NOT_STARTED;
 //                } else {
@@ -197,11 +197,20 @@ public class RAFileStatsService {
     public RASheetProgressInfo getRASheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         RASheetProgressInfo rosterFileProgressInfo = getBaseRosterSheetProgressInfo(raFileDetails, raSheetDetails);
         List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList = getRosConvProcessingDurationStatsList(raSheetDetails.getId());
-//        RosterFileProcessStage currRosterFileProcessStage = rosterConvStatusStageMappingInfoService.getRosterFileProcessStage(raSheetDetails.getStatus());
+        RosterStageState autoMappedRosterStageState = getRosterStageState(RosterFileProcessStage.AUTO_MAPPED, raSheetDetails.getStatusCode());
+//        if (autoMappedRosterStageState != RosterStageState.NOT_STARTED) {
+//            //TODO demo
+//            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterFileProcessStage.AUTO_MAPPED,
+//                    autoMappedRosterStageState, Utils.MILLIS_IN_HOUR);
+//            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo);
+//            rosterFileProgressInfo.setAutoMapped(new AutoMappedStageInfo(rosterFileProcessIntermediateStageInfo));
+//        }
 
+
+//        RosterFileProcessStage currRosterFileProcessStage = rosterConvStatusStageMappingInfoService.getRosterFileProcessStage(raSheetDetails.getStatus());
 //        List<RosterFileProcessStage> possibleRosterFileProcessStageList = (raSheetDetails.getStatus() == null || raSheetDetails.getStatus() == RosterFileProcessStatus.FAILED) ? getValidRosterFileProcessStageListInOrder()
 //                : rosterConvStatusStageMappingInfoService.getPrecedingRosterFileProcessStageList(currRosterFileProcessStage);
-//
+
 //        if (possibleRosterFileProcessStageList.contains(RosterFileProcessStage.AUTO_MAPPED)) {
 //            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = computeRosterFileProcessIntermediateStageInfo(RosterFileProcessStage.AUTO_MAPPED,
 //                    //TODO is getRosterRecordCount() right??
@@ -228,7 +237,7 @@ public class RAFileStatsService {
     }
 
     public BaseRosterFileProcessStageInfo getBaseRosterFileProcessStageInfo(RosterFileProcessStage rosterFileProcessStage,
-                                                                            List<RARTConvProcessingDurationStats> RAConvProcessingDurationStatsList, RosterFileStageState rosterFileStageState) {
+                                                                            List<RARTConvProcessingDurationStats> RAConvProcessingDurationStatsList, RosterStageState rosterFileStageState) {
 //        List<RAConvStatusStageMappingInfo> raConvStatusStageMappingInfoList = rosterConvStatusStageMappingInfoService
 //                .getAllRosterConvMappingInfoList(rosterFileProcessStage);
         //TODO important what if startTime is finally MAX_VALUE??
@@ -266,11 +275,11 @@ public class RAFileStatsService {
 //        }
 //        RAConvStatusStageMappingInfo raConvStatusStageMappingInfo = optionalRosterConvStatusStageMappingInfo.get();
 //        if (raConvStatusStageMappingInfo.getStatusPosition() != RosterFileProcessStatusPosition.FINAL) {
-//            return RosterFileStageState.STARTED;
+//            return RosterStageState.STARTED;
 //        }
 //        //If final state and completed return completed.
 //        boolean isStatusCompleted = raConvProcessingDurationStatsList.stream().anyMatch(p -> p.getStatus() == currentRosterFileProcessStatus
 //                && p.getCompletionDate() != null);
-//        return isStatusCompleted ? RosterFileStageState.COMPLETED : RosterFileStageState.STARTED;
+//        return isStatusCompleted ? RosterStageState.COMPLETED : RosterFileStageState.STARTED;
 //    }
 }

@@ -1,5 +1,6 @@
 package com.hilabs.rostertracker.service;
 
+import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RAProvDetails;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
 import com.hilabs.roster.repository.RAProvDetailsRepository;
@@ -39,18 +40,6 @@ public class RAProviderService {
             return Optional.empty();
         }
         return Optional.of(raProvDetails);
-    }
-
-    public List<RAProvDetails> getRosterSourceListFromMarketAndState(String market, String lineOfBusiness) {
-        return raProvDetailsRepository.findByMarketAndLineOfBusiness(market, lineOfBusiness);
-    }
-
-    public List<RAProvDetails> getRosterSourceListFromMarket(String market) {
-        return raProvDetailsRepository.findByMarket(market);
-    }
-
-    public List<RAProvDetails> getRosterSourceListFromLineOfBusiness(String lineOfBusiness) {
-        return raProvDetailsRepository.findByLineOfBusiness(lineOfBusiness);
     }
 
 //    public List<RAProvDetails> getRosterSourceListFromLineOfBusiness(String lineOfBusiness, Date startDate, Date endDate) {
@@ -105,10 +94,10 @@ public class RAProviderService {
         }
     }
 
-    public ConcurrentLruCache<String, List<RAProvDetails>> marketSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
-        return raProvDetailsRepository.findByMarketSearchStr(p);
+    public ConcurrentLruCache<String, List<RAFileDetails>> marketSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
+        return raFileDetailsRepository.findByMarketSearchStr(p);
     });
-    public List<RAProvDetails> findByMarketSearchStr(String searchStr) {
+    public List<RAFileDetails> findByMarketSearchStr(String searchStr) {
         try {
             if (marketSearchStrCache.contains(searchStr)) {
                 return marketSearchStrCache.get(searchStr);
@@ -117,23 +106,23 @@ public class RAProviderService {
             populateMarketSearchStrCache(searchStr);
             return marketSearchStrCache.get(adjustedKey);
         } catch (Exception ex) {
-            return raProvDetailsRepository.findByMarketSearchStr(searchStr);
+            return raFileDetailsRepository.findByMarketSearchStr(searchStr);
         }
     }
 
     @Async
     public void populateMarketSearchStrCache(String marketSearchStr) {
         try {
-            raProvDetailsRepository.findByMarketSearchStr(marketSearchStr);
+            marketSearchStrCache.get(marketSearchStr);
         } catch (Exception ex) {
             log.error("Error in populateMarketSearchStrCache marketSearchStr {} ex {}", marketSearchStr, ex.getMessage());
         }
     }
 
-    public ConcurrentLruCache<String, List<RAProvDetails>> lineOfBusinessSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
-        return raProvDetailsRepository.findByLineOfBusinessSearchStr(p);
+    public ConcurrentLruCache<String, List<RAFileDetails>> lineOfBusinessSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
+        return raFileDetailsRepository.findByLineOfBusinessSearchStr(p);
     });
-    public List<RAProvDetails> findByLineOfBusinessSearchStr(String searchStr) {
+    public List<RAFileDetails> findByLineOfBusinessSearchStr(String searchStr) {
         try {
             if (lineOfBusinessSearchStrCache.contains(searchStr)) {
                 return lineOfBusinessSearchStrCache.get(searchStr);
@@ -142,14 +131,26 @@ public class RAProviderService {
             populateLineOfBusinessSearchStrCache(searchStr);
             return lineOfBusinessSearchStrCache.get(adjustedKey);
         } catch (Exception ex) {
-            return raProvDetailsRepository.findByLineOfBusinessSearchStr(searchStr);
+            return raFileDetailsRepository.findByLineOfBusinessSearchStr(searchStr);
         }
+    }
+
+    public List<RAFileDetails> getRosterSourceListFromMarketAndState(String market, String lineOfBusiness) {
+        return raFileDetailsRepository.findByMarketAndLineOfBusiness(market, lineOfBusiness);
+    }
+
+    public List<RAFileDetails> getRosterSourceListFromMarket(String market) {
+        return raFileDetailsRepository.findByMarket(market);
+    }
+
+    public List<RAFileDetails> getRosterSourceListFromLineOfBusiness(String lineOfBusiness) {
+        return raFileDetailsRepository.findByLineOfBusiness(lineOfBusiness);
     }
 
     @Async
     public void populateLineOfBusinessSearchStrCache(String lineOfBusinessSearchStr) {
         try {
-            raProvDetailsRepository.findByLineOfBusinessSearchStr(lineOfBusinessSearchStr);
+            raFileDetailsRepository.findByLineOfBusinessSearchStr(lineOfBusinessSearchStr);
         } catch (Exception ex) {
             log.error("Error in populateLineOfBusinessSearchStrCache lineOfBusinessSearchStr {} ex {}", lineOfBusinessSearchStr, ex.getMessage());
         }
@@ -171,15 +172,16 @@ public class RAProviderService {
         return allLineOfBusiness;
     }
 
-    public List<RAProvDetails> getRAProvListFromSearchStr(String searchStr) {
+    public List<RAFileDetails> getRAProvListFromSearchStr(String searchStr) {
         if (searchStr == null || searchStr.isEmpty()) {
-            return findTopEntriesOrderBySourceName(DEFAULT_NO_OF_ENTRIES);
+//            return findTopEntriesOrderBySourceName(DEFAULT_NO_OF_ENTRIES);
+            return new ArrayList<>();
         }
-        List<RAProvDetails> raProvDetailsDetailsByProvider = findByProviderSearchStr(searchStr);
-        List<RAProvDetails> raProvDetailsDetailsByMarket = findByMarketSearchStr(searchStr);
-        List<RAProvDetails> raProvDetailsDetailsByLineOfBusiness = findByLineOfBusinessSearchStr(searchStr);
-        List<RAProvDetails> allRAProvDetailsList = new ArrayList<>();
-        allRAProvDetailsList.addAll(raProvDetailsDetailsByProvider);
+//        List<RAFileDetails> raProvDetailsDetailsByProvider = findByProviderSearchStr(searchStr);
+        List<RAFileDetails> raProvDetailsDetailsByMarket = findByMarketSearchStr(searchStr);
+        List<RAFileDetails> raProvDetailsDetailsByLineOfBusiness = findByLineOfBusinessSearchStr(searchStr);
+        List<RAFileDetails> allRAProvDetailsList = new ArrayList<>();
+
         allRAProvDetailsList.addAll(raProvDetailsDetailsByMarket);
         allRAProvDetailsList.addAll(raProvDetailsDetailsByLineOfBusiness);
         return RosterUtils.removeDuplicateRAProvList(allRAProvDetailsList);

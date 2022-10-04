@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +51,6 @@ public class ErrorReportingController {
                                                                            @RequestParam(defaultValue = "10") Integer pageSize,
                                                                            @RequestParam(defaultValue = "") String market,
                                                                            @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                           @RequestParam(defaultValue = "-1") Integer providerId,
                                                                            @RequestParam(defaultValue = "-1") Long raFileDetailsId,
                                                                            @RequestParam(defaultValue = "-1") long startTime,
                                                                            @RequestParam(defaultValue = "-1") long endTime) {
@@ -62,14 +62,14 @@ public class ErrorReportingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, ROSTER_INGESTION_COMPLETED);
+                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, Arrays.asList(ROSTER_INGESTION_COMPLETED));
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(raFileAndErrorStatsList, HttpStatus.OK);
         } catch (Exception ex) {
             //TODO fix log
-            log.error("Error in getFileErrorStatsList pageNo {} pageSize {} market {} lineOfBusiness {} providerId {} startTime {} endTime {}",
-                    pageNo, pageSize, market, lineOfBusiness, providerId, startTime, endTime);
+            log.error("Error in getFileErrorStatsList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",
+                    pageNo, pageSize, market, lineOfBusiness, startTime, endTime);
             throw ex;
         }
     }
@@ -80,7 +80,6 @@ public class ErrorReportingController {
                                                                                    @RequestParam(defaultValue = "10") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                                   @RequestParam(defaultValue = "-1") Integer providerId,
                                                                                    @RequestParam(defaultValue = "-1") Long raFileDetailsId,
                                                                                    @RequestParam(defaultValue = "-1") long startTime,
                                                                                    @RequestParam(defaultValue = "-1") long endTime) {
@@ -92,8 +91,8 @@ public class ErrorReportingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, providerId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, ROSTER_INGESTION_COMPLETED);
+                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, limit, offset, Arrays.asList(ROSTER_INGESTION_COMPLETED));
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {
@@ -105,8 +104,8 @@ public class ErrorReportingController {
             return new ResponseEntity<>(raSheetAndColumnErrorStatsList, HttpStatus.OK);
         } catch (Exception ex) {
             //TODO fix log
-            log.error("Error in getFileErrorStatsList pageNo {} pageSize {} market {} lineOfBusiness {} providerId {} startTime {} endTime {}",
-                    pageNo, pageSize, market, lineOfBusiness, providerId, startTime, endTime);
+            log.error("Error in getFileErrorStatsList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",
+                    pageNo, pageSize, market, lineOfBusiness, startTime, endTime);
             throw ex;
         }
     }

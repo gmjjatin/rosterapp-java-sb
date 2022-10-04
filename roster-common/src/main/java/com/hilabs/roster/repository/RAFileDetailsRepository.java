@@ -1,6 +1,7 @@
 package com.hilabs.roster.repository;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RAProvDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -43,4 +44,31 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select * from RA_RT_FILE_DETAILS where ra_provider_details_id in (:raProvDetailsIds) " +
             "and creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(Date startDate, Date endDate, List<Long> raProvDetailsIds, @Param("limit") int limit, @Param("offset") int offset);
+
+    @Query(value = "select * from RA_RT_FILE_DETAILS where UPPER(orgnl_file_nm) like '%' || UPPER(:searchStr) || '%'", nativeQuery = true)
+    List<RAFileDetails> findByFileSearchStr(@Param("searchStr") String searchStr);
+
+    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
+            " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%'", nativeQuery = true)
+    List<RAFileDetails> findByLineOfBusiness(String lineOfBusiness);
+
+    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB " +
+            "where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and market= :market " +
+            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%'", nativeQuery = true)
+    List<RAFileDetails> findByMarketAndLineOfBusiness(String market, String lineOfBusiness);
+
+    @Query(value = "select * from RA_RT_FILE_DETAILS where market= :market", nativeQuery = true)
+    List<RAFileDetails> findByMarket(String market);
+
+    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB where " +
+            " RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id " +
+            "and UPPER(lob) like '%' || UPPER(:searchStr) || '%'", nativeQuery = true)
+    List<RAFileDetails> findByLineOfBusinessSearchStr(@Param("searchStr") String searchStr);
+
+    @Query(value = "select * from RA_RT_FILE_DETAILS where UPPER(market) like '%' || UPPER(:searchStr) || '%'", nativeQuery = true)
+    List<RAFileDetails> findByMarketSearchStr(@Param("searchStr") String searchStr);
+
+    @Query(value = "select * from RA_RT_FILE_DETAILS where creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findRAFileDetailsListBetweenDates(Date startDate, Date endDate, @Param("limit") int limit, @Param("offset") int offset);
+
 }
