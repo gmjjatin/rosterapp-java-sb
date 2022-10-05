@@ -1,6 +1,6 @@
 package com.hilabs.roster.entity;
 
-import com.hilabs.roster.model.RosterFileProcessStage;
+import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterFileProcessStatus;
 import com.hilabs.roster.model.RosterFileProcessStatusPosition;
 import lombok.Data;
@@ -20,7 +20,7 @@ public class RAConvStatusStageMappingInfo extends BaseEntity {
     private RosterFileProcessStatus processingStatus;
 
     @Column(name = "stage")
-    private RosterFileProcessStage stage;
+    private RosterSheetProcessStage stage;
 
     @Column(name = "status")
     private RosterFileProcessStatusPosition statusPosition;
