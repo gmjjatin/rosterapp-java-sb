@@ -3,7 +3,6 @@ package com.hilabs.rostertracker.controller;
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.utils.Utils;
-import liquibase.pro.packaged.I;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,11 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.hilabs.roster.util.Constants.*;
+import static com.hilabs.rostertracker.service.RAStatusService.getStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/ra-provider")
@@ -37,28 +35,20 @@ public class RAProviderController {
     public ResponseEntity<List<RAFileDetails>> getFileDetailsFromSearchStr(@RequestParam(defaultValue = "") String searchStr,
                                                                            @RequestParam(defaultValue = "true", name = "isCompatible") String isCompatibleStr) {
         try {
-            final boolean   isCompatible = isCompatibleStr == null || !isCompatibleStr.toLowerCase().equals("false");
+            final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.equalsIgnoreCase("false");
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByProviderSearchStr(searchStr);
             raFileDetailsList = raFileDetailsList.stream().filter(p -> {
-                if (isCompatible) {
-                    return p.getStatusCode() != null && p.getStatusCode() == ROSTER_INGESTION_COMPLETED;
-                } else {
-                    return p.getStatusCode() == null || p.getStatusCode() == ROSTER_INGESTION_VALIDATION_FAILED ||
-                            p.getStatusCode() == ROSTER_INGESTION_FAILED;
+                List<Integer> statusCodes = getStatusCodes(isCompatible);
+                if (p.getStatusCode() == null) {
+                    return false;
                 }
+                Integer statusCode = p.getStatusCode();
+                return statusCodes.stream().anyMatch(sC -> sC.equals(statusCode));
             }).collect(Collectors.toList());
             return new ResponseEntity<>(raFileDetailsList, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvListFromProviderSearchStr searchStr {} - ex {}", searchStr, ex.getMessage());
             throw ex;
-        }
-    }
-
-    public List<Integer> getStatusCodes(boolean isCompatible) {
-        if (isCompatible) {
-            return Arrays.asList(ROSTER_INGESTION_COMPLETED);
-        } else {
-            return Arrays.asList(ROSTER_INGESTION_VALIDATION_FAILED, ROSTER_INGESTION_FAILED);
         }
     }
 

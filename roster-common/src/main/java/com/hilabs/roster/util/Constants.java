@@ -1,7 +1,10 @@
 package com.hilabs.roster.util;
 
+import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
 import com.hilabs.roster.model.RosterFileProcessStage;
 import com.hilabs.roster.model.RosterStageState;
+
+import java.util.List;
 
 public class Constants {
     public static int ROSTER_INGESTION_IN_PROGRESS = 13;
@@ -46,6 +49,10 @@ public class Constants {
                 }
             }
         }
+        throw new RuntimeException("Yet to be implemented");
+    }
+
+    public static long computeTimeTakenInMillis(List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, RosterFileProcessStage rosterFileProcessStage) {
         throw new RuntimeException("Yet to be implemented");
     }
 }

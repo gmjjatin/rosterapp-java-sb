@@ -56,16 +56,6 @@ public class RAFileDetailsService {
                 resRaFileDetailsList.add(raFileDetails);
             }
         }
-//        raFileDetailsList = raFileDetailsList.stream().filter(p -> {
-//            Date date = p.getCreatedDate();
-//            //TODO
-//            if (date == null) {
-//                return true;
-//            }
-//            return startDate.getTime() <= date.getTime() && endDate.getTime() > date.getTime();
-//        }).collect(Collectors.toList());
-//        List<RAFileDetails> raFileDetailsList = raFileDetailsRepository.findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(startDate, endDate,
-//                raProvDetailsList.stream().map(RAProvDetails::getId).collect(Collectors.toList()), limit, offset);
         return resRaFileDetailsList;
     }
 
