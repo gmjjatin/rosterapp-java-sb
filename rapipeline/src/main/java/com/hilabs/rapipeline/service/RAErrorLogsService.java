@@ -1,7 +1,7 @@
 package com.hilabs.rapipeline.service;
 
-import com.hilabs.roster.entity.RAErrorLogs;
-import com.hilabs.roster.repository.RAErrorLogsRepository;
+import com.hilabs.roster.entity.RAFileErrorCodeDetails;
+import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,13 +10,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class RAErrorLogsService {
     @Autowired
-    private RAErrorLogsRepository raErrorLogsRepository;
-    public void insertRASystemErrors(Long raFileDetailsId, Long raSheetDetailsId, String stageName, Long errorCodeDetailsId, String errorDescription,
-                                     String errorLongDescription) {
+    private RAFileErrorCodeDetailRepository raFileErrorCodeDetailRepository;
+    public void insertRASystemErrors(Long raFileDetailsId, String errorCode, String errorDescription) {
         try {
-            RAErrorLogs raErrorLogs = new RAErrorLogs(raFileDetailsId, raSheetDetailsId, stageName, errorCodeDetailsId,
-                    errorDescription, errorLongDescription);
-            raErrorLogsRepository.save(raErrorLogs);
+            RAFileErrorCodeDetails raErrorLogs = new RAFileErrorCodeDetails(raFileDetailsId, errorCode, errorDescription, "INGESTION");
+            raFileErrorCodeDetailRepository.save(raErrorLogs);
         } catch (Exception ex) {
             log.error("Error in insertRASystemErrors - ex {}", ex.getMessage());
             throw ex;

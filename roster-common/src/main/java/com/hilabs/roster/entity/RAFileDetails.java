@@ -12,8 +12,8 @@ public class RAFileDetails extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ra_provider_details_id")
-    private Long raProvDetailsId;
+//    @Column(name = "ra_provider_details_id")
+//    private Long raProvDetailsId;
 
     @Column(name = "orgnl_file_nm")
     private String originalFileName;
@@ -29,6 +29,9 @@ public class RAFileDetails extends BaseEntity {
 
     @Column(name = "is_active")
     private Integer isActive;
+
+    @Column(name = "source_nm")
+    private String sourceName;
 
     public RAFileDetails() {}
     @Override

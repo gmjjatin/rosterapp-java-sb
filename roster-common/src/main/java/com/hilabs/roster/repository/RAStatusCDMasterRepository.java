@@ -12,6 +12,6 @@ public interface RAStatusCDMasterRepository extends JpaRepository<RAStatusCDMast
     @Query(value = "select * from RA_RT_STATUS_CD_MSTR where stage_nm = :stage", nativeQuery = true)
     List<RAStatusCDMaster> getRAStatusCDMasterListForStage(@Param("stage") String stage);
 
-    @Query(value = "select * from RA_RT_STATUS_CD_MSTR where status_cd = :statusCode", nativeQuery = true)
+    @Query(value = "select * from RA_RT_STATUS_CD_MSTR where status_cd = :statusCode order by creat_dt desc fetch next 1 rows only", nativeQuery = true)
     Optional<RAStatusCDMaster> getRAStatusCDMasterListForCode(@Param("statusCode") Integer statusCode);
 }

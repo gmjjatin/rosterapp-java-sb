@@ -25,6 +25,7 @@ public class RAFileDetailsLob extends BaseEntity {
     public RAFileDetailsLob() {}
 
     public RAFileDetailsLob(Long raFileDetailsId, String lob, Integer isActive) {
+        super();
         this.raFileDetailsId = raFileDetailsId;
         this.lob = lob;
         this.isActive = isActive;

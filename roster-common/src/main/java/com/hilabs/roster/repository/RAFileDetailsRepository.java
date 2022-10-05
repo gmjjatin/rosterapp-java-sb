@@ -1,8 +1,6 @@
 package com.hilabs.roster.repository;
 
 import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RAProvDetails;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -75,6 +73,6 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select * from RA_RT_FILE_DETAILS where creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findRAFileDetailsListBetweenDates(Date startDate, Date endDate, @Param("limit") int limit, @Param("offset") int offset);
 
-    @Query(value = "select distinct(market) from RA_RT_FILE_DETAILS", nativeQuery = true)
-    List<String> findAllMarkets();
+    @Query(value = "select distinct(market) from RA_RT_FILE_DETAILS where status_cd in (:statusCodes)", nativeQuery = true)
+    List<String> findAllMarkets(List<Integer> statusCodes);
 }

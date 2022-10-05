@@ -20,4 +20,11 @@ public class BaseEntity {
 
     @Column(name = "last_updt_user_id")
     private String lastUpdatedUserId;
+
+    public BaseEntity() {
+        this.createdDate = new Date();
+        this.lastUpdatedDate = new Date();
+        this.createdUserId = "SYSTEM";
+        this.lastUpdatedUserId = "SYSTEM";
+    }
 }

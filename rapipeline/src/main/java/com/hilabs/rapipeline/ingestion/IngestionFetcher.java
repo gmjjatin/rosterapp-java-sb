@@ -6,7 +6,6 @@ import com.hilabs.mcheck.model.Task;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.service.RAFileDetailsService;
 import com.hilabs.rapipeline.service.RAFileMetaDataDetailsService;
-import com.hilabs.roster.repository.RAProvDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -25,9 +24,6 @@ public class IngestionFetcher implements JobRetriever {
 
     @Autowired
     private RAFileDetailsService raFileDetailsService;
-
-    @Autowired
-    private RAProvDetailsRepository raProvDetailsRepository;
 
 
     @Autowired

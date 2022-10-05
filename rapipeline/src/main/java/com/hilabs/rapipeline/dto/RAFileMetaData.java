@@ -14,7 +14,7 @@ public class RAFileMetaData  {
     String racdId;
     String ractId;
     String racfId;
-    int eId;
+    Long npi;
     String taxId;
     String orgName;
     String cntState;
@@ -35,7 +35,7 @@ public class RAFileMetaData  {
         this.racdId = raPlmRoProfData.getRacdId();
         this.ractId = raPlmRoProfData.getRactId();
         this.racfId = raPlmRoProfData.getRacfId();
-        this.eId = raPlmRoProfData.getEId();
+        this.npi = raPlmRoProfData.getNpi();
         this.taxId = raPlmRoProfData.getTaxId();
         this.orgName = raPlmRoProfData.getOrgName();
         this.cntState = raPlmRoProfData.getCntState();

@@ -1,14 +1,14 @@
 package com.hilabs.rostertracker.controller;
 
-import com.hilabs.roster.entity.RAErrorLogs;
-import com.hilabs.roster.repository.RAErrorLogsRepository;
+import com.hilabs.roster.dto.RAFalloutErrorInfo;
+import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RAFileErrorCodeDetails;
+import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
 import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
 import com.hilabs.rostertracker.dto.RASheetReport;
-import com.hilabs.roster.dto.RAFalloutErrorInfo;
-import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.model.RASheetProgressInfo;
 import com.hilabs.rostertracker.service.RAFalloutReportService;
@@ -48,12 +48,12 @@ public class ProgressTrackingController {
     RAFalloutReportService raFalloutReportService;
 
     @Autowired
-    RAErrorLogsRepository raErrorLogsRepository;
+    RAFileErrorCodeDetailRepository raFileErrorCodeDetailRepository;
 
 
     @GetMapping("/file-stats-list")
     public ResponseEntity<List<RAFileAndStats>> getRAProvAndStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                      @RequestParam(defaultValue = "10") Integer pageSize,
+                                                                      @RequestParam(defaultValue = "100") Integer pageSize,
                                                                       @RequestParam(defaultValue = "") String market,
                                                                       @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                       @RequestParam(defaultValue = "-1") Long raFileDetailsId,
@@ -80,7 +80,7 @@ public class ProgressTrackingController {
 
     @GetMapping("/progress-info-list")
     public ResponseEntity<List<RASheetProgressInfo>> getRosterFileProgressInfoList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                                   @RequestParam(defaultValue = "10") Integer pageSize,
+                                                                                   @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                    @RequestParam(defaultValue = "-1") Long raFileDetailsId,
@@ -156,7 +156,7 @@ public class ProgressTrackingController {
 
     @GetMapping("/non-compatible-file-list")
     public ResponseEntity<List<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                                    @RequestParam(defaultValue = "10") Integer pageSize,
+                                                                                    @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                     @RequestParam(defaultValue = "") String market,
                                                                                     @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                     @RequestParam(defaultValue = "-1") Long raFileDetailsId,
@@ -176,12 +176,13 @@ public class ProgressTrackingController {
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
             for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
-                List<RAErrorLogs> raErrorLogs = raErrorLogsRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
+                List<RAFileErrorCodeDetails> raErrorLogs = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
                 //TODO need to fix it
                 String errorCode = "RI_ERR_MD_1";
                 String error = "-";
                 if (raErrorLogs.size() > 0) {
-                    error = raErrorLogs.get(0).getErrorDescription();
+                    errorCode = raErrorLogs.get(0).getErrorCode() != null ? raErrorLogs.get(0).getErrorCode() : errorCode;
+                    error = raErrorLogs.get(0).getErrorCodeTemplateParameters();
                 }
                 InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(), raFileAndStats.getRosterRecordCount(),
                         error, errorCode);

@@ -35,8 +35,8 @@ public class RAPlmRoProfData extends BaseEntity {
     private String racfId;
 
     //Master Provider ID  NUMBER
-    @Column(name = "eid")
-    private int eId;
+    @Column(name = "npi")
+    private Long npi;
 
     //Tax Id
     @Column(name = "tax_id")
@@ -57,6 +57,9 @@ public class RAPlmRoProfData extends BaseEntity {
     //Corporate Receipt Date
     @Column(name = "corp_recipt_dt")
     private Date corporateReceiptDate;
+
+    @Column(name = "IS_FILE_DLD_COMP")
+    private String isFileDLDCOMP;
 
     public RAPlmRoProfData() {}
 

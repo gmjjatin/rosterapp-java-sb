@@ -50,6 +50,12 @@ public class RAFileDetailsService {
         Date endDate = new Date(endTime);
         //TODO demo fix limit and offset
         List<RAFileDetails> raFileDetailsList = getRAFileDetailsList(market, lineOfBusiness, startDate, endDate, limit, offset);
+        List<RAFileDetails> resRaFileDetailsList = new ArrayList<>();
+        for (RAFileDetails raFileDetails : raFileDetailsList) {
+            if (raFileDetails.getStatusCode() != null && statusCodes.stream().anyMatch(ss -> raFileDetails.getStatusCode().equals(ss))) {
+                resRaFileDetailsList.add(raFileDetails);
+            }
+        }
 //        raFileDetailsList = raFileDetailsList.stream().filter(p -> {
 //            Date date = p.getCreatedDate();
 //            //TODO
@@ -60,7 +66,7 @@ public class RAFileDetailsService {
 //        }).collect(Collectors.toList());
 //        List<RAFileDetails> raFileDetailsList = raFileDetailsRepository.findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(startDate, endDate,
 //                raProvDetailsList.stream().map(RAProvDetails::getId).collect(Collectors.toList()), limit, offset);
-        return raFileDetailsList.stream().filter(p -> p.getStatusCode() != null && statusCodes.stream().anyMatch(ss -> p.getStatusCode() == ss)).collect(Collectors.toList());
+        return resRaFileDetailsList;
     }
 
     public List<RAFileDetails> getRAFileDetailsList(String market, String lineOfBusiness, Date startDate, Date endDate, int limit, int offset) {
@@ -89,7 +95,7 @@ public class RAFileDetailsService {
             if (fileSearchStrCache.contains(providerSearchStr)) {
                 return fileSearchStrCache.get(providerSearchStr);
             }
-            String adjustedKey = getAdjustedString(providerSearchStr, 3);
+            String adjustedKey = getAdjustedString(providerSearchStr, 10);
             //TODO
             populateFileSearchStrCache(providerSearchStr);
             return fileSearchStrCache.get(adjustedKey);
@@ -172,9 +178,9 @@ public class RAFileDetailsService {
     }
 
     List<String> allMarkets = null;
-    public List<String> findAllMarkets() {
+    public List<String> findAllMarkets(List<Integer> statusCodes) {
         if (allMarkets == null) {
-            allMarkets = raFileDetailsRepository.findAllMarkets();
+            allMarkets = raFileDetailsRepository.findAllMarkets(statusCodes);
         }
         return allMarkets;
     }

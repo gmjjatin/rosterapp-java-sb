@@ -15,17 +15,21 @@ public class RAFileDetailsService {
     @Autowired
     private RAFileDetailsRepository raFileDetailsRepository;
 
-    public Long insertRAFileDetails(Long raProvDetailsId, String originalFileName, String standardizedFileName,
-                                    String market, int statusCode, String createdUserId, String lastUpdateUserId) {
+    public static String getStrOrNA(String sourceName) {
+        return sourceName == null ? "N/A" : sourceName;
+    }
+
+    public Long insertRAFileDetails(String sourceName, String originalFileName, String standardizedFileName,
+                                    String market, int statusCode) {
         RAFileDetails raFileDetails = new RAFileDetails();
-        raFileDetails.setRaProvDetailsId(raProvDetailsId);
-        raFileDetails.setOriginalFileName(originalFileName);
-        raFileDetails.setStandardizedFileName(standardizedFileName);
-        raFileDetails.setMarket(market);
+        raFileDetails.setSourceName(getStrOrNA(sourceName));
+        raFileDetails.setOriginalFileName(getStrOrNA(originalFileName));
+        raFileDetails.setStandardizedFileName(getStrOrNA(standardizedFileName));
+        raFileDetails.setMarket(getStrOrNA(market));
         raFileDetails.setStatusCode(statusCode);
         raFileDetails.setIsActive(1);
-        raFileDetails.setCreatedUserId(createdUserId);
-        raFileDetails.setLastUpdatedUserId(lastUpdateUserId);
+        raFileDetails.setCreatedUserId("SYSTEM");
+        raFileDetails.setLastUpdatedUserId("SYSTEM");
         raFileDetails.setCreatedDate(new Date());
         raFileDetails.setLastUpdatedDate(new Date());
         raFileDetails = raFileDetailsRepository.save(raFileDetails);

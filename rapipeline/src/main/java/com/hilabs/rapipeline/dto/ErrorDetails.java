@@ -5,10 +5,10 @@ import lombok.Data;
 
 @Data
 public class ErrorDetails {
+    String errorCode;
     String errorDescription;
-    String errorLongDescription;
-    public ErrorDetails(String errorDescription, String errorLongDescription) {
+    public ErrorDetails(String errorCode, String errorDescription) {
+        this.errorCode = errorCode;
         this.errorDescription = errorDescription;
-        this.errorLongDescription = errorLongDescription;
     }
 }

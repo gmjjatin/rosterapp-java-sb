@@ -48,7 +48,7 @@ public class ErrorReportingController {
 
     @GetMapping("/file-error-stats-list")
     public ResponseEntity<List<RAFileAndErrorStats>> getFileErrorStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                           @RequestParam(defaultValue = "10") Integer pageSize,
+                                                                           @RequestParam(defaultValue = "100") Integer pageSize,
                                                                            @RequestParam(defaultValue = "") String market,
                                                                            @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                            @RequestParam(defaultValue = "-1") Long raFileDetailsId,
@@ -77,7 +77,7 @@ public class ErrorReportingController {
     //TODO manikanta fix the API
     @GetMapping("/sheet-error-stats-list")
     public ResponseEntity<List<RASheetAndColumnErrorStats>> getSheetErrorStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                                   @RequestParam(defaultValue = "10") Integer pageSize,
+                                                                                   @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                    @RequestParam(defaultValue = "-1") Long raFileDetailsId,

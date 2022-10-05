@@ -3,6 +3,7 @@ package com.hilabs.rostertracker.controller;
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.utils.Utils;
+import liquibase.pro.packaged.I;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,10 +54,19 @@ public class RAProviderController {
         }
     }
 
+    public List<Integer> getStatusCodes(boolean isCompatible) {
+        if (isCompatible) {
+            return Arrays.asList(ROSTER_INGESTION_COMPLETED);
+        } else {
+            return Arrays.asList(ROSTER_INGESTION_VALIDATION_FAILED, ROSTER_INGESTION_FAILED);
+        }
+    }
+
     @GetMapping("/market/all")
-    public ResponseEntity<List<String>> getAllMarkets() {
+    public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "true", name = "isCompatible") String isCompatibleStr) {
         try {
-            List<String> markets = raFileDetailsService.findAllMarkets();
+            final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.toLowerCase().equals("false");
+            List<String> markets = raFileDetailsService.findAllMarkets(getStatusCodes(isCompatible));
             return new ResponseEntity<>(markets, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getAllMarkets ex {}", ex.getMessage());

@@ -27,12 +27,6 @@ public class RAFileMetaDataDetailsService {
     private RAPlmRoProfDataRepository raPlmRoProfDataRepository;
 
     @Autowired
-    private RAProvDetailsRepository raProvDetailsRepository;
-
-    @Autowired
-    private RAProvMarketLobMapRepository raProvMarketLobMapRepository;
-
-    @Autowired
     private RAFileDetailsLobRepository raFileDetailsLobRepository;
 
     @Autowired
@@ -44,11 +38,11 @@ public class RAFileMetaDataDetailsService {
     @Autowired
     private RAStatusCDMasterRepository raStatusCDMasterRepository;
 
-    public Long insertRAProvMarketLobMap(Long raProvDetailsId, String market, String lob, Integer isActive) {
-        RAProvMarketLobMap raProvMarketLobMap = new RAProvMarketLobMap(raProvDetailsId, market, lob, isActive);
-        raProvMarketLobMap = raProvMarketLobMapRepository.save(raProvMarketLobMap);
-        return raProvMarketLobMap.getId();
-    }
+//    public Long insertRAProvMarketLobMap(Long raProvDetailsId, String market, String lob, Integer isActive) {
+//        RAProvMarketLobMap raProvMarketLobMap = new RAProvMarketLobMap(raProvDetailsId, market, lob, isActive);
+//        raProvMarketLobMap = raProvMarketLobMapRepository.save(raProvMarketLobMap);
+//        return raProvMarketLobMap.getId();
+//    }
 
     public Long insertRAFileDetailsLob(Long raFileDetailsId, String lob, Integer isActive) {
         RAFileDetailsLob raFileDetailsLob = new RAFileDetailsLob(raFileDetailsId, lob, isActive);

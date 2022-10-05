@@ -7,7 +7,6 @@ import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.service.*;
 import com.hilabs.roster.entity.RAPlmRoFileData;
-import com.hilabs.roster.entity.RAProvDetails;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -96,7 +95,7 @@ public class IngestionTask extends Task {
 
     @Override
     public void run() {
-        log.info("IngestionTask stared for {}", gson.toJson(getTaskData()));
+        log.info("IngestionTask started for {}", gson.toJson(getTaskData()));
         RAFileMetaData raFileMetaData = getRAFileMetaDataFromTaskData();
         if (raFileMetaData == null) {
             return;
@@ -117,22 +116,17 @@ public class IngestionTask extends Task {
             if (validationErrorDetails != null) {
                 log.warn("raFileMetaDataDetails {} has these errors {} in metadata",
                         gson.toJson(raFileMetaData), gson.toJson(validationErrorDetails));
-                Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
                 //TODO fix status code
-                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED,
-                        optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),null,
+                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED,null,
                         validationErrorDetails, false);
                 return;
             }
 
             //Already checked in validateMetaDataAndGetErrorList
-            Optional<RAProvDetails> optionalRAProvDetails = raProviderService.findByProvider(raFileMetaData.getOrgName());
-            RAProvDetails raProvDetails = optionalRAProvDetails.get();
             //Step 2 - File validation
             ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
             if (validateFileErrorDetails != null) {
-                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED,
-                        optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null), null,
+                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED, null,
                         validateFileErrorDetails, false);
                 return;
             }
@@ -153,12 +147,11 @@ public class IngestionTask extends Task {
                 log.warn(errorDescription);
                 //TODO fix status code
                 upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_FAILED,
-                        optionalRAProvDetails.<Long>map(RAProvDetails::getId).orElse(null),
                         standardizedFileName,
-                        new ErrorDetails("System error for copying files", errorDescription), false);
+                        new ErrorDetails("RI_ERR_MD_3", "System error while copying files"), false);
                 return;
             }
-            upsertIngestionStatus(raFileMetaData, IN_PROGRESS, ROSTER_INGESTION_COMPLETED, raProvDetails.getId(),
+            upsertIngestionStatus(raFileMetaData, IN_PROGRESS, ROSTER_INGESTION_COMPLETED,
                     standardizedFileName, null, false);
             if (!deleteFileIfExists(sourceFilePath)) {
                 //TODO later do we need to stop process here???
@@ -172,8 +165,7 @@ public class IngestionTask extends Task {
             String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 1000);
             String message = trimToNChars(ex.getMessage(), 1000);
             upsertIngestionStatus(raFileMetaData, FileMetaDataTableStatus.valueOf(raFileMetaData.getRAFileProcessingStatus()),
-                    ROSTER_INGESTION_FAILED,
-                    null, null, new ErrorDetails(message, stacktrace),
+                    ROSTER_INGESTION_FAILED, null, new ErrorDetails("RI_ERR_MD_UNKWN", message),
                     raFileMetaData.getReprocess() != null && raFileMetaData.getReprocess().toUpperCase().startsWith("Y"));
         } finally {
             runningMap.remove(raFileMetaData.getRaPlmRoFileDataId());
@@ -206,8 +198,7 @@ public class IngestionTask extends Task {
         File file = new File(sourceFilePath);
         if (!file.exists()) {
             log.warn("File with name {} doesn't exists - raFileMetaDataDetails {}", raFileMetaData.getFileName(), gson.toJson(raFileMetaData));
-            return new ErrorDetails("File missing", String.format("File with name %s doesn't exists",
-                    raFileMetaData.getFileName()));
+            return new ErrorDetails("RI_ERR_MD_1", "File missing");
         }
         return null;
     }
@@ -224,15 +215,14 @@ public class IngestionTask extends Task {
         return copied;
     }
 
-    public void upsertIngestionStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status, int statusCode,
-                                      Long raProvDetailsId, String standardizedFileName, ErrorDetails errorDetails,
+    public void upsertIngestionStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status, int statusCode, String standardizedFileName, ErrorDetails errorDetails,
                                       boolean reProcess) {
         String fileName = raFileMetaData.getFileName();
         //TODO insert ticket ids
         String market = raFileMetaData.getCntState();
         String lob = raFileMetaData.getPlmNetwork();
-        Long raFileDetailsId = raFileDetailsService.insertRAFileDetails(raProvDetailsId, fileName,
-                standardizedFileName, market, statusCode, null, null);
+        Long raFileDetailsId = raFileDetailsService.insertRAFileDetails(raFileMetaData.getOrgName(), fileName,
+                standardizedFileName, market, statusCode);
         raFileMetaDataDetailsService.insertRAFileDetailsLob(raFileDetailsId, lob, 1);
         if (raFileMetaData.getDcnId() != null) {
             raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getDcnId(), "DCN_ID", 1);
@@ -246,9 +236,8 @@ public class IngestionTask extends Task {
         raFileMetaDataDetailsService.updateRAPlmRoFileDataStatus(raFileMetaData, status, reProcess);
         if (errorDetails != null) {
             //TODO what should be errorCodeDetailsId
-            raErrorLogsService.insertRASystemErrors(raFileDetailsId, null, "INGESTION",
-                    null, errorDetails.getErrorDescription(),
-                    errorDetails.getErrorLongDescription());
+            raErrorLogsService.insertRASystemErrors(raFileDetailsId, errorDetails.getErrorCode(),
+                    errorDetails.getErrorDescription());
         }
     }
 }
