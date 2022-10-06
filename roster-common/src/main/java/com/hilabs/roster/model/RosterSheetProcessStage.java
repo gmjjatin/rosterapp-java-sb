@@ -1,21 +1,24 @@
 package com.hilabs.roster.model;
 
-import org.omg.CORBA.UNKNOWN;
-
 import java.util.Arrays;
 import java.util.List;
 
-public enum RosterFileProcessStage {
+public enum RosterSheetProcessStage {
     ROSTER_RECEIVED("Roster Received", 0),
+
+    PRE_PROCESSING("Pre Processing", 0),
+
     AUTO_MAPPED("Auto Mapped", 1),
-    CONVERTED_DART("Converted Dart", 2),
-    SPS_LOAD("SPS Load", 3),
-    REPORT("Report", 4),
+
+    ISF("ISF", 2),
+    CONVERTED_DART("Converted Dart", 3),
+    SPS_LOAD("SPS Load", 4),
+    REPORT("Report", 5),
 
     UNKNOWN("Unknown", -1);
     public final String displayName;
     public final int rank;
-    RosterFileProcessStage(String displayName, int rank) {
+    RosterSheetProcessStage(String displayName, int rank) {
         this.displayName = displayName;
         this.rank = rank;
     }
@@ -25,7 +28,7 @@ public enum RosterFileProcessStage {
         return displayName;
     }
 
-    public static List<RosterFileProcessStage> getValidRosterFileProcessStageListInOrder() {
+    public static List<RosterSheetProcessStage> getValidRosterFileProcessStageListInOrder() {
         return Arrays.asList(ROSTER_RECEIVED, AUTO_MAPPED, CONVERTED_DART, SPS_LOAD, REPORT);
     }
 }

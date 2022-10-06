@@ -1,7 +1,12 @@
 package com.hilabs.roster.util;
 
-import com.hilabs.roster.model.RosterFileProcessStage;
+import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
+import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
+
+import java.util.List;
+
+import static com.hilabs.roster.util.RAStatusEntity.statusEntities;
 
 public class Constants {
     public static int ROSTER_INGESTION_IN_PROGRESS = 13;
@@ -22,30 +27,16 @@ public class Constants {
     public static int AI_Mapping_Post_review_validation_Failed = 141;
 
     //TODO complete
-    public static RosterStageState getRosterStageState(RosterFileProcessStage rosterFileProcessStage,
+    public static RosterStageState getRosterStageState(RosterSheetProcessStage rosterSheetProcessStage,
                                                        Integer statusCode) {
         if (statusCode == null) {
             return RosterStageState.NOT_STARTED;
         }
-        if (rosterFileProcessStage == RosterFileProcessStage.ROSTER_RECEIVED) {
-            return RosterStageState.COMPLETED;
-        }
-        if (rosterFileProcessStage == RosterFileProcessStage.AUTO_MAPPED) {
-            if (statusCode < 121) {
-                return RosterStageState.NOT_STARTED;
-            } else if (statusCode > 141) {
-                return RosterStageState.COMPLETED;
-            } else {
-                if (statusCode == AI_Mapping_in_Progres || statusCode == AI_Mapping_Manual_review_in_Progress
-                        || statusCode == AI_Mapping_Manual_review_completed || statusCode == AI_Mapping_Completed || statusCode == AI_Mapping_Manually_updated || statusCode == AI_Mapping_Post_review_validation_in_Progress) {
-                    return RosterStageState.STARTED;
-                } else if (statusCode == AI_Mapping_Post_review_validation_Completed) {
-                        return RosterStageState.COMPLETED;
-                    } else if (statusCode == AI_Mapping_Failed_System_Error || statusCode == AI_Mapping_Failed_Business_Error || statusCode == AI_Mapping_Manual_review_Failed || statusCode == AI_Mapping_Post_review_validation_Failed) {
-                    return RosterStageState.FAILED;
-                }
-            }
-        }
+        //TODO write the logic based statusEntities in RAStatusEntity file
+        throw new RuntimeException("Yet to be implemented");
+    }
+
+    public static long computeTimeTakenInMillis(List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, RosterSheetProcessStage rosterSheetProcessStage) {
         throw new RuntimeException("Yet to be implemented");
     }
 }
