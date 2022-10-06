@@ -3,7 +3,7 @@ package com.hilabs.rostertracker.service;
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
 import com.hilabs.roster.entity.RASheetDetails;
-import com.hilabs.roster.model.RosterFileProcessStage;
+import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
 import com.hilabs.roster.repository.RAConvProcessingDurationStatsRepository;
 import com.hilabs.roster.repository.RAStatusCDMasterRepository;
@@ -88,35 +88,35 @@ public class RAFileStatsService {
         RASheetProgressInfo rosterFileProgressInfo = getBaseRosterSheetProgressInfo(raFileDetails, raSheetDetails);
         List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList = getRosConvProcessingDurationStatsList(raSheetDetails.getId());
 
-        RosterStageState autoMappedRosterStageState = getRosterStageState(RosterFileProcessStage.AUTO_MAPPED, raSheetDetails.getStatusCode());
+        RosterStageState autoMappedRosterStageState = getRosterStageState(RosterSheetProcessStage.AUTO_MAPPED, raSheetDetails.getStatusCode());
         if (autoMappedRosterStageState != RosterStageState.NOT_STARTED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterFileProcessStage.AUTO_MAPPED,
-                    autoMappedRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterFileProcessStage.AUTO_MAPPED));
+            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.AUTO_MAPPED,
+                    autoMappedRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterSheetProcessStage.AUTO_MAPPED));
             RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo,
                     raSheetDetails.getRosterRecordCount(), Utils.MILLIS_IN_HOUR);
             rosterFileProgressInfo.setAutoMapped(new AutoMappedStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
-        RosterStageState dartRosterStageState = getRosterStageState(RosterFileProcessStage.CONVERTED_DART, raSheetDetails.getStatusCode());
+        RosterStageState dartRosterStageState = getRosterStageState(RosterSheetProcessStage.CONVERTED_DART, raSheetDetails.getStatusCode());
         if (dartRosterStageState != RosterStageState.NOT_STARTED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterFileProcessStage.CONVERTED_DART,
-                    dartRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterFileProcessStage.CONVERTED_DART));
+            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.CONVERTED_DART,
+                    dartRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterSheetProcessStage.CONVERTED_DART));
             RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo,
                     raSheetDetails.getOutRowCount(), Utils.MILLIS_IN_HOUR);
             rosterFileProgressInfo.setConvertedDart(new ConvertedDartStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
-        RosterStageState spsLoadRosterStageState = getRosterStageState(RosterFileProcessStage.SPS_LOAD, raSheetDetails.getStatusCode());
+        RosterStageState spsLoadRosterStageState = getRosterStageState(RosterSheetProcessStage.SPS_LOAD, raSheetDetails.getStatusCode());
         if (spsLoadRosterStageState != RosterStageState.NOT_STARTED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterFileProcessStage.SPS_LOAD,
-                    spsLoadRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterFileProcessStage.SPS_LOAD));
+            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.SPS_LOAD,
+                    spsLoadRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterSheetProcessStage.SPS_LOAD));
             RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo,
                     raSheetDetails.getTargetLoadTransactionCount(), Utils.MILLIS_IN_HOUR);
             rosterFileProgressInfo.setConvertedDart(new ConvertedDartStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
         if (spsLoadRosterStageState == RosterStageState.COMPLETED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterFileProcessStage.REPORT,
+            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.REPORT,
                     RosterStageState.COMPLETED, 0);
             rosterFileProgressInfo.setReport(new ReportStageInfo(baseRosterFileProcessStageInfo));
         }

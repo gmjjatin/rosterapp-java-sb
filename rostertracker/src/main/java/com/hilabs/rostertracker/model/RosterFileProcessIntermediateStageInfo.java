@@ -1,6 +1,6 @@
 package com.hilabs.rostertracker.model;
 
-import com.hilabs.roster.model.RosterFileProcessStage;
+import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
 import lombok.Data;
 
@@ -13,7 +13,7 @@ public class RosterFileProcessIntermediateStageInfo extends BaseRosterFileProces
     public RosterFileProcessIntermediateStageInfo() {
     }
 
-    public RosterFileProcessIntermediateStageInfo(RosterFileProcessStage rosterFileProcessStage) {
+    public RosterFileProcessIntermediateStageInfo(RosterSheetProcessStage rosterFileProcessStage) {
         super(rosterFileProcessStage, RosterStageState.NOT_STARTED, 0);
         this.noOfRecords = -1;
         this.processThresholdInMillis = -1;

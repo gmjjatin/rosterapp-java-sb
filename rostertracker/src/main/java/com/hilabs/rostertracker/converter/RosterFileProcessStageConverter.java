@@ -1,6 +1,6 @@
 package com.hilabs.rostertracker.converter;
 
-import com.hilabs.roster.model.RosterFileProcessStage;
+import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.rostertracker.utils.Utils;
 
 import javax.persistence.AttributeConverter;
@@ -8,10 +8,10 @@ import javax.persistence.Converter;
 import java.util.stream.Stream;
 
 @Converter(autoApply = true)
-public class RosterFileProcessStageConverter implements AttributeConverter<RosterFileProcessStage, String> {
+public class RosterFileProcessStageConverter implements AttributeConverter<RosterSheetProcessStage, String> {
 
     @Override
-    public String convertToDatabaseColumn(RosterFileProcessStage category) {
+    public String convertToDatabaseColumn(RosterSheetProcessStage category) {
         if (category == null) {
             return null;
         }
@@ -19,11 +19,11 @@ public class RosterFileProcessStageConverter implements AttributeConverter<Roste
     }
 
     @Override
-    public RosterFileProcessStage convertToEntityAttribute(String stage) {
+    public RosterSheetProcessStage convertToEntityAttribute(String stage) {
         if (stage == null) {
             return null;
         }
-        return Stream.of(RosterFileProcessStage.values())
+        return Stream.of(RosterSheetProcessStage.values())
                 .filter(c -> Utils.compareAlphanumeric(c.displayName.toUpperCase(), stage.toUpperCase()))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);

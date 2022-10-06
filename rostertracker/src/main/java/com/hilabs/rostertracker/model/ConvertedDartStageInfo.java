@@ -1,12 +1,12 @@
 package com.hilabs.rostertracker.model;
 
-import com.hilabs.roster.model.RosterFileProcessStage;
+import com.hilabs.roster.model.RosterSheetProcessStage;
 import lombok.Data;
 
 @Data
 public class ConvertedDartStageInfo extends RosterFileProcessIntermediateStageInfo {
     public ConvertedDartStageInfo() {
-        super(RosterFileProcessStage.CONVERTED_DART);
+        super(RosterSheetProcessStage.CONVERTED_DART);
     }
 
     public ConvertedDartStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis) {

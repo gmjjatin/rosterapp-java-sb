@@ -1,12 +1,11 @@
 package com.hilabs.rostertracker.service;
 
 import com.hilabs.roster.entity.RAConvStatusStageMappingInfo;
-import com.hilabs.roster.model.RosterFileProcessStage;
-import com.hilabs.roster.model.RosterFileProcessStatus;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.hilabs.roster.model.RosterSheetProcessStage;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,8 +40,8 @@ public class RosterConvStatusStageMappingInfoService {
 //        return RAConvStatusStageMappingInfoList.stream().filter(p -> p.getStage() == rosterFileProcessStage).collect(Collectors.toList());
 //    }
 
-    public List<RosterFileProcessStage> getPrecedingRosterFileProcessStageList(RosterFileProcessStage rosterFileProcessStage) {
-        return Arrays.stream(RosterFileProcessStage.values()).filter(p -> p.rank <= rosterFileProcessStage.rank)
+    public List<RosterSheetProcessStage> getPrecedingRosterFileProcessStageList(RosterSheetProcessStage rosterFileProcessStage) {
+        return Arrays.stream(RosterSheetProcessStage.values()).filter(p -> p.rank <= rosterFileProcessStage.rank)
                 .collect(Collectors.toList());
     }
 
