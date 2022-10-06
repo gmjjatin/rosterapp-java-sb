@@ -2,6 +2,8 @@
 
 Information on APIs
 
+Access the application REST docs: `http://localhost:8998/swagger-ui/#/`
+
 ## Authentication
 
 ### Request
@@ -259,7 +261,6 @@ Information on APIs
     Date: Thu, 24 Feb 2011 12:36:32 GMT
     Status: 204 No Content
     Connection: close
-
 
 ## Try to delete same Thing again
 
