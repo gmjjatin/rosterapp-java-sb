@@ -1,8 +1,6 @@
 package com.hilabs.roster.util;
 
-import com.hilabs.roster.model.RosterSheetProcessStage.*;
 import com.hilabs.roster.model.RosterSheetProcessStage;
-import com.hilabs.roster.model.RosterStageState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
