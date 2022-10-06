@@ -1,5 +1,6 @@
 package com.hilabs.roster.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -7,7 +8,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "RA_RC_ROSTER_ISF_MAP")
 @Data
-public class RARCRosterISFMap {
+public class RARCRosterISFMap extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,4 +29,13 @@ public class RARCRosterISFMap {
     private Integer isActive;
 
     public RARCRosterISFMap() {}
+
+    public RARCRosterISFMap(final Long raSheetDetailsId, final String rosterColumnName, final String isfColumnName, final Integer columnMappingRank, final Integer isActive) {
+        super();
+        this.raSheetDetailsId = raSheetDetailsId;
+        this.rosterColumnName = rosterColumnName;
+        this.isfColumnName = isfColumnName;
+        this.columnMappingRank = columnMappingRank;
+        this.isActive = isActive;
+    }
 }

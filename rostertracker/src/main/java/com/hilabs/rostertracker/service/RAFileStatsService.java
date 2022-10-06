@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hilabs.roster.util.Constants.computeTimeTakenInMillis;
-import static com.hilabs.roster.util.Constants.getRosterStageState;
+import static com.hilabs.roster.util.RosterStageUtils.computeTimeTakenInMillis;
+import static com.hilabs.roster.util.RosterStageUtils.getRosterStageState;
 import static com.hilabs.rostertracker.utils.RosterUtils.computeFalloutRecordCount;
 
 @Service

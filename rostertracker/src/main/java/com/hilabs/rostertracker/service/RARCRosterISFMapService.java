@@ -24,18 +24,36 @@ public class RARCRosterISFMapService {
     }
 
     //TODO improve or refactor
-    public void updateSheetMapping(List<RARCRosterISFMap> rarcRosterISFMapList, Map<String, String> data) {
+    public void updateSheetMapping(List<RARCRosterISFMap> raRCRosterISFMapList, Map<String, String> data, Long raSheetDetailsId) {
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String columnName = entry.getKey();
-            String selIsColumnName = entry.getValue();
-            if (columnName == null || selIsColumnName == null) {
+            String selIsfColumnName = entry.getValue();
+            if (columnName == null || selIsfColumnName == null) {
                 continue;
             }
-            List<RARCRosterISFMap> filteredRARCRosterISFMapList = rarcRosterISFMapList.stream().filter(p -> p.getRosterColumnName()
-                            .equals(columnName)).collect(Collectors.toList());
-            List<> a = filteredRARCRosterISFMapList.stream().filter(p -> p.getColumnMappingRank() == 1
-                    || p.getRosterColumnName().equals(columnName)).collect(Collectors.toList());
-            rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap()
+            List<RARCRosterISFMap> colRARCRosterISFMapList = raRCRosterISFMapList.stream()
+                    .filter(p -> p.getRosterColumnName().equals(columnName)).collect(Collectors.toList());
+            List<RARCRosterISFMap> firstRankRARCRosterISFMapList = colRARCRosterISFMapList.stream().filter(p -> p.getColumnMappingRank() != null && p.getColumnMappingRank() == 1)
+                    .collect(Collectors.toList());
+            if (firstRankRARCRosterISFMapList.stream().anyMatch(p -> p.getIsfColumnName().equals(selIsfColumnName))) {
+                List<Long> otherFirstRankRARCRosterISFMapIds = firstRankRARCRosterISFMapList.stream()
+                        .filter(p -> !p.getIsfColumnName().equals(selIsfColumnName)).map(p -> p.getId())
+                        .distinct()
+                        .collect(Collectors.toList());
+                if (otherFirstRankRARCRosterISFMapIds.size() > 0) {
+                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0);
+                }
+            } else {
+                List<Long> otherFirstRankRARCRosterISFMapIds = firstRankRARCRosterISFMapList.stream()
+                        .map(p -> p.getId()).distinct().collect(Collectors.toList());
+                if (otherFirstRankRARCRosterISFMapIds.size() > 0) {
+                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0);
+                }
+                RARCRosterISFMap rarcRosterISFMap = new RARCRosterISFMap(raSheetDetailsId, columnName, selIsfColumnName,
+                        1, 1);
+                rarcRosterISFMapRepository.save(rarcRosterISFMap);
+            }
+
         }
     }
 }
