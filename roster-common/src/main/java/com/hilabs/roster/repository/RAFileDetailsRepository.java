@@ -52,11 +52,6 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
             "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' order by RA_RT_FILE_DETAILS.creat_dt desc", nativeQuery = true)
     List<RAFileDetails> findByLineOfBusiness(String lineOfBusiness, Date startDate, Date endDate);
 
-
-    //
-    sheetid,         col1 - 1,
-    sheet,       col1 - 2
-
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate" +
             "where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and market= :market " +
