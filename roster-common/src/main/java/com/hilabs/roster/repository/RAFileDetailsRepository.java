@@ -38,29 +38,8 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select * from RA_RT_FILE_DETAILS where id = :raFileDetailsId", nativeQuery = true)
     Optional<RAFileDetails> findByRAFileDetailsId(@Param("raFileDetailsId") Long raFileDetailsId);
 
-    //TODO
-    @Query(value = "select * from RA_RT_FILE_DETAILS where ra_provider_details_id in (:raProvDetailsIds) " +
-            "and creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
-    List<RAFileDetails> findRAFileDetailsListBetweenDatesFromRAProvDetailsIds(Date startDate, Date endDate, List<Long> raProvDetailsIds, @Param("limit") int limit, @Param("offset") int offset);
-
     @Query(value = "select * from RA_RT_FILE_DETAILS where UPPER(orgnl_file_nm) like '%' || UPPER(:searchStr) || '%'", nativeQuery = true)
     List<RAFileDetails> findByFileSearchStr(@Param("searchStr") String searchStr);
-
-    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
-            " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
-            "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate" +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' order by RA_RT_FILE_DETAILS.creat_dt desc", nativeQuery = true)
-    List<RAFileDetails> findByLineOfBusiness(String lineOfBusiness, Date startDate, Date endDate);
-
-    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB and " +
-            "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate" +
-            "where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and market= :market " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' order by RA_RT_FILE_DETAILS.creat_dt desc", nativeQuery = true)
-    List<RAFileDetails> findByMarketAndLineOfBusiness(String market, String lineOfBusiness, Date startDate, Date endDate);
-
-    //TODO demo handle limit and offset
-    @Query(value = "select * from RA_RT_FILE_DETAILS where market= :market and creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc", nativeQuery = true)
-    List<RAFileDetails> findByMarket(String market, Date startDate, Date endDate);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB where " +
             " RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id " +
@@ -70,9 +49,32 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select * from RA_RT_FILE_DETAILS where UPPER(market) like '%' || UPPER(:searchStr) || '%'", nativeQuery = true)
     List<RAFileDetails> findByMarketSearchStr(@Param("searchStr") String searchStr);
 
-    @Query(value = "select * from RA_RT_FILE_DETAILS where creat_dt >= :startDate and creat_dt < :endDate order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
-    List<RAFileDetails> findRAFileDetailsListBetweenDates(Date startDate, Date endDate, @Param("limit") int limit, @Param("offset") int offset);
-
     @Query(value = "select distinct(market) from RA_RT_FILE_DETAILS where status_cd in (:statusCodes)", nativeQuery = true)
     List<String> findAllMarkets(List<Integer> statusCodes);
+
+    @Query(value = "select * from RA_RT_FILE_DETAILS where creat_dt >= :startDate and creat_dt < :endDate and status_cd in (:statusCodes) " +
+            "order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findRAFileDetailsListBetweenDates(Date startDate, Date endDate, List<Integer> statusCodes, int limit, int offset);
+
+    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
+            " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
+            "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
+            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "order by RA_RT_FILE_DETAILS.creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findByLineOfBusiness(String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes,
+                                             int limit, int offset);
+
+    //TODO demo handle limit and offset
+    @Query(value = "select * from RA_RT_FILE_DETAILS where market= :market and creat_dt >= :startDate " +
+            "and creat_dt < :endDate and status_cd in (:statusCodes) order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findByMarket(String market, Date startDate, Date endDate, List<Integer> statusCodes, int limit, int offset);
+
+    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB " +
+            "where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and market= :market " +
+            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
+            "order by RA_RT_FILE_DETAILS.creat_dt desc" +
+            " offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findByMarketAndLineOfBusiness(String market, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes,
+                                                      int limit, int offset);
 }

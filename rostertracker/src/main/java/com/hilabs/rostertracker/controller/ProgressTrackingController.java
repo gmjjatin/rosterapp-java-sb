@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.hilabs.roster.util.RosterStageUtils.getCompletedStatusCodes;
-import static com.hilabs.roster.util.RosterStageUtils.getFailedStatusCodes;
+import static com.hilabs.roster.util.RosterStageUtils.getCompletedFileStatusCodes;
+import static com.hilabs.roster.util.RosterStageUtils.getFailedFileStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/progress-tracking")
@@ -72,7 +72,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getCompletedStatusCodes());
+                            startTime, endTime, limit, offset, getCompletedFileStatusCodes());
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(raFileAndStatsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -99,7 +99,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getCompletedStatusCodes());
+                            startTime, endTime, limit, offset, getCompletedFileStatusCodes());
             Map<Long, RAFileDetails> raFileDetailsMap = raFileDetailsListAndSheetList.getRAFileDetailsMap();
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
             for (RASheetDetails raSheetDetails : raFileDetailsListAndSheetList.getRaSheetDetailsList()) {
@@ -174,7 +174,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getFailedStatusCodes());
+                            startTime, endTime, limit, offset, getFailedFileStatusCodes());
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();

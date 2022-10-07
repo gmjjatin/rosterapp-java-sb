@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.hilabs.roster.util.RosterStageUtils.getCompletedStatusCodes;
+import static com.hilabs.roster.util.RosterStageUtils.getCompletedFileStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/config-ui")
@@ -54,7 +54,7 @@ public class ConfigUIController {
             //TODO
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getCompletedStatusCodes());
+                            startTime, endTime, limit, offset, getCompletedFileStatusCodes());
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
         } catch (Exception ex) {

@@ -7,7 +7,8 @@ import com.hilabs.roster.model.RosterStageState;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.hilabs.roster.util.RAStatusEntity.statusEntities;
+import static com.hilabs.roster.util.RAStatusEntity.fileStatusEntities;
+import static com.hilabs.roster.util.RAStatusEntity.sheetStatusEntities;
 
 public class RosterStageUtils {
     //TODO complete
@@ -24,12 +25,21 @@ public class RosterStageUtils {
         throw new RuntimeException("Yet to be implemented");
     }
 
-    public static List<Integer> getFailedStatusCodes() {
-        return statusEntities.stream().filter(RAStatusEntity::isFailure).map(RAStatusEntity::getCode).collect(Collectors.toList());
+    public static List<Integer> getFailedSheetStatusCodes() {
+        return sheetStatusEntities.stream().filter(RAStatusEntity::isFailure).map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 
-    public static List<Integer> getCompletedStatusCodes() {
-        return statusEntities.stream().filter(p -> p.isCompleted() && !p.isFailure())
+    public static List<Integer> getCompletedSheetStatusCodes() {
+        return sheetStatusEntities.stream().filter(p -> p.isCompleted() && !p.isFailure())
+                .map(RAStatusEntity::getCode).collect(Collectors.toList());
+    }
+
+    public static List<Integer> getFailedFileStatusCodes() {
+        return fileStatusEntities.stream().filter(RAStatusEntity::isFailure).map(RAStatusEntity::getCode).collect(Collectors.toList());
+    }
+
+    public static List<Integer> getCompletedFileStatusCodes() {
+        return fileStatusEntities.stream().filter(p -> p.isCompleted() && !p.isFailure())
                 .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 }
