@@ -24,12 +24,22 @@ public class RAFileDetailsService {
 
     @Autowired
     RAFileDetailsRepository raFileDetailsRepository;
+    public ConcurrentLruCache<String, List<RAFileDetails>> fileSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
+        return raFileDetailsRepository.findByFileSearchStr(p);
+    });
+    public ConcurrentLruCache<String, List<RAFileDetails>> marketSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
+        return raFileDetailsRepository.findByMarketSearchStr(p);
+    });
+    public ConcurrentLruCache<String, List<RAFileDetails>> lineOfBusinessSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
+        return raFileDetailsRepository.findByLineOfBusinessSearchStr(p);
+    });
 
     @Autowired
     RASheetDetailsRepository raSheetDetailsRepository;
-
     @Autowired
     RAFileDetailsLobRepository raFileDetailsLobRepository;
+    List<String> allMarkets = null;
+    private List<String> allLineOfBusiness = null;
 
     public RAFileDetailsListAndSheetList getRosterSourceListAndFilesList(Long raFileDetailsId, String market, String lineOfBusiness,
                                                                          long startTime, long endTime, int limit, int offset, List<Integer> statusCodes) {
@@ -77,10 +87,6 @@ public class RAFileDetailsService {
         return raFileDetailsRepository.findById(rosterFileId);
     }
 
-
-    public ConcurrentLruCache<String, List<RAFileDetails>> fileSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
-        return raFileDetailsRepository.findByFileSearchStr(p);
-    });
     public List<RAFileDetails> findByFileSearchStr(String providerSearchStr) {
         try {
             if (fileSearchStrCache.contains(providerSearchStr)) {
@@ -95,6 +101,11 @@ public class RAFileDetailsService {
         }
     }
 
+    public List<RASheetDetails> getRAFileDetailsList(Long fileId) {
+        log.debug("Fetch sheet data for fileId:{}", fileId);
+        return raSheetDetailsRepository.getSheetDetails(fileId);
+    }
+
     //TODO
     @Async
     public void populateFileSearchStrCache(String searchStr) {
@@ -106,9 +117,6 @@ public class RAFileDetailsService {
         }
     }
 
-    public ConcurrentLruCache<String, List<RAFileDetails>> marketSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
-        return raFileDetailsRepository.findByMarketSearchStr(p);
-    });
     public List<RAFileDetails> findByMarketSearchStr(String searchStr) {
         try {
             if (marketSearchStrCache.contains(searchStr)) {
@@ -131,9 +139,6 @@ public class RAFileDetailsService {
         }
     }
 
-    public ConcurrentLruCache<String, List<RAFileDetails>> lineOfBusinessSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
-        return raFileDetailsRepository.findByLineOfBusinessSearchStr(p);
-    });
     public List<RAFileDetails> findByLineOfBusinessSearchStr(String searchStr) {
         try {
             if (lineOfBusinessSearchStrCache.contains(searchStr)) {
@@ -158,7 +163,7 @@ public class RAFileDetailsService {
         return raFileDetailsRepository.findByMarket(market, startDate, endDate, statusCodes, limit, offset);
     }
 
-    public List<RAFileDetails> getRosterSourceListFromLineOfBusiness(String lineOfBusiness,Date startDate, Date endDate,
+    public List<RAFileDetails> getRosterSourceListFromLineOfBusiness(String lineOfBusiness, Date startDate, Date endDate,
                                                                      List<Integer> statusCodes, int limit, int offset) {
         return raFileDetailsRepository.findByLineOfBusiness(lineOfBusiness, startDate, endDate, statusCodes, limit, offset);
     }
@@ -172,7 +177,6 @@ public class RAFileDetailsService {
         }
     }
 
-    List<String> allMarkets = null;
     public List<String> findAllMarkets(List<Integer> statusCodes) {
         if (allMarkets == null) {
             allMarkets = raFileDetailsRepository.findAllMarkets(statusCodes);
@@ -180,7 +184,6 @@ public class RAFileDetailsService {
         return allMarkets;
     }
 
-    private List<String> allLineOfBusiness = null;
     public List<String> findAllLineOfBusiness() {
         if (allLineOfBusiness == null) {
             allLineOfBusiness = raFileDetailsLobRepository.findAllLineOfBusinesses();

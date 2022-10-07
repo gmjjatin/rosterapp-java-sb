@@ -1,11 +1,12 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RARCRosterISFMap;
-import com.hilabs.rostertracker.controller.model.ConfigUiFileData;
-import com.hilabs.rostertracker.controller.model.UpdateColumnMappingRequest;
-import com.hilabs.rostertracker.controller.model.UpdateColumnMappingSheetData;
+import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
+import com.hilabs.rostertracker.model.ConfigUiFileData;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
+import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
+import com.hilabs.rostertracker.model.UpdateColumnMappingSheetData;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.service.RAFileStatsService;
 import com.hilabs.rostertracker.service.RARCRosterISFMapService;
@@ -28,13 +29,11 @@ import static com.hilabs.roster.util.RosterStageUtils.getCompletedFileStatusCode
 @Log4j2
 public class ConfigUIController {
     @Autowired
-    private RARCRosterISFMapService raRcRosterISFMapService;
-
-    @Autowired
     RAFileDetailsService raFileDetailsService;
-
     @Autowired
     RAFileStatsService raFileStatsService;
+    @Autowired
+    private RARCRosterISFMapService raRcRosterISFMapService;
 
     @GetMapping("/valid-file-list")
     public ResponseEntity<List<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "1") Integer pageNo,
@@ -94,5 +93,11 @@ public class ConfigUIController {
             log.error("Error in updateColumnMapping updateColumnMappingRequest {}", updateColumnMappingRequest);
             throw ex;
         }
+    }
+
+    @GetMapping("/sheet-details")
+    public ResponseEntity<List<RASheetDetails>> getSheetDetails(Long fileId) {
+        return ResponseEntity
+                .ok(raFileDetailsService.getRAFileDetailsList(fileId));
     }
 }

@@ -1,4 +1,4 @@
-package com.hilabs.rostertracker.controller.model;
+package com.hilabs.rostertracker.model;
 
 import lombok.Data;
 

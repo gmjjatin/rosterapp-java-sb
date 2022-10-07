@@ -18,7 +18,7 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "status_cd")
     private Integer statusCode;
 
-    @Column(name = "tab_nm")
+    @Column(name = "name")
     private String tabName;
 
     @Column(name = "type")
@@ -60,7 +60,8 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "out_file_nm")
     private String outFileName;
 
-    public RASheetDetails() {}
+    public RASheetDetails() {
+    }
 
     @Override
     public String toString() {
