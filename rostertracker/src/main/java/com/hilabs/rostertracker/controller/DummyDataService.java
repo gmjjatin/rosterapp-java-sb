@@ -34,8 +34,7 @@ public class DummyDataService {
     }
 
     public List<ConfigUiFileData> getConfigUIValidFileList() {
-        return Arrays.asList(
-                new ConfigUiFileData(1L, "Sample File", System.currentTimeMillis(),
+        return Arrays.asList(new ConfigUiFileData(1L, "Sample File", System.currentTimeMillis(),
                         "Auto Mapped", RosterSheetProcessStage.AUTO_MAPPED, true),
                 new ConfigUiFileData(2L, "Sample File 2",
                         System.currentTimeMillis(), "Dart File Generated", RosterSheetProcessStage.CONVERTED_DART, false));

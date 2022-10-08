@@ -1,8 +1,9 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RARCRosterISFMap;
-import com.hilabs.roster.model.RosterSheetProcessStage;
-import com.hilabs.rostertracker.dto.*;
+import com.hilabs.rostertracker.dto.RAFileAndStats;
+import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
+import com.hilabs.rostertracker.dto.SheetDetails;
 import com.hilabs.rostertracker.model.ConfigUiFileData;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
@@ -18,8 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +66,20 @@ public class ConfigUIController {
         }
     }
 
-    @PostMapping("/save-colum-mapping")
+    @GetMapping("/sheet-details")
+    public ResponseEntity<List<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
+        List<SheetDetails> sheetDetailsList = raFileDetailsService.getRASheetDetailsList(raFileDetailsId);
+        //TODO demo
+        return ResponseEntity.ok(dummyDataService.getSheetDetails(raFileDetailsId));
+    }
+
+    @GetMapping("/sheet-column-mapping")
+    public ResponseEntity<RosterSheetColumnMappingInfo> getSheetColumnMapping(@RequestParam(defaultValue = "raSheetDetailsId") Long raSheetDetailsId) {
+        //TODO fix the API
+        return ResponseEntity.ok(dummyDataService.getSheetColumnMapping(raSheetDetailsId));
+    }
+
+    @PostMapping("/save-column-mapping")
     public ResponseEntity<String> saveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
         try {
             List<UpdateColumnMappingSheetData> sheetDataList = updateColumnMappingRequest.getSheetDataList();
@@ -96,18 +108,5 @@ public class ConfigUIController {
             log.error("Error in updateColumnMapping updateColumnMappingRequest {}", updateColumnMappingRequest);
             throw ex;
         }
-    }
-
-    @GetMapping("/sheet-details")
-    public ResponseEntity<List<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
-        List<SheetDetails> sheetDetailsList = raFileDetailsService.getRASheetDetailsList(raFileDetailsId);
-        //TODO demo
-        return ResponseEntity.ok(dummyDataService.getSheetDetails(raFileDetailsId));
-    }
-
-    @GetMapping("/sheet-column-mapping")
-    public ResponseEntity<RosterSheetColumnMappingInfo> getSheetColumnMapping(@RequestParam(defaultValue = "raSheetDetailsId") Long raSheetDetailsId) {
-        //TODO fix the API
-        return ResponseEntity.ok(dummyDataService.getSheetColumnMapping(raSheetDetailsId));
     }
 }
