@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.*;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 import static com.hilabs.roster.util.Constants.*;
-//import static com.hilabs.roster.util.Constants.*;
 
 @Slf4j
 //TODO what if same file is placed again???

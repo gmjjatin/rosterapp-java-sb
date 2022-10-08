@@ -15,4 +15,10 @@ public class AppPropertiesConfig {
 
     @Value("${raArchiveFolder}")
     private String archiveFolder;
+
+    @Value("${pyScriptsFolder}")
+    private String pyScriptsFolder;
+
+    @Value("${preProcessPythonFilePath}")
+    private String preProcessPythonFilePath;
 }

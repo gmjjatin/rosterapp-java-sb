@@ -77,4 +77,11 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
             " offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findByMarketAndLineOfBusiness(String market, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes,
                                                       int limit, int offset);
+
+    @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) " +
+            "offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, int limit, int offset);
+
+    @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode where id = :raFileDetailsId", nativeQuery = true)
+    void updateRAFileDetailsStatus(Long raFileDetailsId, Integer statusCode);
 }
