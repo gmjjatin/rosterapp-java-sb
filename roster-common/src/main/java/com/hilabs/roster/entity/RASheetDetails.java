@@ -60,7 +60,8 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "out_file_nm")
     private String outFileName;
 
-    public RASheetDetails() {}
+    public RASheetDetails() {
+    }
 
     @Override
     public String toString() {
