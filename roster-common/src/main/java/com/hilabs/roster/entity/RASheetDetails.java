@@ -18,7 +18,7 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "status_cd")
     private Integer statusCode;
 
-    @Column(name = "name")
+    @Column(name = "tab_nm")
     private String tabName;
 
     @Column(name = "type")
