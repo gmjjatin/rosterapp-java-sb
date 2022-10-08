@@ -96,8 +96,7 @@ public class ConfigUIController {
     }
 
     @GetMapping("/sheet-details")
-    public ResponseEntity<List<RASheetDetails>> getSheetDetails(Long fileId) {
-        return ResponseEntity
-                .ok(raFileDetailsService.getRAFileDetailsList(fileId));
+    public ResponseEntity<List<RASheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
+        return ResponseEntity.ok(raFileDetailsService.getRAFileDetailsList(raFileDetailsId));
     }
 }

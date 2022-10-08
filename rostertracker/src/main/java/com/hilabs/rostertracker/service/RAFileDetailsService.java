@@ -101,9 +101,9 @@ public class RAFileDetailsService {
         }
     }
 
-    public List<RASheetDetails> getRAFileDetailsList(Long fileId) {
-        log.debug("Fetch sheet data for fileId:{}", fileId);
-        return raSheetDetailsRepository.getSheetDetails(fileId);
+    public List<RASheetDetails> getRAFileDetailsList(Long raFileDetailsId) {
+        log.debug("Fetch sheet data for raFileDetailsId : {}", raFileDetailsId);
+        return raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
     }
 
     //TODO

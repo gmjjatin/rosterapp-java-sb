@@ -10,6 +10,6 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
     @Query(value = "select * from RA_RT_SHEET_DETAILS where ra_file_details_id in (:raFileDetailsIds)", nativeQuery = true)
     List<RASheetDetails> findRASheetDetailsListForFileIdsList(List<Long> raFileDetailsIds);
 
-    @Query(value = "select * from RA_RT_SHEET_DETAILS where RA_FILE_DETAILS_ID = :fileId", nativeQuery = true)
-    List<RASheetDetails> getSheetDetails(Long fileId);
+    @Query(value = "select * from RA_RT_SHEET_DETAILS where RA_FILE_DETAILS_ID = :raFileDetailsId", nativeQuery = true)
+    List<RASheetDetails> getSheetDetailsForAFileId(Long raFileDetailsId);
 }
