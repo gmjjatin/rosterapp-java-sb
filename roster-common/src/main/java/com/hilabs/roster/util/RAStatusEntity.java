@@ -1,8 +1,6 @@
 package com.hilabs.roster.util;
 
-import com.hilabs.roster.model.RosterSheetProcessStage.*;
 import com.hilabs.roster.model.RosterSheetProcessStage;
-import com.hilabs.roster.model.RosterStageState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -20,7 +18,7 @@ public class RAStatusEntity {
     private boolean isCompleted;
     private boolean isFailure;
 
-    public static List<RAStatusEntity> statusEntities = Arrays.asList(
+    public static List<RAStatusEntity> sheetStatusEntities = Arrays.asList(
                 new RAStatusEntity(111, PRE_PROCESSING,"Roster Sheet Preprocessing in Progress",
                         false, false),
                 new RAStatusEntity(113, PRE_PROCESSING, "Roster Sheet Preprocessing Completed", true, false),
@@ -65,5 +63,45 @@ public class RAStatusEntity {
                 new RAStatusEntity(181,SPS_LOAD, "Roster Sheet SPS load in Progress", false, false),
                 new RAStatusEntity(183,SPS_LOAD, "Roster Sheet SPS load Completed", true, false),
                 new RAStatusEntity(185,SPS_LOAD, "Roster Sheet SPS load Failed", true, true)
+        );
+
+    public static List<RAStatusEntity> fileStatusEntities = Arrays.asList(
+                new RAStatusEntity(13, ROSTER_RECEIVED, "Roster Ingestion in Progress", false, false),
+                new RAStatusEntity(15, ROSTER_RECEIVED, "Roster Initial Validation Failed", true, true),
+                new RAStatusEntity(17, ROSTER_RECEIVED,  "Roster Ingestion Failed", true, true),
+                new RAStatusEntity(19, ROSTER_RECEIVED, "Roster Received", true, false),
+                new RAStatusEntity(21, PRE_PROCESSING,"Roster Preprocessing in Progress", false, false),
+                new RAStatusEntity(23 ,PRE_PROCESSING, "Roster Preprocessing Completed", false, false),
+                new RAStatusEntity(25 , PRE_PROCESSING,"Roster Preprocessing Failed", false, false),
+                new RAStatusEntity(27 ,PRE_PROCESSING, "Roster Preprocessing Failed Incompatible File", false, false),
+                new RAStatusEntity(31 ,AUTO_MAPPED, "Roster AI Mapping in Progress", false, false),
+                new RAStatusEntity(33 , AUTO_MAPPED,"Roster AI Mapping Completed", false, false),
+                new RAStatusEntity(35 , AUTO_MAPPED,"Roster AI Mapping Failed System Error", false, false),
+                new RAStatusEntity(37 , AUTO_MAPPED,"Roster AI Mapping Failed Business Error", false, false),
+                new RAStatusEntity(39 ,AUTO_MAPPED, "Roster AI Mapping Manual review in Progress", false, false),
+                new RAStatusEntity(41 , AUTO_MAPPED,"Roster AI Mapping Manual review Failed", false, false),
+                new RAStatusEntity(43 , AUTO_MAPPED,"Roster AI Mapping Manual review completed", false, false),
+                new RAStatusEntity(45 , AUTO_MAPPED,"Roster AI Mapping Manually updated", false, false),
+                new RAStatusEntity(47 , AUTO_MAPPED,"Roster AI Mapping Post review validation in Progress", false, false),
+                new RAStatusEntity(49 ,AUTO_MAPPED, "Roster AI Mapping Post review validation Completed", false, false),
+                new RAStatusEntity(51 ,AUTO_MAPPED, "Roster AI Mapping Post review validation Failed", false, false),
+                new RAStatusEntity(61 , ISF,"Roster ISF generation in Progress", false, false),
+                new RAStatusEntity(63 , ISF,"Roster ISF generation Completed", false, false),
+                new RAStatusEntity(65 , ISF,"Roster ISF generation Failed", false, false),
+                new RAStatusEntity(67 , ISF,"Roster ISF validation in Progress", false, false),
+                new RAStatusEntity(69 , ISF,"Roster ISF validation Failed", false, false),
+                new RAStatusEntity(68 , ISF,"Roster ISF validation Completed", false, false),
+                new RAStatusEntity(71 , CONVERTED_DART,"Roster DART generation in Progress", false, false),
+                new RAStatusEntity(73 , CONVERTED_DART,"Roster DART generation Completed", false, false),
+                new RAStatusEntity(75 ,CONVERTED_DART, "Roster DART generation Failed", false, false),
+                new RAStatusEntity(77 ,CONVERTED_DART, "Roster DART validation in Progress", false, false),
+                new RAStatusEntity(79 ,CONVERTED_DART, "Roster DART validation Failed", false, false),
+                new RAStatusEntity(81 ,CONVERTED_DART, "Roster DART validation Completed", false, false),
+                new RAStatusEntity(91 ,CONVERTED_DART, "Roster DART UI validation in Progress", false, false),
+                new RAStatusEntity(93 , CONVERTED_DART, "Roster DART UI validation Completed", false, false),
+                new RAStatusEntity(95 ,CONVERTED_DART, "Roster DART UI validation Failed", false, false),
+                new RAStatusEntity(101 , SPS_LOAD,"Roster SPS load in Progress", false, false),
+                new RAStatusEntity(103 , SPS_LOAD,"Roster SPS load Completed", false, false),
+                new RAStatusEntity(105 , SPS_LOAD,"Roster SPS load Failed", false, false)
         );
 }

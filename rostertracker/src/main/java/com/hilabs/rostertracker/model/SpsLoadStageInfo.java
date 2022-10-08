@@ -1,12 +1,12 @@
 package com.hilabs.rostertracker.model;
 
-import com.hilabs.roster.model.RosterFileProcessStage;
+import com.hilabs.roster.model.RosterSheetProcessStage;
 import lombok.Data;
 
 @Data
 public class SpsLoadStageInfo extends RosterFileProcessIntermediateStageInfo {
     public SpsLoadStageInfo() {
-        super(RosterFileProcessStage.SPS_LOAD);
+        super(RosterSheetProcessStage.SPS_LOAD);
     }
 
     public SpsLoadStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis) {

@@ -33,13 +33,13 @@ public class RAFileDetailsService {
 
     public RAFileDetailsListAndSheetList getRosterSourceListAndFilesList(Long raFileDetailsId, String market, String lineOfBusiness,
                                                                          long startTime, long endTime, int limit, int offset, List<Integer> statusCodes) {
-        List<RAFileDetails> raFileDetailsList = getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness, startTime, endTime, limit, offset, statusCodes);
+        List<RAFileDetails> raFileDetailsList = getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset);
         List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(RAFileDetails::getId).collect(Collectors.toList()));
         return new RAFileDetailsListAndSheetList(raFileDetailsList, raSheetDetailsList);
     }
 
     public List<RAFileDetails> getRAFileDetailsList(Long raFileDetailsId, String market, String lineOfBusiness, long startTime, long endTime,
-                                                   int limit, int offset, List<Integer> statusCodes) {
+                                                    List<Integer> statusCodes, int limit, int offset) {
         if (raFileDetailsId != null && raFileDetailsId > 0) {
             Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository.findById(raFileDetailsId);
             if (optionalRAFileDetails.isPresent()) {
@@ -48,27 +48,28 @@ public class RAFileDetailsService {
         }
         Date startDate = new Date(startTime);
         Date endDate = new Date(endTime);
-        //TODO demo fix limit and offset
-        List<RAFileDetails> raFileDetailsList = getRAFileDetailsList(market, lineOfBusiness, startDate, endDate, limit, offset);
-        List<RAFileDetails> resRaFileDetailsList = new ArrayList<>();
-        for (RAFileDetails raFileDetails : raFileDetailsList) {
-            if (raFileDetails.getStatusCode() != null && statusCodes.stream().anyMatch(ss -> raFileDetails.getStatusCode().equals(ss))) {
-                resRaFileDetailsList.add(raFileDetails);
-            }
-        }
-        return resRaFileDetailsList;
+        return getRAFileDetailsList(market, lineOfBusiness, startDate, endDate, statusCodes, limit, offset);
+//        List<RAFileDetails> resRaFileDetailsList = new ArrayList<>();
+//        for (RAFileDetails raFileDetails : raFileDetailsList) {
+//            if (raFileDetails.getStatusCode() != null && statusCodes.stream().anyMatch(ss -> raFileDetails.getStatusCode().equals(ss))) {
+//                resRaFileDetailsList.add(raFileDetails);
+//            }
+//        }
+//        return resRaFileDetailsList;
     }
 
-    public List<RAFileDetails> getRAFileDetailsList(String market, String lineOfBusiness, Date startDate, Date endDate, int limit, int offset) {
+    public List<RAFileDetails> getRAFileDetailsList(String market, String lineOfBusiness, Date startDate, Date endDate,
+                                                    List<Integer> statusCodes, int limit, int offset) {
         //TODO handle limit and offset
         if ((market != null && !market.isEmpty()) && (lineOfBusiness != null && !lineOfBusiness.isEmpty())) {
-            return getRosterSourceListFromMarketAndState(market, lineOfBusiness, startDate, endDate);
+            return getRosterSourceListFromMarketAndState(market, lineOfBusiness, startDate, endDate, statusCodes,
+                    limit, offset);
         } else if (market != null && !market.isEmpty()) {
-            return getRosterSourceListFromMarket(market, startDate, endDate);
+            return getRosterSourceListFromMarket(market, startDate, endDate, statusCodes, limit, offset);
         } else if (lineOfBusiness != null && !lineOfBusiness.isEmpty()) {
-            return getRosterSourceListFromLineOfBusiness(lineOfBusiness, startDate, endDate);
+            return getRosterSourceListFromLineOfBusiness(lineOfBusiness, startDate, endDate, statusCodes, limit, offset);
         } else {
-            return raFileDetailsRepository.findRAFileDetailsListBetweenDates(startDate, endDate, limit, offset);
+            return raFileDetailsRepository.findRAFileDetailsListBetweenDates(startDate, endDate, statusCodes, limit, offset);
         }
     }
 
@@ -80,7 +81,7 @@ public class RAFileDetailsService {
     public ConcurrentLruCache<String, List<RAFileDetails>> fileSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
         return raFileDetailsRepository.findByFileSearchStr(p);
     });
-    public List<RAFileDetails> findByProviderSearchStr(String providerSearchStr) {
+    public List<RAFileDetails> findByFileSearchStr(String providerSearchStr) {
         try {
             if (fileSearchStrCache.contains(providerSearchStr)) {
                 return fileSearchStrCache.get(providerSearchStr);
@@ -146,16 +147,20 @@ public class RAFileDetailsService {
         }
     }
 
-    public List<RAFileDetails> getRosterSourceListFromMarketAndState(String market, String lineOfBusiness, Date startDate, Date endDate) {
-        return raFileDetailsRepository.findByMarketAndLineOfBusiness(market, lineOfBusiness, startDate, endDate);
+    public List<RAFileDetails> getRosterSourceListFromMarketAndState(String market, String lineOfBusiness, Date startDate,
+                                                                     Date endDate, List<Integer> statusCodes,
+                                                                     int limit, int offset) {
+        return raFileDetailsRepository.findByMarketAndLineOfBusiness(market, lineOfBusiness, startDate, endDate, statusCodes, limit, offset);
     }
 
-    public List<RAFileDetails> getRosterSourceListFromMarket(String market, Date startDate, Date endDate) {
-        return raFileDetailsRepository.findByMarket(market, startDate, endDate);
+    public List<RAFileDetails> getRosterSourceListFromMarket(String market, Date startDate, Date endDate,
+                                                             List<Integer> statusCodes, int limit, int offset) {
+        return raFileDetailsRepository.findByMarket(market, startDate, endDate, statusCodes, limit, offset);
     }
 
-    public List<RAFileDetails> getRosterSourceListFromLineOfBusiness(String lineOfBusiness,Date startDate, Date endDate) {
-        return raFileDetailsRepository.findByLineOfBusiness(lineOfBusiness, startDate, endDate);
+    public List<RAFileDetails> getRosterSourceListFromLineOfBusiness(String lineOfBusiness,Date startDate, Date endDate,
+                                                                     List<Integer> statusCodes, int limit, int offset) {
+        return raFileDetailsRepository.findByLineOfBusiness(lineOfBusiness, startDate, endDate, statusCodes, limit, offset);
     }
 
     @Async
@@ -183,7 +188,7 @@ public class RAFileDetailsService {
         return allLineOfBusiness;
     }
 
-    public List<RAFileDetails> getRAProvListFromSearchStr(String searchStr) {
+    public List<RAFileDetails> getRAFileDetailsListFromSearchStr(String searchStr) {
         if (searchStr == null || searchStr.isEmpty()) {
 //            return findTopEntriesOrderBySourceName(DEFAULT_NO_OF_ENTRIES);
             return new ArrayList<>();

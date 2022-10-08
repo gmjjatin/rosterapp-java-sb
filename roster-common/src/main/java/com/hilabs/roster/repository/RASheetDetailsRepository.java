@@ -12,5 +12,4 @@ import java.util.List;
 public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, Long> {
     @Query(value = "select * from RA_RT_SHEET_DETAILS where ra_file_details_id in (:raFileDetailsIds)", nativeQuery = true)
     List<RASheetDetails> findRASheetDetailsListForFileIdsList(List<Long> raFileDetailsIds);
-
 }

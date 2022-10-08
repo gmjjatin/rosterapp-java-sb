@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.hilabs.rostertracker.service.RAStatusService.getStatusCodes;
+import static com.hilabs.roster.util.RosterStageUtils.*;
 
 @RestController
 @RequestMapping("/api/v1/ra-provider")
@@ -27,7 +27,7 @@ public class RAProviderController {
     RAFileDetailsService raFileDetailsService;
 
     public ConcurrentLruCache<String, List<RAFileDetails>> raProviderListFromSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
-        return raFileDetailsService.getRAProvListFromSearchStr(p);
+        return raFileDetailsService.getRAFileDetailsListFromSearchStr(p);
     });
 
     @GetMapping("/file/search")
@@ -36,9 +36,9 @@ public class RAProviderController {
                                                                            @RequestParam(defaultValue = "true", name = "isCompatible") String isCompatibleStr) {
         try {
             final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.equalsIgnoreCase("false");
-            List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByProviderSearchStr(searchStr);
+            List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr);
+            List<Integer> statusCodes = isCompatible ? getCompletedFileStatusCodes() : getFailedFileStatusCodes();
             raFileDetailsList = raFileDetailsList.stream().filter(p -> {
-                List<Integer> statusCodes = getStatusCodes(isCompatible);
                 if (p.getStatusCode() == null) {
                     return false;
                 }
@@ -56,7 +56,8 @@ public class RAProviderController {
     public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "true", name = "isCompatible") String isCompatibleStr) {
         try {
             final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.toLowerCase().equals("false");
-            List<String> markets = raFileDetailsService.findAllMarkets(getStatusCodes(isCompatible));
+            List<Integer> statusCodes = isCompatible ? getCompletedFileStatusCodes() : getFailedFileStatusCodes();
+            List<String> markets = raFileDetailsService.findAllMarkets(statusCodes);
             return new ResponseEntity<>(markets, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getAllMarkets ex {}", ex.getMessage());

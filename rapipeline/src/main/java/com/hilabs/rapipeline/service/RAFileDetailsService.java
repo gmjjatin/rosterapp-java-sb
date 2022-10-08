@@ -4,9 +4,11 @@ import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -38,5 +40,13 @@ public class RAFileDetailsService {
 
     public Optional<RAFileDetails> findByRAFileDetailsId(Long raFileDetailsId) {
         return raFileDetailsRepository.findByRAFileDetailsId(raFileDetailsId);
+    }
+
+    public List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, int limit, int offset) {
+        return raFileDetailsRepository.findFileDetailsByStatusCodes(statusCodes, limit, offset);
+    }
+
+    public void updateRAFileDetailsStatus(Long raFileDetailsId, Integer status) {
+        raFileDetailsRepository.updateRAFileDetailsStatus(raFileDetailsId, status);
     }
 }
