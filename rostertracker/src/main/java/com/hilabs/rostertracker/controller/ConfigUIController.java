@@ -1,8 +1,8 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RARCRosterISFMap;
-import com.hilabs.roster.entity.RASheetDetails;
-import com.hilabs.rostertracker.dto.RAFileAndStats;
+import com.hilabs.roster.model.RosterSheetProcessStage;
+import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.ConfigUiFileData;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,9 @@ public class ConfigUIController {
     RAFileStatsService raFileStatsService;
     @Autowired
     private RARCRosterISFMapService raRcRosterISFMapService;
+
+    @Autowired
+    private DummyDataService dummyDataService;
 
     @GetMapping("/valid-file-list")
     public ResponseEntity<List<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "1") Integer pageNo,
@@ -55,7 +59,7 @@ public class ConfigUIController {
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
                             startTime, endTime, limit, offset, getCompletedFileStatusCodes());
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
-            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+            return new ResponseEntity<>(dummyDataService.getConfigUIValidFileList(), HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
@@ -63,10 +67,9 @@ public class ConfigUIController {
         }
     }
 
-    @PostMapping("/saveColumnMapping")
+    @PostMapping("/save-colum-mapping")
     public ResponseEntity<String> saveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
         try {
-            Long raFileDetailsId = updateColumnMappingRequest.getRaFileDetailsId();
             List<UpdateColumnMappingSheetData> sheetDataList = updateColumnMappingRequest.getSheetDataList();
             for (UpdateColumnMappingSheetData sheetData : sheetDataList) {
                 Long raSheetDetailsId = sheetData.getRaSheetDetailsId();
@@ -84,7 +87,7 @@ public class ConfigUIController {
         }
     }
 
-    @PostMapping("/approveColumnMapping")
+    @PostMapping("/approve-column-mapping")
     public ResponseEntity<String> approveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
         try {
             //TODO yet to be implemented
@@ -96,7 +99,15 @@ public class ConfigUIController {
     }
 
     @GetMapping("/sheet-details")
-    public ResponseEntity<List<RASheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
-        return ResponseEntity.ok(raFileDetailsService.getRAFileDetailsList(raFileDetailsId));
+    public ResponseEntity<List<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
+        List<SheetDetails> sheetDetailsList = raFileDetailsService.getRASheetDetailsList(raFileDetailsId);
+        //TODO demo
+        return ResponseEntity.ok(dummyDataService.getSheetDetails(raFileDetailsId));
+    }
+
+    @GetMapping("/sheet-column-mapping")
+    public ResponseEntity<RosterSheetColumnMappingInfo> getSheetColumnMapping(@RequestParam(defaultValue = "raSheetDetailsId") Long raSheetDetailsId) {
+        //TODO fix the API
+        return ResponseEntity.ok(dummyDataService.getSheetColumnMapping(raSheetDetailsId));
     }
 }
