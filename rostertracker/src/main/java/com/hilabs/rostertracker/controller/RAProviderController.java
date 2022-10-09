@@ -17,7 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.hilabs.roster.util.RosterStageUtils.*;
+import static com.hilabs.roster.util.RosterStageUtils.getFailedFileStatusCodes;
+import static com.hilabs.roster.util.RosterStageUtils.getNonFailedFileStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/ra-provider")
@@ -37,7 +38,7 @@ public class RAProviderController {
         try {
             final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.equalsIgnoreCase("false");
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr);
-            List<Integer> statusCodes = isCompatible ? getCompletedFileStatusCodes() : getFailedFileStatusCodes();
+            List<Integer> statusCodes = isCompatible ? getNonFailedFileStatusCodes() : getFailedFileStatusCodes();
             raFileDetailsList = raFileDetailsList.stream().filter(p -> {
                 if (p.getStatusCode() == null) {
                     return false;
@@ -56,7 +57,7 @@ public class RAProviderController {
     public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "true", name = "isCompatible") String isCompatibleStr) {
         try {
             final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.toLowerCase().equals("false");
-            List<Integer> statusCodes = isCompatible ? getCompletedFileStatusCodes() : getFailedFileStatusCodes();
+            List<Integer> statusCodes = isCompatible ? getNonFailedFileStatusCodes() : getFailedFileStatusCodes();
             List<String> markets = raFileDetailsService.findAllMarkets(statusCodes);
             return new ResponseEntity<>(markets, HttpStatus.OK);
         } catch (Exception ex) {

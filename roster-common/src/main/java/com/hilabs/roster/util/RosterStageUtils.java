@@ -42,4 +42,9 @@ public class RosterStageUtils {
         return fileStatusEntities.stream().filter(p -> p.isCompleted() && !p.isFailure())
                 .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
+
+    public static List<Integer> getNonFailedFileStatusCodes() {
+        return fileStatusEntities.stream().filter(p -> !p.isFailure())
+                .map(RAStatusEntity::getCode).collect(Collectors.toList());
+    }
 }

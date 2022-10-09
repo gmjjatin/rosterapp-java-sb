@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-import static com.hilabs.roster.util.RosterStageUtils.getCompletedFileStatusCodes;
+import static com.hilabs.roster.util.RosterStageUtils.getNonFailedFileStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/config-ui")
@@ -56,7 +56,7 @@ public class ConfigUIController {
             //TODO
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getCompletedFileStatusCodes());
+                            startTime, endTime, limit, offset, getNonFailedFileStatusCodes());
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(dummyDataService.getConfigUIValidFileList(), HttpStatus.OK);
         } catch (Exception ex) {

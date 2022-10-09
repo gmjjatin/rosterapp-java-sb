@@ -82,6 +82,8 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
             "offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, int limit, int offset);
 
+    @Modifying
+    @Transactional
     @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode where id = :raFileDetailsId", nativeQuery = true)
     void updateRAFileDetailsStatus(Long raFileDetailsId, Integer statusCode);
 }

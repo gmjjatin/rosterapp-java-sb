@@ -20,7 +20,7 @@ import static com.hilabs.roster.model.RosterSheetProcessStage.PRE_PROCESSING;
 import static com.hilabs.roster.util.Constants.PRE_PROCESS_IN_PROGRESS;
 
 @Slf4j
-public class PreProcessingTask extends Task {
+public class PreProcessingFirstJobTask extends Task {
     private PythonInvocationService pythonInvocationService;
 
     private RAFileDetailsService raFileDetailsService;
@@ -31,18 +31,20 @@ public class PreProcessingTask extends Task {
 
     public static ConcurrentHashMap<Long, Boolean> runningMap = new ConcurrentHashMap<>();
 
-    public PreProcessingTask(Map<String, Object> taskData) {
+    public PreProcessingFirstJobTask(Map<String, Object> taskData) {
         super(taskData);
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.pythonInvocationService = (PythonInvocationService) applicationContext.getBean("pythonInvocationService");
         this.raFileDetailsService = (RAFileDetailsService) applicationContext.getBean("RAFileDetailsService");
+        this.raFileDetailsService = (RAFileDetailsService) applicationContext.getBean("RAFileDetailsService");
+        this.dartRASystemErrorsService = (DartRASystemErrorsService) applicationContext.getBean("dartRASystemErrorsService");
     }
 
     public boolean shouldRun(Long raFileDetailsId) {
         if (runningMap.containsKey(raFileDetailsId)) {
-            log.warn("PreProcessingTask task in progress for raFileDetailsId {}", raFileDetailsId);
+            log.warn("PreProcessingFirstJobTask task in progress for raFileDetailsId {}", raFileDetailsId);
             return false;
         }
         return isStillEligibleForRun(raFileDetailsId);
@@ -62,24 +64,24 @@ public class PreProcessingTask extends Task {
 
     @Override
     public void run() {
-        log.info("PreProcessingTask stared for {}", gson.toJson(getTaskData()));
+        log.info("PreProcessingFirstJobTask stared for {}", gson.toJson(getTaskData()));
         Long raFileDetailsId = getRAFileDetailsIdFromTaskData();
         try {
             //TODO demo
-//            if (!shouldRun(raFileDetailsId)) {
-//                return;
-//            }
+            if (!shouldRun(raFileDetailsId)) {
+                return;
+            }
             runningMap.put(raFileDetailsId, true);
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, PRE_PROCESS_IN_PROGRESS);
             //TODO change it
-            pythonInvocationService.invokePythonProcessForPreProcessing(raFileDetailsId);
-            log.debug("PreProcessingTask done for {}", gson.toJson(getTaskData()));
+            pythonInvocationService.invokePythonProcessForPreProcessingJob1(raFileDetailsId);
+            log.debug("PreProcessingFirstJobTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
             String stacktrace = ExceptionUtils.getStackTrace(ex);
-            dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
-                    PRE_PROCESSING.name(), null, "UNKNOWN", ex.getMessage(),
-                    stacktrace, 1);
-            log.error("Error in PreProcessingTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
+//            dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
+//                    PRE_PROCESSING.name(), null, "UNKNOWN", ex.getMessage(),
+//                    stacktrace, 1);
+            log.error("Error in PreProcessingFirstJobTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
                     ex.getMessage(), stacktrace);
         }
     }

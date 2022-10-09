@@ -16,9 +16,21 @@ public class AppPropertiesConfig {
     @Value("${raArchiveFolder}")
     private String archiveFolder;
 
-    @Value("${pyScriptsFolder}")
-    private String pyScriptsFolder;
+    @Value("${pythonCommand}")
+    private String pythonCommand;
 
-    @Value("${preProcessPythonFilePath}")
-    private String preProcessPythonFilePath;
+    @Value("${pre_col_map_norm_launcher}")
+    private String preColMapNormLauncher;
+
+    @Value("${pre_norm_col_map_launcher}")
+    private String preNormColMapLauncher;
+
+    @Value("${post_col_map_norm_launcher}")
+    private String postColMapNormLauncher;
+
+    @Value("${post_norm_col_map_launcher}")
+    private String postNormColMapLauncher;
+
+    @Value("${envConfigs}")
+    private String envConfigs;
 }
