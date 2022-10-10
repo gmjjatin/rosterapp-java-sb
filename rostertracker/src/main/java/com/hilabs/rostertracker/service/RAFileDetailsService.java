@@ -61,13 +61,6 @@ public class RAFileDetailsService {
         Date startDate = new Date(startTime);
         Date endDate = new Date(endTime);
         return getRAFileDetailsList(market, lineOfBusiness, startDate, endDate, statusCodes, limit, offset);
-//        List<RAFileDetails> resRaFileDetailsList = new ArrayList<>();
-//        for (RAFileDetails raFileDetails : raFileDetailsList) {
-//            if (raFileDetails.getStatusCode() != null && statusCodes.stream().anyMatch(ss -> raFileDetails.getStatusCode().equals(ss))) {
-//                resRaFileDetailsList.add(raFileDetails);
-//            }
-//        }
-//        return resRaFileDetailsList;
     }
 
     public List<RAFileDetails> getRAFileDetailsList(String market, String lineOfBusiness, Date startDate, Date endDate,
