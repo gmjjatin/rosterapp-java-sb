@@ -7,18 +7,17 @@ import com.hilabs.rapipeline.service.PreprocessingService;
 import com.hilabs.rapipeline.service.RAFileDetailsService;
 import com.hilabs.rapipeline.service.RAFileMetaDataDetailsService;
 import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RASheetDetails;
-import com.hilabs.roster.repository.RASheetDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.hilabs.rapipeline.preprocessing.PreprocessingUtils.preProcessingJob2StatusCodes;
-import static com.hilabs.rapipeline.preprocessing.PreprocessingUtils.preProcessingStatusCodes;
 
 @Component
 @Slf4j
@@ -39,12 +38,15 @@ public class PreProcessingSecondJobFetcher implements JobRetriever {
     @Override
     public List<Task> refillQueue(Integer tasks) {
         List<RAFileDetails> raFileDetailsList = raFileDetailsService.
-                findFileDetailsByStatusCodes(preProcessingJob2StatusCodes, tasks, 0);
+                findFileDetailsByStatusCodes(preProcessingJob2StatusCodes, Math.max(10, tasks), 0);
+        log.info("raFileDetailsList {} tasks {}", raFileDetailsList.size(), tasks);
         List<Task> executors = new ArrayList<>();
         for (RAFileDetails raFileDetails : raFileDetailsList) {
             if (!preprocessingService.checkCompatibleOrNotAndUpdateFileStatus(raFileDetails.getId())) {
+                log.info("Ignoring raFileDetails {}", raFileDetails);
                 continue;
             }
+            log.info("Picked raFileDetails {}", raFileDetails);
             Map<String, Object> taskData = new HashMap<>();
 //            taskData.put("id", raFileMetaData.getFileName());
             taskData.put("data", raFileDetails.getId());

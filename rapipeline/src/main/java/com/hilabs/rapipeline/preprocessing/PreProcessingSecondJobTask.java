@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hilabs.rapipeline.preprocessing.PreprocessingUtils.preProcessingJob2StatusCodes;
 import static com.hilabs.roster.model.RosterSheetProcessStage.PRE_PROCESSING;
-import static com.hilabs.roster.util.Constants.AI_MAPPING_IN_PROGRESS;
 
 @Slf4j
 public class PreProcessingSecondJobTask extends Task {
@@ -67,6 +66,7 @@ public class PreProcessingSecondJobTask extends Task {
         try {
             //TODO demo
             if (!shouldRun(raFileDetailsId)) {
+                log.info("shouldRun is false for raFileDetailsId {}", raFileDetailsId);
                 return;
             }
             runningMap.put(raFileDetailsId, true);

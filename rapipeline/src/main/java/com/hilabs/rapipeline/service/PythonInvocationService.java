@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -42,16 +43,35 @@ public class PythonInvocationService {
         List<String> commands = new ArrayList<>();
         try {
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
+            log.info("raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId, gson.toJson(raSheetDetailsList));
             for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-                if (raSheetDetails.getStatusCode() == 113) {
+                if (raSheetDetails.getStatusCode() == null) {
+                    continue;
+                }
+                log.info("raSheetDetailsId {} statusCode {}", raSheetDetails.getId(), raSheetDetails.getStatusCode());
+                if (raSheetDetails.getStatusCode().equals(113)) {
+                    log.info("raSheetDetailsId {} statusCode is 113", raSheetDetails.getId());
+                    //Pre Norm Col Map Launcher
                     File file = new File(appPropertiesConfig.getPreNormColMapLauncher());
-                    invokePythonProcess(file.getPath(), "--fileDetailsId",  "" + raFileDetailsId);
-                } else if (raSheetDetails.getStatusCode() == 125) {
+                    invokePythonProcess(file.getPath(), "--sheetDetailsId",  "" + raSheetDetails.getId());
+                }
+                Optional<RASheetDetails> optionalRASheetDetails = raSheetDetailsRepository.findById(raSheetDetails.getId());
+                if (optionalRASheetDetails.isPresent()) {
+                    raSheetDetails = optionalRASheetDetails.get();
+                }
+                log.info("raSheetDetailsId {} statusCode updated to {}", raSheetDetails.getId(), raSheetDetails.getStatusCode());
+                if (raSheetDetails.getStatusCode().equals(125)) {
                     File file = new File(appPropertiesConfig.getPostColMapNormLauncher());
-                    invokePythonProcess(file.getPath(), "--fileDetailsId",  "" + raFileDetailsId);
-                } else if (raSheetDetails.getStatusCode() == 135) {
+                    invokePythonProcess(file.getPath(), "--sheetDetailsId",  "" + raSheetDetails.getId());
+                }
+                optionalRASheetDetails = raSheetDetailsRepository.findById(raSheetDetails.getId());
+                if (optionalRASheetDetails.isPresent()) {
+                    raSheetDetails = optionalRASheetDetails.get();
+                }
+                log.info("raSheetDetailsId {} statusCode updated to {}", raSheetDetails.getId(), raSheetDetails.getStatusCode());
+                if (raSheetDetails.getStatusCode().equals(135)) {
                     File file = new File(appPropertiesConfig.getPostNormColMapLauncher());
-                    invokePythonProcess(file.getPath(), "--fileDetailsId",  "" + raFileDetailsId);
+                    invokePythonProcess(file.getPath(), "--sheetDetailsId",  "" + raSheetDetails.getId());
                 }
             }
         } catch (Exception ex) {
@@ -69,7 +89,7 @@ public class PythonInvocationService {
             commands.add("--envConfigs");
             commands.add(appPropertiesConfig.getEnvConfigs());
             commands.addAll(Arrays.asList(arguments));
-            log.info(commands.stream().collect(Collectors.joining(" ")));
+            log.info("Running command {}", commands.stream().collect(Collectors.joining(" ")));
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
