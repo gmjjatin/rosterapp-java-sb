@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hilabs.rapipeline.preprocessing.PreprocessingUtils.preProcessingStatusCodes;
-import static com.hilabs.roster.model.RosterSheetProcessStage.PRE_PROCESSING;
+import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 import static com.hilabs.roster.util.Constants.PRE_PROCESS_IN_PROGRESS;
 
 @Slf4j
@@ -77,10 +77,10 @@ public class PreProcessingFirstJobTask extends Task {
             pythonInvocationService.invokePythonProcessForPreProcessingJob1(raFileDetailsId);
             log.debug("PreProcessingFirstJobTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
-            String stacktrace = ExceptionUtils.getStackTrace(ex);
-//            dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
-//                    PRE_PROCESSING.name(), null, "UNKNOWN", ex.getMessage(),
-//                    stacktrace, 1);
+            String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
+            dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
+                    "PRE PROCESSING", null, "UNKNOWN", ex.getMessage(),
+                    stacktrace, 1);
             log.error("Error in PreProcessingFirstJobTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
                     ex.getMessage(), stacktrace);
         }

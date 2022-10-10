@@ -13,7 +13,8 @@ public class RARTConvProcessingDurationStats extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ra_sheet_details_id")
+    //TODO Has an type in details word
+    @Column(name = "ra_sheet_deatils_id")
     private Long raSheetDetailsId;
 
     @Column(name = "status_cd")

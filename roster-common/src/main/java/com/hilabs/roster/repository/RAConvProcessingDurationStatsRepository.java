@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 public interface RAConvProcessingDurationStatsRepository extends JpaRepository<RARTConvProcessingDurationStats, Long> {
-    @Query(value = "select * from RA_RT_CONV_PROCESSING_DURATION_STATS where ra_sheet_details_id = :raSheetDetailsId",
+    @Query(value = "select * from RA_RT_CONV_PROCESSING_DURATION_STATS where ra_sheet_deatils_id = :raSheetDetailsId",
             nativeQuery = true)
     List<RARTConvProcessingDurationStats> getRAConvProcessingDurationStatsList(long raSheetDetailsId);
 }

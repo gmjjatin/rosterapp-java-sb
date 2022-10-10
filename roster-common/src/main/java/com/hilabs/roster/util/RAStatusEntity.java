@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.hilabs.roster.model.RosterSheetProcessStage.*;
 
@@ -69,4 +72,34 @@ public class RAStatusEntity {
             new RAStatusEntity(53, CONVERTED_DART, "Roster DART UI Validation Failed", true, true),
             new RAStatusEntity(55, CONVERTED_DART, "Roster DART UI Validation Completed", true, false)
         );
+
+    public static Optional<Integer> getFirstStatusCode(RosterSheetProcessStage rosterSheetProcessStage) {
+        List<Integer> statusCodes = sheetStatusEntities.stream().filter(p -> p.getStage() == rosterSheetProcessStage).map(p -> p.getCode()).collect(Collectors.toList());
+        if (statusCodes.size() == 0) {
+            return Optional.empty();
+        }
+        return statusCodes.stream().min(Comparator.comparingInt(p -> p));
+    }
+
+    public static Optional<Integer> getLastStatusCode(RosterSheetProcessStage rosterSheetProcessStage) {
+        List<Integer> statusCodes = sheetStatusEntities.stream().filter(p -> p.getStage() == rosterSheetProcessStage).map(p -> p.getCode()).collect(Collectors.toList());
+        if (statusCodes.size() == 0) {
+            return Optional.empty();
+        }
+        return statusCodes.stream().max(Comparator.comparingInt(p -> p));
+    }
+
+    public static Optional<RosterSheetProcessStage> getRosterSheetProcessStage(Integer statusCode) {
+        if (statusCode == null) {
+            return Optional.empty();
+        }
+        return sheetStatusEntities.stream().filter(p -> p.getCode() == statusCode).map(p -> p.getStage()).findFirst();
+    }
+
+    public static Optional<RAStatusEntity> getRAStatusEntity(Integer statusCode) {
+        if (statusCode == null) {
+            return Optional.empty();
+        }
+        return sheetStatusEntities.stream().filter(p -> p.getCode() == statusCode).findFirst();
+    }
 }

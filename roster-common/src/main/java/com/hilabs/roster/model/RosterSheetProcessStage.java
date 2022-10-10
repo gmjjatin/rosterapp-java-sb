@@ -5,15 +5,12 @@ import java.util.List;
 
 public enum RosterSheetProcessStage {
     ROSTER_RECEIVED("Roster Received", 0),
-//    PRE_PROCESSED("Pre Processed", 1),
-    AUTO_MAPPED("Auto Mapped", 2),
-    ISF_GENERATED("Auto Mapped", 3),
+    AUTO_MAPPED("Auto Mapped", 1),
+    ISF_GENERATED("Auto Mapped", 2),
 
-    CONVERTED_DART("Converted Dart", 4),
-    SPS_LOAD("SPS Load", 5),
-    REPORT("Report", 6),
-
-    UNKNOWN("Unknown", -1);
+    CONVERTED_DART("Converted Dart", 3),
+    SPS_LOAD("SPS Load", 4),
+    REPORT("Report", 5);
     public final String displayName;
     public final int rank;
     RosterSheetProcessStage(String displayName, int rank) {

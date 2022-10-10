@@ -5,6 +5,7 @@ import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
 
 import javax.rmi.CORBA.Util;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,28 +17,55 @@ public class RosterStageUtils {
     //TODO complete
     public static RosterStageState getRosterStageState(RosterSheetProcessStage rosterSheetProcessStage,
                                                        Integer statusCode) {
-        if (statusCode == null) {
+        if (statusCode == null || rosterSheetProcessStage == null) {
             return RosterStageState.NOT_STARTED;
         }
-        //TODO demo
-        if (rosterSheetProcessStage == RosterSheetProcessStage.ROSTER_RECEIVED || rosterSheetProcessStage == RosterSheetProcessStage.AUTO_MAPPED) {
+        if (rosterSheetProcessStage == RosterSheetProcessStage.ROSTER_RECEIVED) {
             return RosterStageState.COMPLETED;
         }
-        return RosterStageState.NOT_STARTED;
-//        Optional<RAStatusEntity> optionalRAStatusEntity = sheetStatusEntities.stream().filter(p -> p.getCode() == statusCode).findFirst();
-//        if (!optionalRAStatusEntity.isPresent()) {
-//            return RosterStageState.NOT_STARTED;
-//        }
-//        RAStatusEntity raStatusEntity = optionalRAStatusEntity.get();
-//        raStatusEntity.isCompleted()
-//        //TODO write the logic based statusEntities in RAStatusEntity file
-//        throw new RuntimeException("Yet to be implemented");
+        Optional<RosterSheetProcessStage> optionalRosterSheetProcessStage = RAStatusEntity.getRosterSheetProcessStage(statusCode);
+        if (!optionalRosterSheetProcessStage.isPresent()) {
+            //TODO fix it
+            return RosterStageState.NOT_STARTED;
+        }
+        RosterSheetProcessStage currRosterSheetProcessStage = optionalRosterSheetProcessStage.get();
+        if (currRosterSheetProcessStage.rank > rosterSheetProcessStage.rank) {
+            return RosterStageState.COMPLETED;
+        } else if (currRosterSheetProcessStage.rank < rosterSheetProcessStage.rank) {
+            return RosterStageState.NOT_STARTED;
+        }
+        Optional<RAStatusEntity> optionalRAStatusEntity = RAStatusEntity.getRAStatusEntity(statusCode);
+        if (!optionalRAStatusEntity.isPresent()) {
+            //TODO fix it
+            return RosterStageState.STARTED;
+        }
+        RAStatusEntity raStatusEntity = optionalRAStatusEntity.get();
+        if (raStatusEntity.isFailure()) {
+            return RosterStageState.FAILED;
+        }
+        return raStatusEntity.isCompleted() ? RosterStageState.COMPLETED : RosterStageState.STARTED;
     }
 
+    //TODO recheck logic
     public static long computeTimeTakenInMillis(List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, RosterSheetProcessStage rosterSheetProcessStage) {
-        //TODO demo
-        return 1000 * 60 * 60;
-//        throw new RuntimeException("Yet to be implemented");
+        List<RAStatusEntity> raStatusEntities = sheetStatusEntities.stream().filter(p -> p.getStage() == rosterSheetProcessStage).collect(Collectors.toList());
+        long timeTakenInMillis = 0;
+        for (RARTConvProcessingDurationStats rartConvProcessingDurationStats : raConvProcessingDurationStatsList) {
+            if (rartConvProcessingDurationStats.getStatusCode() == null) {
+                continue;
+            }
+            Integer statusCode = rartConvProcessingDurationStats.getStatusCode();
+            if (!raStatusEntities.stream().anyMatch(p -> p.getCode() == statusCode)) {
+                continue;
+            }
+            Date completedDate = rartConvProcessingDurationStats.getCompletionDate();
+            Date startDate = rartConvProcessingDurationStats.getStartDate();
+            if (completedDate == null || startDate == null) {
+                continue;
+            }
+            timeTakenInMillis += completedDate.getTime() - startDate.getTime();
+        }
+        return timeTakenInMillis;
     }
 
     public static List<Integer> getFailedSheetStatusCodes() {

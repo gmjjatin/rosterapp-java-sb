@@ -19,6 +19,9 @@ public class AppPropertiesConfig {
     @Value("${pythonCommand}")
     private String pythonCommand;
 
+    @Value("${pre_processing_wrapper}")
+    private String preProcessingWrapper;
+
     @Value("${pre_col_map_norm_launcher}")
     private String preColMapNormLauncher;
 
