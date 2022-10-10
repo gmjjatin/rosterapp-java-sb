@@ -5,6 +5,8 @@ import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RAFileDetailsLobRepository;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
+import com.hilabs.rostertracker.dto.RASheetType;
+import com.hilabs.rostertracker.dto.SheetDetails;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.utils.RosterUtils;
 import lombok.extern.log4j.Log4j2;
@@ -99,6 +101,17 @@ public class RAFileDetailsService {
         } catch (Exception ex) {
             return raFileDetailsRepository.findByFileSearchStr(providerSearchStr);
         }
+    }
+
+    public List<SheetDetails> getRASheetDetailsList(Long raFileDetailsId) {
+        List<RASheetDetails> raSheetDetailsList = getRAFileDetailsList(raFileDetailsId);
+        List<SheetDetails> sheetDetailsList = new ArrayList<>();
+        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
+            RASheetType raSheetType = RASheetType.valueOf(raSheetDetails.getType());
+            sheetDetailsList.add(new SheetDetails(raSheetDetails.getId(), raSheetDetails.getTabName(),
+                    raSheetDetails.getType(), raSheetType));
+        }
+        return sheetDetailsList;
     }
 
     public List<RASheetDetails> getRAFileDetailsList(Long raFileDetailsId) {

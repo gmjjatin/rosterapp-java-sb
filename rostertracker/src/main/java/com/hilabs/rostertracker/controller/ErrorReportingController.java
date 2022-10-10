@@ -1,15 +1,18 @@
 package com.hilabs.rostertracker.controller;
 
+import com.hilabs.roster.dto.RAFalloutErrorInfo;
+import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.rostertracker.config.RosterConfig;
-import com.hilabs.rostertracker.dto.*;
+import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
+import com.hilabs.rostertracker.dto.RASheetAndColumnErrorStats;
+import com.hilabs.rostertracker.dto.RASheetAndErrorStats;
+import com.hilabs.rostertracker.dto.RASheetFalloutReport;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.service.RAFalloutReportService;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.service.RAFileStatsService;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
-import com.hilabs.roster.dto.RAFalloutErrorInfo;
-import com.hilabs.roster.entity.RAFileDetails;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -23,11 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static com.hilabs.roster.util.RosterStageUtils.getCompletedFileStatusCodes;
+import static com.hilabs.roster.util.RosterStageUtils.getNonFailedFileStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/error-reporting")
@@ -63,7 +65,7 @@ public class ErrorReportingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getCompletedFileStatusCodes());
+                            startTime, endTime, limit, offset, getNonFailedFileStatusCodes());
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(raFileAndErrorStatsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -92,7 +94,7 @@ public class ErrorReportingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getCompletedFileStatusCodes());
+                            startTime, endTime, limit, offset, getNonFailedFileStatusCodes());
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {

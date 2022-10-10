@@ -3,7 +3,8 @@ package com.hilabs.rapipeline.config;
 import com.hilabs.mcheck.config.BatchConfig;
 import com.hilabs.mcheck.exception.ApplicationException;
 import com.hilabs.rapipeline.ingestion.IngestionFetcher;
-import com.hilabs.rapipeline.preprocessing.PreProcessingFetcher;
+import com.hilabs.rapipeline.preprocessing.PreProcessingFirstJobFetcher;
+import com.hilabs.rapipeline.preprocessing.PreProcessingSecondJobFetcher;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +20,25 @@ public class AppConfig {
     private IngestionFetcher ingestionFetcher;
 
     @Autowired
-    private PreProcessingFetcher preProcessingFetcher;
+    private PreProcessingFirstJobFetcher preProcessingFirstJobFetcher;
+
+    @Autowired
+    private PreProcessingSecondJobFetcher preProcessingSecondJobFetcher;
 
     @PostConstruct
     public void initialize() throws SchedulerException, ApplicationException {
         log.info("Initiate the scheduler");
 
         new BatchConfig("./config.json")
-//                .registerJobRetrievers(ingestionFetcher)
-                .registerJobRetrievers(preProcessingFetcher)
+                .registerJobRetrievers(ingestionFetcher)
+                .build();
+
+        new BatchConfig("./config.json")
+                .registerJobRetrievers(preProcessingFirstJobFetcher)
+                .build();
+
+        new BatchConfig("./config.json")
+                .registerJobRetrievers(preProcessingSecondJobFetcher)
                 .build();
     }
 }

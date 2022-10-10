@@ -4,7 +4,9 @@ import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
 import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
 
+import javax.rmi.CORBA.Util;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.hilabs.roster.util.RAStatusEntity.fileStatusEntities;
@@ -17,12 +19,25 @@ public class RosterStageUtils {
         if (statusCode == null) {
             return RosterStageState.NOT_STARTED;
         }
-        //TODO write the logic based statusEntities in RAStatusEntity file
-        throw new RuntimeException("Yet to be implemented");
+        //TODO demo
+        if (rosterSheetProcessStage == RosterSheetProcessStage.ROSTER_RECEIVED || rosterSheetProcessStage == RosterSheetProcessStage.AUTO_MAPPED) {
+            return RosterStageState.COMPLETED;
+        }
+        return RosterStageState.NOT_STARTED;
+//        Optional<RAStatusEntity> optionalRAStatusEntity = sheetStatusEntities.stream().filter(p -> p.getCode() == statusCode).findFirst();
+//        if (!optionalRAStatusEntity.isPresent()) {
+//            return RosterStageState.NOT_STARTED;
+//        }
+//        RAStatusEntity raStatusEntity = optionalRAStatusEntity.get();
+//        raStatusEntity.isCompleted()
+//        //TODO write the logic based statusEntities in RAStatusEntity file
+//        throw new RuntimeException("Yet to be implemented");
     }
 
     public static long computeTimeTakenInMillis(List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, RosterSheetProcessStage rosterSheetProcessStage) {
-        throw new RuntimeException("Yet to be implemented");
+        //TODO demo
+        return 1000 * 60 * 60;
+//        throw new RuntimeException("Yet to be implemented");
     }
 
     public static List<Integer> getFailedSheetStatusCodes() {
@@ -40,6 +55,11 @@ public class RosterStageUtils {
 
     public static List<Integer> getCompletedFileStatusCodes() {
         return fileStatusEntities.stream().filter(p -> p.isCompleted() && !p.isFailure())
+                .map(RAStatusEntity::getCode).collect(Collectors.toList());
+    }
+
+    public static List<Integer> getNonFailedFileStatusCodes() {
+        return fileStatusEntities.stream().filter(p -> !p.isFailure())
                 .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 }

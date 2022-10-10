@@ -15,12 +15,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hilabs.rapipeline.preprocessing.PreprocessingUtils.preProcessingStatusCodes;
+import static com.hilabs.rapipeline.preprocessing.PreprocessingUtils.preProcessingJob2StatusCodes;
 import static com.hilabs.roster.model.RosterSheetProcessStage.PRE_PROCESSING;
-import static com.hilabs.roster.util.Constants.PRE_PROCESS_IN_PROGRESS;
 
 @Slf4j
-public class PreProcessingTask extends Task {
+public class PreProcessingSecondJobTask extends Task {
     private PythonInvocationService pythonInvocationService;
 
     private RAFileDetailsService raFileDetailsService;
@@ -31,7 +30,7 @@ public class PreProcessingTask extends Task {
 
     public static ConcurrentHashMap<Long, Boolean> runningMap = new ConcurrentHashMap<>();
 
-    public PreProcessingTask(Map<String, Object> taskData) {
+    public PreProcessingSecondJobTask(Map<String, Object> taskData) {
         super(taskData);
     }
 
@@ -42,7 +41,7 @@ public class PreProcessingTask extends Task {
 
     public boolean shouldRun(Long raFileDetailsId) {
         if (runningMap.containsKey(raFileDetailsId)) {
-            log.warn("PreProcessingTask task in progress for raFileDetailsId {}", raFileDetailsId);
+            log.warn("PreProcessingSecondJobTask task in progress for raFileDetailsId {}", raFileDetailsId);
             return false;
         }
         return isStillEligibleForRun(raFileDetailsId);
@@ -57,29 +56,29 @@ public class PreProcessingTask extends Task {
         if (raFileDetails.getStatusCode() == null) {
             return false;
         }
-        return preProcessingStatusCodes.stream().anyMatch(p -> raFileDetails.getStatusCode().equals(p));
+        return preProcessingJob2StatusCodes.stream().anyMatch(p -> raFileDetails.getStatusCode().equals(p));
     }
 
     @Override
     public void run() {
-        log.info("PreProcessingTask stared for {}", gson.toJson(getTaskData()));
+        log.info("PreProcessingSecondJobTask started for {}", gson.toJson(getTaskData()));
         Long raFileDetailsId = getRAFileDetailsIdFromTaskData();
         try {
             //TODO demo
-//            if (!shouldRun(raFileDetailsId)) {
-//                return;
-//            }
+            if (!shouldRun(raFileDetailsId)) {
+                log.info("shouldRun is false for raFileDetailsId {}", raFileDetailsId);
+                return;
+            }
             runningMap.put(raFileDetailsId, true);
-            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, PRE_PROCESS_IN_PROGRESS);
             //TODO change it
-            pythonInvocationService.invokePythonProcessForPreProcessing(raFileDetailsId);
-            log.debug("PreProcessingTask done for {}", gson.toJson(getTaskData()));
+            pythonInvocationService.invokePythonProcessForPreProcessingJob2(raFileDetailsId);
+            log.debug("PreProcessingSecondJobTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
             String stacktrace = ExceptionUtils.getStackTrace(ex);
             dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
                     PRE_PROCESSING.name(), null, "UNKNOWN", ex.getMessage(),
                     stacktrace, 1);
-            log.error("Error in PreProcessingTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
+            log.error("Error in PreProcessingSecondJobTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
                     ex.getMessage(), stacktrace);
         }
     }
