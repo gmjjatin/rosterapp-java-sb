@@ -48,3 +48,6 @@ Thumbs.db
 *.mov
 *.wmv
 
+.jpb/
+logs/
+error-logs/
