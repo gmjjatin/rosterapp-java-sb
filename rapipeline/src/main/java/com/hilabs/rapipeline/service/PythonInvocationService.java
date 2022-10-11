@@ -33,7 +33,8 @@ public class PythonInvocationService {
             //TODO hardcode for now
 //            File file = new File(appPropertiesConfig.getPreColMapNormLauncher());
             File file = new File(appPropertiesConfig.getPreProcessingWrapper());
-            invokePythonProcess(file.getPath(), "--fileDetailsId",  "" + raFileDetailsId);
+            invokePythonProcess(file.getPath(), "--fileId",  "" + raFileDetailsId, "--rootPath",
+                    appPropertiesConfig.getRootPath());
         } catch (Exception ex) {
             log.info("Error in invokePythonProcess - commands {}", gson.toJson(commands));
             throw ex;

@@ -36,4 +36,7 @@ public class AppPropertiesConfig {
 
     @Value("${envConfigs}")
     private String envConfigs;
+
+    @Value("${rootPath}")
+    private String rootPath;
 }

@@ -14,7 +14,7 @@ public class RARTConvProcessingDurationStats extends BaseEntity {
     private Long id;
 
     //TODO Has an type in details word
-    @Column(name = "ra_sheet_deatils_id")
+    @Column(name = "ra_sheet_details_id")
     private Long raSheetDetailsId;
 
     @Column(name = "status_cd")

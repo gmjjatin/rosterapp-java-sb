@@ -25,6 +25,7 @@ public class IngestionValidationService {
     //TODO later - need to add more checks
     public ErrorDetails validateMetaDataAndGetErrorList(RAFileMetaData raFileMetaData) {
         List<String> missingFields = new ArrayList<>();
+        String errorCode = "RI_ERR_MD_1";
         if (raFileMetaData.getOrgName() == null) {
             missingFields.add("Organization Name");
         }
@@ -58,6 +59,7 @@ public class IngestionValidationService {
             String lob = raFileMetaData.getPlmNetwork();
             List<RARTMarketLobVald> marketLobValds = rartMarketLobValdRepository.getByMarket(market);
             if (!marketLobValds.stream().anyMatch(p -> p.getLob() != null && p.getLob().equals(lob))) {
+                errorCode = "RI_ERR_MD_2";
                 errorList.add("Invalid Cnt State and PLM Network combination");
             }
         }
@@ -85,7 +87,7 @@ public class IngestionValidationService {
 //            }
 //        }
         if (errorList.size() > 0) {
-            return new ErrorDetails("RI_ERR_MD_1", String.join(", ", errorList));
+            return new ErrorDetails(errorCode, String.join(", ", errorList));
         }
         return null;
     }

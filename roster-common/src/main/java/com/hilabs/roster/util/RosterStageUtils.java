@@ -4,7 +4,6 @@ import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
 import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
 
-import javax.rmi.CORBA.Util;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +33,7 @@ public class RosterStageUtils {
         } else if (currRosterSheetProcessStage.rank < rosterSheetProcessStage.rank) {
             return RosterStageState.NOT_STARTED;
         }
-        Optional<RAStatusEntity> optionalRAStatusEntity = RAStatusEntity.getRAStatusEntity(statusCode);
+        Optional<RAStatusEntity> optionalRAStatusEntity = RAStatusEntity.getRASheetStatusEntity(statusCode);
         if (!optionalRAStatusEntity.isPresent()) {
             //TODO fix it
             return RosterStageState.STARTED;
@@ -81,13 +80,23 @@ public class RosterStageUtils {
         return fileStatusEntities.stream().filter(RAStatusEntity::isFailure).map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 
-    public static List<Integer> getCompletedFileStatusCodes() {
-        return fileStatusEntities.stream().filter(p -> p.isCompleted() && !p.isFailure())
+    public static List<Integer> getFailedAndNonCompatibleStatusCodes() {
+        return fileStatusEntities.stream().filter(p -> p.isFailure() || p.isNotCompatible())
                 .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 
+//    public static List<Integer> getCompletedFileStatusCodes() {
+//        return fileStatusEntities.stream().filter(p -> p.isCompleted() && !p.isFailure())
+//                .map(RAStatusEntity::getCode).collect(Collectors.toList());
+//    }
+
     public static List<Integer> getNonFailedFileStatusCodes() {
         return fileStatusEntities.stream().filter(p -> !p.isFailure())
+                .map(RAStatusEntity::getCode).collect(Collectors.toList());
+    }
+
+    public static List<Integer> getNonFailedWithoutNonCompatibleFileStatusCodes() {
+        return fileStatusEntities.stream().filter(p -> !p.isFailure() && !p.isNotCompatible())
                 .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 }

@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hilabs.rapipeline.preprocessing.PreprocessingUtils.preProcessingStatusCodes;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
-import static com.hilabs.roster.util.Constants.PRE_PROCESS_IN_PROGRESS;
 
 @Slf4j
 public class PreProcessingFirstJobTask extends Task {
@@ -29,7 +28,7 @@ public class PreProcessingFirstJobTask extends Task {
 
     private static final Gson gson = new Gson();
 
-    public static ConcurrentHashMap<Long, Boolean> runningMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Long, Boolean> preProcessingFirstJobTaskRunningMap = new ConcurrentHashMap<>();
 
     public PreProcessingFirstJobTask(Map<String, Object> taskData) {
         super(taskData);
@@ -43,7 +42,7 @@ public class PreProcessingFirstJobTask extends Task {
     }
 
     public boolean shouldRun(Long raFileDetailsId) {
-        if (runningMap.containsKey(raFileDetailsId)) {
+        if (preProcessingFirstJobTaskRunningMap.containsKey(raFileDetailsId)) {
             log.warn("PreProcessingFirstJobTask task in progress for raFileDetailsId {}", raFileDetailsId);
             return false;
         }
@@ -71,8 +70,8 @@ public class PreProcessingFirstJobTask extends Task {
             if (!shouldRun(raFileDetailsId)) {
                 return;
             }
-            runningMap.put(raFileDetailsId, true);
-            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, PRE_PROCESS_IN_PROGRESS);
+            preProcessingFirstJobTaskRunningMap.put(raFileDetailsId, true);
+//            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, PRE_PROCESS_IN_PROGRESS);
             //TODO change it
             pythonInvocationService.invokePythonProcessForPreProcessingJob1(raFileDetailsId);
             log.debug("PreProcessingFirstJobTask done for {}", gson.toJson(getTaskData()));

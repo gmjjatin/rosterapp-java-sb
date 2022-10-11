@@ -4,8 +4,8 @@ import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RAFileDetailsLobRepository;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
+import com.hilabs.roster.repository.RARCRosterISFMapRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
-import com.hilabs.rostertracker.dto.RASheetType;
 import com.hilabs.rostertracker.dto.SheetDetails;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.utils.RosterUtils;
@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.hilabs.roster.util.FileUtils.getAdjustedString;
+import static com.hilabs.roster.util.RosterStageUtils.*;
 
 @Service
 @Log4j2
@@ -26,6 +27,9 @@ public class RAFileDetailsService {
 
     @Autowired
     RAFileDetailsRepository raFileDetailsRepository;
+
+    @Autowired
+    private RARCRosterISFMapRepository rarcRosterISFMapRepository;
     public ConcurrentLruCache<String, List<RAFileDetails>> fileSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
         return raFileDetailsRepository.findByFileSearchStr(p);
     });
@@ -100,9 +104,12 @@ public class RAFileDetailsService {
         List<RASheetDetails> raSheetDetailsList = getRAFileDetailsList(raFileDetailsId);
         List<SheetDetails> sheetDetailsList = new ArrayList<>();
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            RASheetType raSheetType = RASheetType.valueOf(raSheetDetails.getType());
+            //TODO demo check if mapping is available
+            int count = rarcRosterISFMapRepository.countMappingCountForSheetDetailsId(raSheetDetails.getId());
             sheetDetailsList.add(new SheetDetails(raSheetDetails.getId(), raSheetDetails.getTabName(),
-                    raSheetDetails.getType(), raSheetType));
+                    raSheetDetails.getType(), raSheetDetails.getType() != null && raSheetDetails.getType()
+                    .equalsIgnoreCase("NON_TERM") ? "AUTOMATED" : raSheetDetails.getType(),
+                    count != 0));
         }
         return sheetDetailsList;
     }
@@ -210,5 +217,21 @@ public class RAFileDetailsService {
         allRAProvDetailsList.addAll(raProvDetailsDetailsByMarket);
         allRAProvDetailsList.addAll(raProvDetailsDetailsByLineOfBusiness);
         return RosterUtils.removeDuplicateRAProvList(allRAProvDetailsList);
+    }
+
+    public static List<Integer> getStatusCodes(String type) {
+        if (type.isEmpty()) {
+            return getNonFailedWithoutNonCompatibleFileStatusCodes();
+        } else if (type.equalsIgnoreCase("roster-tracker")) {
+            return getNonFailedWithoutNonCompatibleFileStatusCodes();
+        } else if (type.equalsIgnoreCase("error-reporting")) {
+            return getNonFailedWithoutNonCompatibleFileStatusCodes();
+        } else if (type.equalsIgnoreCase("config")) {
+            List<Integer> statusCodes = getNonFailedFileStatusCodes();
+            return statusCodes.stream().filter(p -> p >= 27).collect(Collectors.toList());
+        } else if (type.equalsIgnoreCase("non-compatible")) {
+            return getFailedAndNonCompatibleStatusCodes();
+        }
+        return getNonFailedWithoutNonCompatibleFileStatusCodes();
     }
 }

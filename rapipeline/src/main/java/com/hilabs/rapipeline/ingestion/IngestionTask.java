@@ -147,7 +147,7 @@ public class IngestionTask extends Task {
                 //TODO fix status code
                 upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_FAILED,
                         standardizedFileName,
-                        new ErrorDetails("RI_ERR_MD_3", "System error while copying files"), false);
+                        new ErrorDetails("RI_ERR_MD_4", "System error while copying files"), false);
                 return;
             }
             upsertIngestionStatus(raFileMetaData, IN_PROGRESS, ROSTER_INGESTION_COMPLETED,
@@ -197,7 +197,7 @@ public class IngestionTask extends Task {
         File file = new File(sourceFilePath);
         if (!file.exists()) {
             log.warn("File with name {} doesn't exists - raFileMetaDataDetails {}", raFileMetaData.getFileName(), gson.toJson(raFileMetaData));
-            return new ErrorDetails("RI_ERR_MD_1", "File missing");
+            return new ErrorDetails("RI_ERR_MD_3", "File missing");
         }
         return null;
     }

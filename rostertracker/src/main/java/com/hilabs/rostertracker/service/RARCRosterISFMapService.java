@@ -1,13 +1,16 @@
 package com.hilabs.rostertracker.service;
 
+import com.hilabs.roster.entity.RADLISFTemplate;
 import com.hilabs.roster.entity.RARCRosterISFMap;
+import com.hilabs.roster.repository.RADLISFTemplateRepository;
 import com.hilabs.roster.repository.RARCRosterISFMapRepository;
+import com.hilabs.rostertracker.dto.RosterColumnMappingData;
+import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -16,11 +19,65 @@ public class RARCRosterISFMapService {
     @Autowired
     private RARCRosterISFMapRepository rarcRosterISFMapRepository;
 
-    public List<RARCRosterISFMap> getRARCRosterISFMapListForSheetId(Long raSheetDetailsId) {
+    @Autowired
+    private RADLISFTemplateRepository radlisfTemplateRepository;
+
+    public List<RARCRosterISFMap> getActiveRARCRosterISFMapListForSheetId(Long raSheetDetailsId) {
         if (raSheetDetailsId == null) {
             return null;
         }
         return rarcRosterISFMapRepository.getRARCRosterISFMapList(raSheetDetailsId);
+    }
+
+    public List<String> getAllIsfColumnList() {
+        Iterator<RADLISFTemplate> iterator = radlisfTemplateRepository.findAll().iterator();
+        Set<String> allIsfColumnSet = new HashSet<>();
+        while (iterator.hasNext()) {
+            RADLISFTemplate radlisfTemplate = iterator.next();
+            if (radlisfTemplate.getIsActive() == 0) {
+                continue;
+            }
+            allIsfColumnSet.add(radlisfTemplate.getIsfColumnName());
+        }
+        return new ArrayList<>(allIsfColumnSet);
+    }
+
+    public RosterSheetColumnMappingInfo getRosterSheetColumnMappingInfoForSheetId(Long raSheetDetailsId) {
+        if (raSheetDetailsId == null) {
+            return null;
+        }
+        List<RARCRosterISFMap> rarcRosterISFMapList = getActiveRARCRosterISFMapListForSheetId(raSheetDetailsId);
+        Set<String> allPossibleRosterColumnSet = new HashSet<>(rarcRosterISFMapList.stream().map(RARCRosterISFMap::getRosterColumnName).collect(Collectors.toList()));
+        List<RosterColumnMappingData> rosterColumnMappingDataList = new ArrayList<>();
+        for (String rosterColumnName : allPossibleRosterColumnSet) {
+            List<RARCRosterISFMap> isfRarcRosterISFMapList = rarcRosterISFMapList.stream().
+                    filter(p -> p.getColumnMappingRank() != null && p.getRosterColumnName().equals(rosterColumnName))
+                    .sorted((l1, l2) -> {
+                        if (l1.getColumnMappingRank() == l2.getColumnMappingRank()) {
+                            return 0;
+                        }
+                        return l1.getColumnMappingRank() > l2.getColumnMappingRank() ? 1 : -1;
+                    }).collect(Collectors.toList());
+            List<String> isfColumnValues = new ArrayList<>();
+            Set<String> alreadyAdded = new HashSet<>();
+            for (RARCRosterISFMap rarcRosterISFMap : isfRarcRosterISFMapList) {
+                if (alreadyAdded.contains(rarcRosterISFMap.getIsfColumnName())) {
+                    continue;
+                }
+                isfColumnValues.add(rarcRosterISFMap.getIsfColumnName());
+                alreadyAdded.add(rarcRosterISFMap.getIsfColumnName());
+            }
+            for (String isfColumn : getAllIsfColumnList()) {
+                if (alreadyAdded.contains(isfColumn)) {
+                    continue;
+                }
+                isfColumnValues.add(isfColumn);
+                alreadyAdded.add(isfColumn);
+            }
+            rosterColumnMappingDataList.add(new RosterColumnMappingData(rosterColumnName, isfColumnValues));
+        }
+
+        return new RosterSheetColumnMappingInfo(raSheetDetailsId, rosterColumnMappingDataList);
     }
 
     //TODO improve or refactor

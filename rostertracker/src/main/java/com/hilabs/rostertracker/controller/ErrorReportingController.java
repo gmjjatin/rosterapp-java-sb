@@ -29,11 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.hilabs.roster.util.RosterStageUtils.getNonFailedFileStatusCodes;
+import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/error-reporting")
 @Log4j2
+@CrossOrigin(origins = "*")
 public class ErrorReportingController {
 
     @Autowired
@@ -57,6 +58,7 @@ public class ErrorReportingController {
                                                                            @RequestParam(defaultValue = "-1") long startTime,
                                                                            @RequestParam(defaultValue = "-1") long endTime) {
         try {
+            List<Integer> statusCodes = getStatusCodes("error-reporting");
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
@@ -65,7 +67,7 @@ public class ErrorReportingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getNonFailedFileStatusCodes());
+                            startTime, endTime, limit, offset, statusCodes);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(raFileAndErrorStatsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -86,6 +88,7 @@ public class ErrorReportingController {
                                                                                    @RequestParam(defaultValue = "-1") long startTime,
                                                                                    @RequestParam(defaultValue = "-1") long endTime) {
         try {
+            List<Integer> statusCodes = getStatusCodes("error-reporting");
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
@@ -94,7 +97,7 @@ public class ErrorReportingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getNonFailedFileStatusCodes());
+                            startTime, endTime, limit, offset, statusCodes);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {
