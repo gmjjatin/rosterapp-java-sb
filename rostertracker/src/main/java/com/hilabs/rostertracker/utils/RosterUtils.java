@@ -24,6 +24,9 @@ public class RosterUtils {
 
     //TODO confirm??
     public static int computeFalloutRecordCount(RASheetDetails raSheetDetails) {
-        return raSheetDetails.getRosterRecordCount() - raSheetDetails.getTargetSuccessfulRecordCount() - raSheetDetails.getManualReviewRecordCount();
+        //TODO demo
+        return 0;
+//        return raSheetDetails.getRosterRecordCount() - raSheetDetails.getTargetSuccessfulRecordCount()
+//                - raSheetDetails.getManualReviewRecordCount();
     }
 }

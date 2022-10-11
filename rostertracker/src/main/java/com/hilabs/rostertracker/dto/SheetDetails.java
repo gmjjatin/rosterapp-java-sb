@@ -7,12 +7,14 @@ public class SheetDetails {
     private Long raSheetDetailsId;
     private String sheetName;
     private String classification;
-    private RASheetType raSheetType;
+    private String raSheetType;
+    private boolean hasColumnMapping;
 
-    public SheetDetails(Long raSheetDetailsId, String sheetName, String classification, RASheetType raSheetType) {
+    public SheetDetails(Long raSheetDetailsId, String sheetName, String classification, String raSheetType, boolean hasColumnMapping) {
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
         this.classification = classification;
         this.raSheetType = raSheetType;
+        this.hasColumnMapping = hasColumnMapping;
     }
 }

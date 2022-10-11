@@ -4,39 +4,34 @@ import com.hilabs.roster.dto.RAFalloutErrorInfo;
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RAFileErrorCodeDetails;
 import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.entity.RASheetErrorCodeDetails;
 import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
+import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
 import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
 import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
 import com.hilabs.rostertracker.dto.RASheetReport;
 import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.model.RASheetProgressInfo;
-import com.hilabs.rostertracker.service.RAFalloutReportService;
-import com.hilabs.rostertracker.service.RAFileDetailsService;
-import com.hilabs.rostertracker.service.RAFileStatsService;
-import com.hilabs.rostertracker.service.RASheetDetailsService;
+import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static com.hilabs.roster.util.RosterStageUtils.*;
+import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/progress-tracking")
 @Log4j2
+@CrossOrigin(origins = "*")
 public class ProgressTrackingController {
     @Autowired
     RAFileStatsService raFileStatsService;
@@ -52,6 +47,12 @@ public class ProgressTrackingController {
 
     @Autowired
     RAFileErrorCodeDetailRepository raFileErrorCodeDetailRepository;
+
+    @Autowired
+    DartRaErrorCodeDetailsService dartRaErrorCodeDetailsService;
+
+    @Autowired
+    RASheetErrorCodeDetailRepository raSheetErrorCodeDetailRepository;
 
 
     @GetMapping("/file-stats-list")
@@ -71,7 +72,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getNonFailedFileStatusCodes());
+                            startTime, endTime, limit, offset, getStatusCodes("roster-tracker"));
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
             return new ResponseEntity<>(raFileAndStatsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -98,7 +99,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getNonFailedFileStatusCodes());
+                            startTime, endTime, limit, offset, getStatusCodes("roster-tracker"));
             Map<Long, RAFileDetails> raFileDetailsMap = raFileDetailsListAndSheetList.getRAFileDetailsMap();
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
             for (RASheetDetails raSheetDetails : raFileDetailsListAndSheetList.getRaSheetDetailsList()) {
@@ -165,6 +166,7 @@ public class ProgressTrackingController {
                                                                                     @RequestParam(defaultValue = "-1") long startTime,
                                                                                     @RequestParam(defaultValue = "-1") long endTime) {
         try {
+            List<Integer> statusCodes = getStatusCodes("non-compatible");
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
@@ -173,21 +175,30 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
                     .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getFailedFileStatusCodes());
+                            startTime, endTime, limit, offset, statusCodes);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
+            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileDetailsListAndSheetList.getRASheetDetailsListMap();
             for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
                 List<RAFileErrorCodeDetails> raErrorLogs = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
                 //TODO need to fix it
-                String errorCode = "RI_ERR_MD_1";
-                String error = "-";
+                List<String> errorCodes = new ArrayList<>();
                 if (raErrorLogs.size() > 0) {
-                    errorCode = raErrorLogs.get(0).getErrorCode() != null ? raErrorLogs.get(0).getErrorCode() : errorCode;
-                    error = raErrorLogs.get(0).getErrorCodeTemplateParameters();
+                    errorCodes.add(raErrorLogs.get(0).getErrorCode());
                 }
+                if (raSheetDetailsListMap.containsKey(raFileAndStats.getRaFileDetailsId()) && raSheetDetailsListMap.get(raFileAndStats.getRaFileDetailsId()).size() > 0) {
+                    for (RASheetDetails raSheetDetails : raSheetDetailsListMap.get(raFileAndStats.getRaFileDetailsId())) {
+                        List<RASheetErrorCodeDetails> raSheetErrorCodeDetailsList = raSheetErrorCodeDetailRepository.findByRASheetDetailsId(raSheetDetails.getId());
+                        if (raSheetErrorCodeDetailsList.size() > 0) {
+                            RASheetErrorCodeDetails raSheetErrorCodeDetails = raSheetErrorCodeDetailsList.get(0);
+                            errorCodes.add(raSheetErrorCodeDetails.getErrorCode());
+                        }
+                    }
+                }
+                errorCodes = errorCodes.stream().filter(Objects::nonNull).collect(Collectors.toList());
                 InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(), raFileAndStats.getRosterRecordCount(),
-                        error, errorCode);
+                        dartRaErrorCodeDetailsService.getErrorString(errorCodes), String.join(", ", errorCodes));
                 inCompatibleRosterDetails.add(details);
             }
             return new ResponseEntity<>(inCompatibleRosterDetails, HttpStatus.OK);

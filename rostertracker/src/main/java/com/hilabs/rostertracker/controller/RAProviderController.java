@@ -8,21 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ConcurrentLruCache;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.hilabs.roster.util.RosterStageUtils.getFailedFileStatusCodes;
-import static com.hilabs.roster.util.RosterStageUtils.getNonFailedFileStatusCodes;
+import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/ra-provider")
 @Log4j2
+@CrossOrigin(origins = "*")
 public class RAProviderController {
     @Autowired
     RAFileDetailsService raFileDetailsService;
@@ -31,14 +28,15 @@ public class RAProviderController {
         return raFileDetailsService.getRAFileDetailsListFromSearchStr(p);
     });
 
+
+
     @GetMapping("/file/search")
     //TODO don;t use entites
     public ResponseEntity<List<RAFileDetails>> getFileDetailsFromSearchStr(@RequestParam(defaultValue = "") String searchStr,
-                                                                           @RequestParam(defaultValue = "true", name = "isCompatible") String isCompatibleStr) {
+                                                                           @RequestParam(defaultValue = "", name = "type") String type) {
         try {
-            final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.equalsIgnoreCase("false");
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr);
-            List<Integer> statusCodes = isCompatible ? getNonFailedFileStatusCodes() : getFailedFileStatusCodes();
+            List<Integer> statusCodes = getStatusCodes(type);
             raFileDetailsList = raFileDetailsList.stream().filter(p -> {
                 if (p.getStatusCode() == null) {
                     return false;
@@ -54,10 +52,9 @@ public class RAProviderController {
     }
 
     @GetMapping("/market/all")
-    public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "true", name = "isCompatible") String isCompatibleStr) {
+    public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "", name = "type") String type) {
         try {
-            final boolean isCompatible = isCompatibleStr == null || !isCompatibleStr.toLowerCase().equals("false");
-            List<Integer> statusCodes = isCompatible ? getNonFailedFileStatusCodes() : getFailedFileStatusCodes();
+            List<Integer> statusCodes = getStatusCodes(type);
             List<String> markets = raFileDetailsService.findAllMarkets(statusCodes);
             return new ResponseEntity<>(markets, HttpStatus.OK);
         } catch (Exception ex) {

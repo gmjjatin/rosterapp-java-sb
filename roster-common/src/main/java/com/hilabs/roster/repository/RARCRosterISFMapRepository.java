@@ -17,4 +17,7 @@ public interface RARCRosterISFMapRepository extends CrudRepository<RARCRosterISF
     @Transactional
     @Query(value = "update RA_RC_ROSTER_ISF_MAP set is_active = :isActive where id in (:ids)", nativeQuery = true)
     void updateIsActiveForRARCRosterISFMap(List<Long> ids, Integer isActive);
+
+    @Query(value = "select count(*) from RA_RC_ROSTER_ISF_MAP where RA_SHEET_DETAILS_ID = :raSheetDetailsId and is_active = 1", nativeQuery = true)
+    int countMappingCountForSheetDetailsId(Long raSheetDetailsId);
 }

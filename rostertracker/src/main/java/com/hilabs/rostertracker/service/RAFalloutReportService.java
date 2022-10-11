@@ -16,7 +16,6 @@ public class RAFalloutReportService {
 
     public List<RAFalloutErrorInfo> getRASheetFalloutReport(Long raSheetDetailsId) {
         //TODO rewrite code
-        List<RAFalloutErrorInfo> raFalloutErrorInfoList = raFalloutReportRepository.getRAFalloutErrorInfoList(raSheetDetailsId);
-        return raFalloutErrorInfoList;
+        return raFalloutReportRepository.getRAFalloutErrorInfoList(raSheetDetailsId);
     }
 }

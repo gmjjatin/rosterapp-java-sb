@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+import static com.hilabs.rapipeline.preprocessing.PreProcessingFirstJobTask.preProcessingFirstJobTaskRunningMap;
 import static com.hilabs.rapipeline.preprocessing.PreprocessingUtils.preProcessingStatusCodes;
 
 @Component
@@ -36,8 +37,11 @@ public class PreProcessingFirstJobFetcher implements JobRetriever {
             log.info("raFileDetailsList size {}", raFileDetailsList.size());
             List<Task> executors = new ArrayList<>();
             for (RAFileDetails raFileDetails : raFileDetailsList) {
+                if (preProcessingFirstJobTaskRunningMap.containsKey(raFileDetails.getId())) {
+                    continue;
+                }
                 Map<String, Object> taskData = new HashMap<>();
-                taskData.put("id", "" + raFileDetails.getId());
+//                taskData.put("id", "" + raFileDetails.getId());
                 taskData.put("data", raFileDetails.getId());
                 PreProcessingFirstJobTask preProcessingFirstJobTask = new PreProcessingFirstJobTask(taskData);
                 preProcessingFirstJobTask.setApplicationContext(applicationContext);

@@ -27,6 +27,9 @@ public class RAFileDetails extends BaseEntity {
     @Column(name = "status_cd")
     private Integer statusCode;
 
+    @Column(name = "MANUAL_ACTN_REQ")
+    private Integer manualActionRequired;
+
     @Column(name = "is_active")
     private Integer isActive;
 

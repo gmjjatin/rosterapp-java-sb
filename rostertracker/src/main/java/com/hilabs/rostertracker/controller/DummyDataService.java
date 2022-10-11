@@ -1,14 +1,11 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.model.RosterSheetProcessStage;
-import com.hilabs.rostertracker.dto.RASheetType;
 import com.hilabs.rostertracker.dto.RosterColumnMappingData;
 import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
 import com.hilabs.rostertracker.dto.SheetDetails;
 import com.hilabs.rostertracker.model.ConfigUiFileData;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +24,9 @@ public class DummyDataService {
 
     public List<SheetDetails> getSheetDetails(Long raFileDetailsId) {
         List<SheetDetails> sheetDetailsList = new ArrayList<>();
-        sheetDetailsList.add(new SheetDetails(1L, "Adds", "Automated", RASheetType.AUTOMATED));
-        sheetDetailsList.add(new SheetDetails(2L, "Changes", "Automated", RASheetType.AUTOMATED));
-        sheetDetailsList.add(new SheetDetails(3L, "Terms", "MANUAL PROCESSING", RASheetType.MANUAL_PROCESSING));
+        sheetDetailsList.add(new SheetDetails(1L, "Adds", "Automated", "AUTOMATED", true));
+        sheetDetailsList.add(new SheetDetails(2L, "Changes", "Automated", "AUTOMATED", true));
+        sheetDetailsList.add(new SheetDetails(3L, "Terms", "MANUAL PROCESSING", "AUTOMATED", true));
         return sheetDetailsList;
     }
 
