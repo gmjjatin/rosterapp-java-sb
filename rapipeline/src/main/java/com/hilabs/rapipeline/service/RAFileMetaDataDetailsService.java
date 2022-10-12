@@ -62,8 +62,8 @@ public class RAFileMetaDataDetailsService {
         rartFileAltIds = rartFileAltIdsRepository.save(rartFileAltIds);
         return rartFileAltIds.getId();
     }
-    public List<RAFileMetaData> getNewAndReProcessFileMetaDataDetails() {
-        List<RAPlmRoFileData> raPlmRoFileDataList = new ArrayList<>(raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name()));
+    public List<RAFileMetaData> getNewAndReProcessFileMetaDataDetails(int count) {
+        List<RAPlmRoFileData> raPlmRoFileDataList = new ArrayList<>(raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name(), count));
         raPlmRoFileDataList.addAll(raPlmRoFileDataRepository.getReprocessRAPlmRoFileDataListWithStatus(PENDING.name()));
         List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
         Set<Long> set = new HashSet<>();

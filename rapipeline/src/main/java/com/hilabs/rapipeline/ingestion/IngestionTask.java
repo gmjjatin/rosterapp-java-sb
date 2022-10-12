@@ -6,7 +6,7 @@ import com.hilabs.rapipeline.dto.ErrorDetails;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.service.*;
-import com.hilabs.roster.entity.RAPlmRoFileData;
+import com.hilabs.roster.service.DartRASystemErrorsService;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -18,10 +18,10 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.*;
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.IN_PROGRESS;
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.REJECTED;
+import static com.hilabs.rapipeline.service.IngestionTaskService.ingestionTaskRunningMap;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 import static com.hilabs.roster.util.Constants.*;
 
@@ -32,12 +32,12 @@ public class IngestionTask extends Task {
     private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
     private FileSystemUtilService fileSystemUtilService;
     private RAFileDetailsService raFileDetailsService;
-    private RAProviderService raProviderService;
     private RAErrorLogsService raErrorLogsService;
-    private IngestionValidationService ingestionValidationService;
+    private IngestionTaskService ingestionTaskService;
+
+    private DartRASystemErrorsService dartRASystemErrorsService;
 
     //TODO this approach won't work for multiple files.
-    public static ConcurrentHashMap<Long, String> runningMap = new ConcurrentHashMap<>();
 
     private static final Gson gson = new Gson();
 
@@ -49,32 +49,9 @@ public class IngestionTask extends Task {
         this.fileSystemUtilService = (FileSystemUtilService) applicationContext.getBean("fileSystemUtilService");
         this.raFileMetaDataDetailsService = (RAFileMetaDataDetailsService) applicationContext.getBean("RAFileMetaDataDetailsService");
         this.raFileDetailsService = (RAFileDetailsService) applicationContext.getBean("RAFileDetailsService");
-        this.raProviderService = (RAProviderService) applicationContext.getBean("RAProviderService");
         this.raErrorLogsService = (RAErrorLogsService) applicationContext.getBean("RAErrorLogsService");
-        this.ingestionValidationService = (IngestionValidationService) applicationContext.getBean("ingestionValidationService");
-    }
-
-    public boolean shouldRun(RAFileMetaData raFileMetaData) {
-        //TODO confirm
-        Long plmRoFileDataId = raFileMetaData.getRaPlmRoFileDataId();
-        if (runningMap.containsKey(plmRoFileDataId)) {
-            log.warn("Ingestion task in progress for raFileMetaData {}", gson.toJson(raFileMetaData));
-            return false;
-        }
-        return isShouldReprocess(raFileMetaData);
-    }
-
-    public boolean isShouldReprocess(RAFileMetaData raFileMetaData) {
-        Optional<RAPlmRoFileData> raPlmRoFileDataOptional = raFileMetaDataDetailsService
-                .findById(raFileMetaData.getRaPlmRoFileDataId());
-        if (raPlmRoFileDataOptional.isPresent()) {
-            RAPlmRoFileData raPlmRoFileData = raPlmRoFileDataOptional.get();
-            if (raPlmRoFileData.getRaFileProcessingStatus() != null && raPlmRoFileData.getRaFileProcessingStatus().equalsIgnoreCase(NEW.name())) {
-                return true;
-            }
-            return raPlmRoFileData.getReProcess() != null && raPlmRoFileData.getReProcess().toUpperCase().startsWith("Y");
-        }
-        return false;
+        this.ingestionTaskService = (IngestionTaskService) applicationContext.getBean("ingestionTaskService");
+        this.dartRASystemErrorsService = (DartRASystemErrorsService) applicationContext.getBean("dartRASystemErrorsService");
     }
 
     public RAFileMetaData getRAFileMetaDataFromTaskData() {
@@ -106,12 +83,12 @@ public class IngestionTask extends Task {
             return;
         }
         try {
-            if (!shouldRun(raFileMetaData)) {
+            if (!ingestionTaskService.shouldRun(raFileMetaData)) {
                 return;
             }
-            runningMap.put(raFileMetaData.getRaPlmRoFileDataId(), fileName);
+            ingestionTaskRunningMap.put(raFileMetaData.getRaPlmRoFileDataId(), fileName);
             //Step 1 - Meta data validation
-            ErrorDetails validationErrorDetails = ingestionValidationService.validateMetaDataAndGetErrorList(raFileMetaData);
+            ErrorDetails validationErrorDetails = ingestionTaskService.validateMetaDataAndGetErrorList(raFileMetaData);
             if (validationErrorDetails != null) {
                 log.warn("raFileMetaDataDetails {} has these errors {} in metadata",
                         gson.toJson(raFileMetaData), gson.toJson(validationErrorDetails));
@@ -158,16 +135,22 @@ public class IngestionTask extends Task {
             }
             log.debug("IngestionTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception ex) {
-            log.error("Error in IngestionTask raFileMetaData {} ex {}", gson.toJson(raFileMetaData),
-                    ex.getMessage());
+            log.error("Error in IngestionTask raFileMetaData {} ex {} stacktrace {} ", gson.toJson(raFileMetaData),
+                    ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             //TODO fix it
-            String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 1000);
+            String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
             String message = trimToNChars(ex.getMessage(), 1000);
-            upsertIngestionStatus(raFileMetaData, FileMetaDataTableStatus.valueOf(raFileMetaData.getRAFileProcessingStatus()),
+            Long raFileDetailsId = upsertIngestionStatus(raFileMetaData, FileMetaDataTableStatus.valueOf(raFileMetaData.getRAFileProcessingStatus()),
                     ROSTER_INGESTION_FAILED, null, new ErrorDetails("RI_ERR_MD_UNKWN", message),
                     raFileMetaData.getReprocess() != null && raFileMetaData.getReprocess().toUpperCase().startsWith("Y"));
+
+            if (raFileDetailsId != null) {
+                dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
+                        "INGESTION", null, "UNKNOWN", ex.getMessage(),
+                        stacktrace, 1);
+            }
         } finally {
-            runningMap.remove(raFileMetaData.getRaPlmRoFileDataId());
+            ingestionTaskRunningMap.remove(raFileMetaData.getRaPlmRoFileDataId());
         }
     }
 
@@ -214,7 +197,7 @@ public class IngestionTask extends Task {
         return copied;
     }
 
-    public void upsertIngestionStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status, int statusCode, String standardizedFileName, ErrorDetails errorDetails,
+    public Long upsertIngestionStatus(RAFileMetaData raFileMetaData, FileMetaDataTableStatus status, int statusCode, String standardizedFileName, ErrorDetails errorDetails,
                                       boolean reProcess) {
         String fileName = raFileMetaData.getFileName();
         //TODO insert ticket ids
@@ -238,5 +221,6 @@ public class IngestionTask extends Task {
             raErrorLogsService.insertRASystemErrors(raFileDetailsId, errorDetails.getErrorCode(),
                     errorDetails.getErrorDescription());
         }
+        return raFileDetailsId;
     }
 }
