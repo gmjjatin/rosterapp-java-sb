@@ -3,6 +3,7 @@ package com.hilabs.rapipeline.service;
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.dto.ErrorDetails;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
+import com.hilabs.roster.entity.RAPlmRoFileData;
 import com.hilabs.roster.entity.RARTMarketLobVald;
 import com.hilabs.roster.repository.RARTMarketLobValdRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -11,16 +12,48 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.NEW;
 
 @Service
 @Slf4j
-public class IngestionValidationService {
-    private static final Gson gson = new Gson();
+public class IngestionTaskService {
+    private static Gson gson = new Gson();
+
     @Autowired
     private RARTMarketLobValdRepository rartMarketLobValdRepository;
     @Autowired
     private RAProvMarketLobMapService raProvMarketLobMapService;
+
+    public static ConcurrentHashMap<Long, String> ingestionTaskRunningMap = new ConcurrentHashMap<>();
+
+    @Autowired
+    private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
+
+    public boolean shouldRun(RAFileMetaData raFileMetaData) {
+        //TODO confirm
+        Long plmRoFileDataId = raFileMetaData.getRaPlmRoFileDataId();
+        if (ingestionTaskRunningMap.containsKey(plmRoFileDataId)) {
+            log.warn("Ingestion task in progress for raFileMetaData {}", gson.toJson(raFileMetaData));
+            return false;
+        }
+        return isShouldReprocess(raFileMetaData);
+    }
+
+    public boolean isShouldReprocess(RAFileMetaData raFileMetaData) {
+        Optional<RAPlmRoFileData> raPlmRoFileDataOptional = raFileMetaDataDetailsService
+                .findById(raFileMetaData.getRaPlmRoFileDataId());
+        if (raPlmRoFileDataOptional.isPresent()) {
+            RAPlmRoFileData raPlmRoFileData = raPlmRoFileDataOptional.get();
+            if (raPlmRoFileData.getRaFileProcessingStatus() != null && raPlmRoFileData.getRaFileProcessingStatus().equalsIgnoreCase(NEW.name())) {
+                return true;
+            }
+            return raPlmRoFileData.getReProcess() != null && raPlmRoFileData.getReProcess().toUpperCase().startsWith("Y");
+        }
+        return false;
+    }
 
     //TODO later - need to add more checks
     public ErrorDetails validateMetaDataAndGetErrorList(RAFileMetaData raFileMetaData) {
@@ -52,8 +85,6 @@ public class IngestionValidationService {
         if (!raFileMetaData.getFileName().endsWith(".xlsx")) {
             errorList.add("File name doesn't end with .xlsx");
         }
-
-
         if (raFileMetaData.getPlmNetwork() != null && raFileMetaData.getCntState() != null) {
             String market = raFileMetaData.getCntState();
             String lob = raFileMetaData.getPlmNetwork();
@@ -63,33 +94,9 @@ public class IngestionValidationService {
                 errorList.add("Invalid Cnt State and PLM Network combination");
             }
         }
-//        Optional<RAProvDetails> optionalRAProvDetails = raProvDetailsRepository.findByProvider(raFileMetaData.getOrgName());
-//        if (!optionalRAProvDetails.isPresent()) {
-//            errorList.add("Provider not listed");
-//        }
-//        if (optionalRAProvDetails.isPresent() && raFileMetaData.getPlmNetwork() != null && raFileMetaData.getCntState() != null) {
-//            RAProvDetails raProvDetails = optionalRAProvDetails.get();
-//            String lob = raFileMetaData.getPlmNetwork();
-//            String market = raFileMetaData.getCntState();
-//            List<RAProvMarketLobMap> raProvMarketLobMapList = raProvMarketLobMapService
-//                    .getRAProvMarketLobMapForProvider(raProvDetails.getId());
-//            //TODO confirm if comma separated
-//            boolean isKnownNetwork = raProvMarketLobMapList.stream().anyMatch(p -> {
-//                String m = p.getMarket();
-//                String pLob = p.getLob();
-//                if (m == null || pLob == null) {
-//                    return false;
-//                }
-//                return m.equalsIgnoreCase(market) && pLob.equalsIgnoreCase(lob);
-//            });
-//            if (!isKnownNetwork) {
-//                errorList.add(String.format("PlmNetwork %s CntState %s Organization Name %s is not supported", lob, market, raFileMetaData.getOrgName()));
-//            }
-//        }
         if (errorList.size() > 0) {
             return new ErrorDetails(errorCode, String.join(", ", errorList));
         }
         return null;
     }
 }
-

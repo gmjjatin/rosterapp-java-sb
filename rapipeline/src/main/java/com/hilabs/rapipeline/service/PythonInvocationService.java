@@ -27,61 +27,6 @@ public class PythonInvocationService {
     @Autowired
     private RASheetDetailsRepository raSheetDetailsRepository;
 
-    public void invokePythonProcessForPreProcessingJob1(Long raFileDetailsId) throws Exception {
-        List<String> commands = new ArrayList<>();
-        try {
-            //TODO hardcode for now
-//            File file = new File(appPropertiesConfig.getPreColMapNormLauncher());
-            File file = new File(appPropertiesConfig.getPreProcessingWrapper());
-            invokePythonProcess(file.getPath(), "--fileId",  "" + raFileDetailsId, "--rootPath",
-                    appPropertiesConfig.getRootPath());
-        } catch (Exception ex) {
-            log.info("Error in invokePythonProcess - commands {}", gson.toJson(commands));
-            throw ex;
-        }
-    }
-
-    public void invokePythonProcessForPreProcessingJob2(Long raFileDetailsId) throws Exception {
-        List<String> commands = new ArrayList<>();
-        try {
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
-            log.info("raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId, gson.toJson(raSheetDetailsList));
-            for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-                if (raSheetDetails.getStatusCode() == null) {
-                    continue;
-                }
-                log.info("raSheetDetailsId {} statusCode {}", raSheetDetails.getId(), raSheetDetails.getStatusCode());
-                if (raSheetDetails.getStatusCode().equals(113)) {
-                    log.info("raSheetDetailsId {} statusCode is 113", raSheetDetails.getId());
-                    //Pre Norm Col Map Launcher
-                    File file = new File(appPropertiesConfig.getPreNormColMapLauncher());
-                    invokePythonProcess(file.getPath(), "--sheetDetailsId",  "" + raSheetDetails.getId());
-                }
-                Optional<RASheetDetails> optionalRASheetDetails = raSheetDetailsRepository.findById(raSheetDetails.getId());
-                if (optionalRASheetDetails.isPresent()) {
-                    raSheetDetails = optionalRASheetDetails.get();
-                }
-                log.info("raSheetDetailsId {} statusCode updated to {}", raSheetDetails.getId(), raSheetDetails.getStatusCode());
-                if (raSheetDetails.getStatusCode().equals(125)) {
-                    File file = new File(appPropertiesConfig.getPostColMapNormLauncher());
-                    invokePythonProcess(file.getPath(), "--sheetDetailsId",  "" + raSheetDetails.getId());
-                }
-                optionalRASheetDetails = raSheetDetailsRepository.findById(raSheetDetails.getId());
-                if (optionalRASheetDetails.isPresent()) {
-                    raSheetDetails = optionalRASheetDetails.get();
-                }
-                log.info("raSheetDetailsId {} statusCode updated to {}", raSheetDetails.getId(), raSheetDetails.getStatusCode());
-                if (raSheetDetails.getStatusCode().equals(135)) {
-                    File file = new File(appPropertiesConfig.getPostNormColMapLauncher());
-                    invokePythonProcess(file.getPath(), "--sheetDetailsId",  "" + raSheetDetails.getId());
-                }
-            }
-        } catch (Exception ex) {
-            log.info("Error in invokePythonProcess - commands {}", gson.toJson(commands));
-            throw ex;
-        }
-    }
-
     public List<String> invokePythonProcess(String filePath, String ...arguments) throws Exception {
         List<String> commands = new ArrayList<>();
         try {

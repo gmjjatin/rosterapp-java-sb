@@ -22,17 +22,11 @@ public class AppPropertiesConfig {
     @Value("${pre_processing_wrapper}")
     private String preProcessingWrapper;
 
-    @Value("${pre_col_map_norm_launcher}")
-    private String preColMapNormLauncher;
+    @Value("${isf_wrapper}")
+    private String isfWrapper;
 
-    @Value("${pre_norm_col_map_launcher}")
-    private String preNormColMapLauncher;
-
-    @Value("${post_col_map_norm_launcher}")
-    private String postColMapNormLauncher;
-
-    @Value("${post_norm_col_map_launcher}")
-    private String postNormColMapLauncher;
+    @Value("${dart_wrapper}")
+    private String dartWrapper;
 
     @Value("${envConfigs}")
     private String envConfigs;
