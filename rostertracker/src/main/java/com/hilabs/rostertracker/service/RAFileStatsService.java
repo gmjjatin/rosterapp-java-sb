@@ -38,9 +38,7 @@ public class RAFileStatsService {
     @Autowired
     private RAStatusService raStatusService;
 
-    public List<RAFileAndErrorStats> getRAFileAndErrorStats(RAFileDetailsListAndSheetList raFileDetailsListAndSheetList) {
-        List<RAFileDetails> raFileDetailsList = raFileDetailsListAndSheetList.getRaFileDetailsList();
-        List<RASheetDetails> raSheetDetailsList = raFileDetailsListAndSheetList.getRaSheetDetailsList();
+    public List<RAFileAndErrorStats> getRAFileAndErrorStats(List<RAFileDetails> raFileDetailsList,  List<RASheetDetails> raSheetDetailsList) {
         Map<Long, List<RASheetDetails>> rosterSheetDetailsListMap = new HashMap<>();
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
             rosterSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
@@ -53,9 +51,7 @@ public class RAFileStatsService {
         return raFileAndErrorStatsList;
     }
 
-    public List<RAFileAndStats> getRAFileAndStats(RAFileDetailsListAndSheetList raFileDetailsListAndSheetList) {
-        List<RAFileDetails> raFileDetailsList = raFileDetailsListAndSheetList.getRaFileDetailsList();
-        List<RASheetDetails> raSheetDetailsList = raFileDetailsListAndSheetList.getRaSheetDetailsList();
+    public List<RAFileAndStats> getRAFileAndStats(List<RAFileDetails> raFileDetailsList,  List<RASheetDetails> raSheetDetailsList) {
         Map<Long, List<RASheetDetails>> rosterSheetDetailsListMap = new HashMap<>();
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
             rosterSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
@@ -165,5 +161,22 @@ public class RAFileStatsService {
         raSheetAndStats.setFalloutRecordCount(computeFalloutRecordCount(raSheetDetails));
         raSheetAndStats.setManualReviewRecordCount(raSheetDetails.getManualReviewRecordCount());
         return raSheetAndStats;
+    }
+
+    public Map<Long, RAFileDetails> getRAFileDetailsMap(List<RAFileDetails> raFileDetailsList) {
+        Map<Long, RAFileDetails> raFileDetailsMap = new HashMap<>();
+        for (RAFileDetails raFileDetails : raFileDetailsList) {
+            raFileDetailsMap.put(raFileDetails.getId(), raFileDetails);
+        }
+        return raFileDetailsMap;
+    }
+
+    public Map<Long, List<RASheetDetails>> getRASheetDetailsListMap(List<RAFileDetails> raFileDetailsList, List<RASheetDetails> raSheetDetailsList) {
+        Map<Long, List<RASheetDetails>> raSheetDetailsListMap = new HashMap<>();
+        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
+            raSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
+            raSheetDetailsListMap.get(raSheetDetails.getRaFileDetailsId()).add(raSheetDetails);
+        }
+        return raSheetDetailsListMap;
     }
 }

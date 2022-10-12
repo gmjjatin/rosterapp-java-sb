@@ -2,15 +2,16 @@ package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.dto.RAFalloutErrorInfo;
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.rostertracker.config.RosterConfig;
 import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
 import com.hilabs.rostertracker.dto.RASheetAndColumnErrorStats;
 import com.hilabs.rostertracker.dto.RASheetAndErrorStats;
 import com.hilabs.rostertracker.dto.RASheetFalloutReport;
-import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.service.RAFalloutReportService;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.service.RAFileStatsService;
+import com.hilabs.rostertracker.service.RASheetDetailsService;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
@@ -28,6 +29,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 
@@ -45,6 +47,9 @@ public class ErrorReportingController {
 
     @Autowired
     RAFalloutReportService raFalloutReportService;
+
+    @Autowired
+    RASheetDetailsService raSheetDetailsService;
 
     @Autowired
     private RosterConfig rosterConfig;
@@ -65,10 +70,11 @@ public class ErrorReportingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, statusCodes);
-            List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
+            List<RAFileDetails> raFileDetailsList = raFileDetailsService
+                    .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, statusCodes, limit, offset);
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(RAFileDetails::getId).collect(Collectors.toList()));
+            List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsList, raSheetDetailsList);
             return new ResponseEntity<>(raFileAndErrorStatsList, HttpStatus.OK);
         } catch (Exception ex) {
             //TODO fix log
@@ -95,10 +101,11 @@ public class ErrorReportingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, statusCodes);
-            List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsListAndSheetList);
+            List<RAFileDetails> raFileDetailsList = raFileDetailsService.getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, statusCodes, limit, offset);
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
+                    .map(RAFileDetails::getId).collect(Collectors.toList()));
+            List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsList, raSheetDetailsList);
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {
                 for (RASheetAndErrorStats raSheetAndErrorStats : raFileAndErrorStats.getSheetStatsList()) {

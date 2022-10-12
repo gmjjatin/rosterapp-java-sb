@@ -7,10 +7,7 @@ import com.hilabs.roster.util.RAStatusEntity;
 import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
 import com.hilabs.rostertracker.dto.SheetDetails;
 import com.hilabs.rostertracker.model.*;
-import com.hilabs.rostertracker.service.RAFileDetailsService;
-import com.hilabs.rostertracker.service.RAFileStatsService;
-import com.hilabs.rostertracker.service.RARCRosterISFMapService;
-import com.hilabs.rostertracker.service.RAStatusService;
+import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
@@ -21,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 
@@ -31,6 +29,10 @@ import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCod
 public class ConfigUIController {
     @Autowired
     RAFileDetailsService raFileDetailsService;
+
+    @Autowired
+    RASheetDetailsService raSheetDetailsService;
+
     @Autowired
     RAFileStatsService raFileStatsService;
     @Autowired
@@ -59,11 +61,12 @@ public class ConfigUIController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             //TODO demo
-            RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService.getRosterSourceListAndFilesList(raFileDetailsId, market,
-                    lineOfBusiness, startTime, endTime, limit, offset, statusCodes);
-            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileDetailsListAndSheetList.getRASheetDetailsListMap();
+            List<RAFileDetails> raFileDetailsList = raFileDetailsService.getRAFileDetailsList(raFileDetailsId, market,
+                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset);
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
             List<ConfigUiFileData> configUiFileDataList = new ArrayList<>();
-            for (RAFileDetails raFileDetails : raFileDetailsListAndSheetList.getRaFileDetailsList()) {
+            for (RAFileDetails raFileDetails : raFileDetailsList) {
                 if (!raSheetDetailsListMap.containsKey(raFileDetails.getId())
                         || raSheetDetailsListMap.get(raFileDetails.getId()).size() == 0) {
                     continue;

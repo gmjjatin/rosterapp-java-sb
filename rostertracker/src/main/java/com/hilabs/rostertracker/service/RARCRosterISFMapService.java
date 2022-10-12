@@ -120,4 +120,8 @@ public class RARCRosterISFMapService {
             }
         }
     }
+
+    public int countMappingCountForSheetDetailsId(Long raSheetDetailsId) {
+        return rarcRosterISFMapRepository.countMappingCountForSheetDetailsId(raSheetDetailsId);
+    }
 }

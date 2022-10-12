@@ -11,7 +11,6 @@ import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
 import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
 import com.hilabs.rostertracker.dto.RASheetReport;
-import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.model.RASheetProgressInfo;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
@@ -70,10 +69,11 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getStatusCodes("roster-tracker"));
-            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
+            List<RAFileDetails> raFileDetailsList = raFileDetailsService
+                    .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
             return new ResponseEntity<>(raFileAndStatsList, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
@@ -97,12 +97,14 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, getStatusCodes("roster-tracker"));
-            Map<Long, RAFileDetails> raFileDetailsMap = raFileDetailsListAndSheetList.getRAFileDetailsMap();
+            List<RAFileDetails> raFileDetailsList = raFileDetailsService
+                    .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
+                    .map(p -> p.getId()).collect(Collectors.toList()));
+            Map<Long, RAFileDetails> raFileDetailsMap = raFileStatsService.getRAFileDetailsMap(raFileDetailsList);
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
-            for (RASheetDetails raSheetDetails : raFileDetailsListAndSheetList.getRaSheetDetailsList()) {
+            for (RASheetDetails raSheetDetails : raSheetDetailsList) {
                 raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetailsMap.get(raSheetDetails.getRaFileDetailsId()), raSheetDetails));
             }
             return new ResponseEntity<>(raSheetProgressInfoList, HttpStatus.OK);
@@ -173,13 +175,15 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            RAFileDetailsListAndSheetList raFileDetailsListAndSheetList = raFileDetailsService
-                    .getRosterSourceListAndFilesList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, limit, offset, statusCodes);
-            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsListAndSheetList);
+            List<RAFileDetails> raFileDetailsList = raFileDetailsService
+                    .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, statusCodes, limit, offset);
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
+                    .map(p -> p.getId()).collect(Collectors.toList()));
+            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
-            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileDetailsListAndSheetList.getRASheetDetailsListMap();
+            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
             for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
                 List<RAFileErrorCodeDetails> raErrorLogs = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
                 //TODO need to fix it

@@ -4,10 +4,8 @@ import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RAFileDetailsLobRepository;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
-import com.hilabs.roster.repository.RARCRosterISFMapRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import com.hilabs.rostertracker.dto.SheetDetails;
-import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
 import com.hilabs.rostertracker.utils.RosterUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +27,7 @@ public class RAFileDetailsService {
     RAFileDetailsRepository raFileDetailsRepository;
 
     @Autowired
-    private RARCRosterISFMapRepository rarcRosterISFMapRepository;
+    private RARCRosterISFMapService rarcRosterISFMapService;
     public ConcurrentLruCache<String, List<RAFileDetails>> fileSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
         return raFileDetailsRepository.findByFileSearchStr(p);
     });
@@ -47,12 +45,12 @@ public class RAFileDetailsService {
     List<String> allMarkets = null;
     private List<String> allLineOfBusiness = null;
 
-    public RAFileDetailsListAndSheetList getRosterSourceListAndFilesList(Long raFileDetailsId, String market, String lineOfBusiness,
-                                                                         long startTime, long endTime, int limit, int offset, List<Integer> statusCodes) {
-        List<RAFileDetails> raFileDetailsList = getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset);
-        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(RAFileDetails::getId).collect(Collectors.toList()));
-        return new RAFileDetailsListAndSheetList(raFileDetailsList, raSheetDetailsList);
-    }
+//    public RAFileDetailsListAndSheetList getRosterSourceListAndFilesList(Long raFileDetailsId, String market, String lineOfBusiness,
+//                                                                         long startTime, long endTime, int limit, int offset, List<Integer> statusCodes) {
+//        List<RAFileDetails> raFileDetailsList = getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset);
+//        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(RAFileDetails::getId).collect(Collectors.toList()));
+//        return new RAFileDetailsListAndSheetList(raFileDetailsList, raSheetDetailsList);
+//    }
 
     public List<RAFileDetails> getRAFileDetailsList(Long raFileDetailsId, String market, String lineOfBusiness, long startTime, long endTime,
                                                     List<Integer> statusCodes, int limit, int offset) {
@@ -105,7 +103,7 @@ public class RAFileDetailsService {
         List<SheetDetails> sheetDetailsList = new ArrayList<>();
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
             //TODO demo check if mapping is available
-            int count = rarcRosterISFMapRepository.countMappingCountForSheetDetailsId(raSheetDetails.getId());
+            int count = rarcRosterISFMapService.countMappingCountForSheetDetailsId(raSheetDetails.getId());
             sheetDetailsList.add(new SheetDetails(raSheetDetails.getId(), raSheetDetails.getTabName(),
                     raSheetDetails.getType(), raSheetDetails.getType() != null && raSheetDetails.getType()
                     .equalsIgnoreCase("NON_TERM") ? "AUTOMATED" : raSheetDetails.getType(),

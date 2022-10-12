@@ -39,7 +39,7 @@ public class FileDownloadController {
     private RosterConfig rosterConfig;
 
     //TODO remove
-    @RequestMapping(path = "/downloadRoster", method = RequestMethod.GET)
+    @RequestMapping(path = "/download-roster", method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> downloadSampleReport(@RequestParam() Long raFileDetailsId) throws IOException {
         try {
             Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raFileDetailsId);
