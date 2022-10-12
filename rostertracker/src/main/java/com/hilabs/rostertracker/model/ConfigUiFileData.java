@@ -12,5 +12,5 @@ public class ConfigUiFileData {
     private Long rosterReceivedTime;
     private String status;
     private RosterSheetProcessStage stage;
-    private boolean isAlreadyConfigured;
+    private boolean isEditable;
 }

@@ -13,25 +13,25 @@ public class RARCFalloutReport extends BaseEntity {
     private Long id;
 
     @Column(name = "ra_sheet_details_id")
-    private int raSheetDetailsId;
+    private Integer raSheetDetailsId;
 
     @Column(name = "ra_row_id")
-    private int raRowId;
+    private Integer raRowId;
 
     @Column(name = "rule_ctgry_stage")
-    private int ruleCategoryStage;
+    private Integer ruleCategoryStage;
 
     @Column(name = "err_type")
-    private int errorType;
+    private String errorType;
 
     @Column(name = "err_dscrptn")
-    private int errorDescription;
+    private String errorDescription;
 
     @Column(name = "trnsctn_type")
-    private int transactionType;
+    private String transactionType;
 
     @Column(name = "recommendation_action")
-    private int recommendationAction;
+    private String recommendationAction;
 
     public RARCFalloutReport() {
     }
