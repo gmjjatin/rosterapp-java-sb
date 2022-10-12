@@ -4,6 +4,7 @@ import com.hilabs.roster.entity.RADLISFTemplate;
 import com.hilabs.roster.entity.RARCRosterISFMap;
 import com.hilabs.roster.repository.RADLISFTemplateRepository;
 import com.hilabs.roster.repository.RARCRosterISFMapRepository;
+import com.hilabs.rostertracker.dto.IsfColumnInfo;
 import com.hilabs.rostertracker.dto.RosterColumnMappingData;
 import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
 import lombok.extern.log4j.Log4j2;
@@ -39,7 +40,10 @@ public class RARCRosterISFMapService {
             }
             allIsfColumnSet.add(radlisfTemplate.getIsfColumnName());
         }
-        return new ArrayList<>(allIsfColumnSet);
+        //TODO order by column
+        List<String> columnList = new ArrayList<>(allIsfColumnSet);
+        Collections.sort(columnList);
+        return columnList;
     }
 
     public RosterSheetColumnMappingInfo getRosterSheetColumnMappingInfoForSheetId(Long raSheetDetailsId) {
@@ -58,25 +62,29 @@ public class RARCRosterISFMapService {
                         }
                         return l1.getColumnMappingRank() > l2.getColumnMappingRank() ? 1 : -1;
                     }).collect(Collectors.toList());
-            List<String> isfColumnValues = new ArrayList<>();
+            List<IsfColumnInfo> isfColumnValues = new ArrayList<>();
             Set<String> alreadyAdded = new HashSet<>();
             for (RARCRosterISFMap rarcRosterISFMap : isfRarcRosterISFMapList) {
                 if (alreadyAdded.contains(rarcRosterISFMap.getIsfColumnName())) {
                     continue;
                 }
-                isfColumnValues.add(rarcRosterISFMap.getIsfColumnName());
+                isfColumnValues.add(new IsfColumnInfo(rarcRosterISFMap.getIsfColumnName(), true));
                 alreadyAdded.add(rarcRosterISFMap.getIsfColumnName());
             }
             for (String isfColumn : getAllIsfColumnList()) {
                 if (alreadyAdded.contains(isfColumn)) {
                     continue;
                 }
-                isfColumnValues.add(isfColumn);
+                isfColumnValues.add(new IsfColumnInfo(isfColumn, false));
                 alreadyAdded.add(isfColumn);
             }
             rosterColumnMappingDataList.add(new RosterColumnMappingData(rosterColumnName, isfColumnValues));
         }
-
+        rosterColumnMappingDataList.sort((l, r) -> {
+            String lStr = l.getRosterColumnName();
+            String rStr = r.getRosterColumnName();
+            return lStr.compareTo(rStr);
+        });
         return new RosterSheetColumnMappingInfo(raSheetDetailsId, rosterColumnMappingDataList);
     }
 
@@ -110,7 +118,6 @@ public class RARCRosterISFMapService {
                         1, 1);
                 rarcRosterISFMapRepository.save(rarcRosterISFMap);
             }
-
         }
     }
 }

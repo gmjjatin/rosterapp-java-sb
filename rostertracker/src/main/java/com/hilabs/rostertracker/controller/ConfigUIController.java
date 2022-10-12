@@ -6,16 +6,14 @@ import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.util.RAStatusEntity;
 import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
 import com.hilabs.rostertracker.dto.SheetDetails;
-import com.hilabs.rostertracker.model.ConfigUiFileData;
-import com.hilabs.rostertracker.model.RAFileDetailsListAndSheetList;
-import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
-import com.hilabs.rostertracker.model.UpdateColumnMappingSheetData;
+import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.service.RAFileStatsService;
 import com.hilabs.rostertracker.service.RARCRosterISFMapService;
 import com.hilabs.rostertracker.service.RAStatusService;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
+import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -95,7 +93,6 @@ public class ConfigUIController {
 
     @GetMapping("/sheet-column-mapping")
     public ResponseEntity<RosterSheetColumnMappingInfo> getSheetColumnMapping(@RequestParam(defaultValue = "raSheetDetailsId") Long raSheetDetailsId) {
-        //TODO fix the API
         RosterSheetColumnMappingInfo rosterSheetColumnMappingInfo = raRcRosterISFMapService.getRosterSheetColumnMappingInfoForSheetId(raSheetDetailsId);
         return ResponseEntity.ok(rosterSheetColumnMappingInfo);
     }
@@ -112,10 +109,8 @@ public class ConfigUIController {
                         .getActiveRARCRosterISFMapListForSheetId(raSheetDetailsId);
                 raRcRosterISFMapService.updateSheetMapping(rarcRosterISFMapList, data, raSheetDetailsId);
             }
-            //TODO
-            Map<String, String> map = new HashMap<>();
-            map.put("SUCCESSFUL", "SUCCESSFUL");
-            return new ResponseEntity<>(map, HttpStatus.OK);
+            //TODO return better response
+            return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in updateColumnMapping updateColumnMappingRequest {}", updateColumnMappingRequest);
             throw ex;
@@ -123,14 +118,15 @@ public class ConfigUIController {
     }
 
     @PostMapping("/approve-column-mapping")
-    public ResponseEntity<Map<String, String>> approveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
+    public ResponseEntity<Map<String, String>> approveColumnMapping(@RequestBody ApproveColumnMappingRequest approveColumnMappingRequest) {
         try {
-            //TODO yet to be implemented
-            Map<String, String> map = new HashMap<>();
-            map.put("SUCCESSFUL", "SUCCESSFUL");
-            return new ResponseEntity<>(map, HttpStatus.OK);
+            Long raFileDetailsId = approveColumnMappingRequest.getRaFileDetailsId();
+            raFileDetailsService.updateManualActionRequiredInRAFileDetails(raFileDetailsId, 0);
+            //TODO return better response
+            return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
         } catch (Exception ex) {
-            log.error("Error in updateColumnMapping updateColumnMappingRequest {}", updateColumnMappingRequest);
+            log.error("Error in updateColumnMapping message {} stackTrace {}", ex.getMessage(),
+                    ExceptionUtils.getStackTrace(ex));
             throw ex;
         }
     }

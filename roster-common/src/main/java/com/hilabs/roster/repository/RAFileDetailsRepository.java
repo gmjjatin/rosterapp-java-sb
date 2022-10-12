@@ -86,4 +86,9 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Transactional
     @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode where id = :raFileDetailsId", nativeQuery = true)
     void updateRAFileDetailsStatus(Long raFileDetailsId, Integer statusCode);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update RA_RT_FILE_DETAILS set MANUAL_ACTN_REQ = :manualActionRequired where id = :raFileDetailsId", nativeQuery = true)
+    void updateManualActionRequiredInRAFileDetails(Long raFileDetailsId, Integer manualActionRequired);
 }

@@ -234,4 +234,8 @@ public class RAFileDetailsService {
         }
         return getNonFailedWithoutNonCompatibleFileStatusCodes();
     }
+
+    public void updateManualActionRequiredInRAFileDetails(Long raFileDetailsId, Integer manualActionRequired) {
+        raFileDetailsRepository.updateManualActionRequiredInRAFileDetails(raFileDetailsId, manualActionRequired);
+    }
 }

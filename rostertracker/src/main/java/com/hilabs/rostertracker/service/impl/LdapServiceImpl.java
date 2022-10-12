@@ -7,6 +7,7 @@ import org.springframework.ldap.core.*;
 import org.springframework.ldap.support.LdapNameBuilder;
 
 import javax.naming.Name;
+import javax.naming.directory.DirContext;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -27,7 +28,6 @@ public class LdapServiceImpl implements LdapService {
     @Override
     public void authenticate(String username, String password) {
         contextSource.getContext("cn=" + username + ",ou=users," + ldapBase, password);
-
     }
 
     @Override
