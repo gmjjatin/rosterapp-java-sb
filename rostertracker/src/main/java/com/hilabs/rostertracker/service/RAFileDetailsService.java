@@ -98,25 +98,6 @@ public class RAFileDetailsService {
         }
     }
 
-    public List<SheetDetails> getRASheetDetailsList(Long raFileDetailsId) {
-        List<RASheetDetails> raSheetDetailsList = getRAFileDetailsList(raFileDetailsId);
-        List<SheetDetails> sheetDetailsList = new ArrayList<>();
-        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            //TODO demo check if mapping is available
-            int count = rarcRosterISFMapService.countMappingCountForSheetDetailsId(raSheetDetails.getId());
-            sheetDetailsList.add(new SheetDetails(raSheetDetails.getId(), raSheetDetails.getTabName(),
-                    raSheetDetails.getType(), raSheetDetails.getType() != null && raSheetDetails.getType()
-                    .equalsIgnoreCase("NON_TERM") ? "AUTOMATED" : raSheetDetails.getType(),
-                    count != 0));
-        }
-        return sheetDetailsList;
-    }
-
-    public List<RASheetDetails> getRAFileDetailsList(Long raFileDetailsId) {
-        log.debug("Fetch sheet data for raFileDetailsId : {}", raFileDetailsId);
-        return raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
-    }
-
     //TODO
     @Async
     public void populateFileSearchStrCache(String searchStr) {

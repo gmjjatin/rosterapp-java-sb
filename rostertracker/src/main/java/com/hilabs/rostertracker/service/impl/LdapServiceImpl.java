@@ -1,10 +1,13 @@
 package com.hilabs.rostertracker.service.impl;
 
+import com.google.gson.Gson;
 import com.hilabs.rostertracker.service.LdapService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.support.LdapNameBuilder;
+import org.springframework.stereotype.Service;
 
 import javax.naming.Name;
 import javax.naming.directory.DirContext;
@@ -13,6 +16,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
 
+@Service
+@Slf4j
 public class LdapServiceImpl implements LdapService {
 
 
@@ -27,7 +32,29 @@ public class LdapServiceImpl implements LdapService {
 
     @Override
     public void authenticate(String username, String password) {
-        contextSource.getContext("cn=" + username + ",ou=users," + ldapBase, password);
+        try {
+            DirContext dirContext = contextSource.getContext(username + ldapBase, password);
+            try {
+                log.info(dirContext.toString());
+            } catch (Exception ex) {
+                log.error("first" + ex.getMessage());
+            }
+
+            try {
+                log.info(new Gson().toJson(dirContext));
+            } catch (Exception ex) {
+                log.error("format" + ex.getMessage());
+            }
+
+            try {
+                log.info(new Gson().toJson(dirContext.getAttributes("")));
+            } catch (Exception ex) {
+                log.error("att" + ex.getMessage());
+            }
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            throw ex;
+        }
     }
 
     @Override

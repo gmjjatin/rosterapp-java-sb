@@ -6,6 +6,8 @@ import com.hilabs.rostertracker.model.UserDTO;
 import com.hilabs.rostertracker.model.jwt.JwtRequest;
 import com.hilabs.rostertracker.service.JwtUserDetailsService;
 import com.hilabs.roster.entity.RosterUser;
+import com.hilabs.rostertracker.service.LdapService;
+import com.hilabs.rostertracker.service.impl.LdapServiceImpl;
 import io.jsonwebtoken.impl.DefaultClaims;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -44,10 +46,20 @@ public class JwtAuthenticationController {
     @Autowired
     private JwtUserDetailsService jwtUserDetailsService;
 
+    @Autowired
+    private LdapServiceImpl ldapService;
+
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<LoginDetails> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request)
             throws Exception {
+        try {
+            List<String> users = ldapService.search(authenticationRequest.getUsername().trim().toLowerCase());
+            log.info(users.stream().collect(Collectors.joining(", ")));
+        } catch (Exception ex) {
+            log.info(ex.getMessage());
+        }
+        ldapService.authenticate(authenticationRequest.getUsername().trim().toLowerCase(), authenticationRequest.getPassword());
         String username=authenticationRequest.getUsername().trim().toLowerCase();
         authenticate(username, authenticationRequest.getPassword());
         final UserDetails userDetails = jwtUserDetailsService
