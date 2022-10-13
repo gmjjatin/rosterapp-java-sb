@@ -9,11 +9,13 @@ import org.springframework.ldap.core.*;
 import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 
-import javax.naming.Name;
-import javax.naming.directory.DirContext;
+import javax.naming.*;
+import javax.naming.directory.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Hashtable;
 import java.util.List;
 
 @Service
@@ -30,42 +32,142 @@ public class LdapServiceImpl implements LdapService {
     @Value("${spring.ldap.base}")
     private String ldapBase;
 
+    @Value("${spring.ldap.url}")
+    private String ldapUrl;
+
+
+    @Value("${spring.ldap.username}")
+    private String ldapUsername;
+
+    @Value("${spring.ldap.password}")
+    private String ldapPassword;
+
     @Override
-    public void authenticate(String username, String password) {
+    public boolean authenticate(String username, String password) {
+        List<Attributes> attributesList = search(username);
+        if (attributesList.size() == 0) {
+            return false;
+        }
+        //TODO Assuming uniqueness for username
+        Attributes attributes = attributesList.get(0);
         try {
-            DirContext dirContext = contextSource.getContext(username + ldapBase, password);
-            try {
-                log.info(dirContext.toString());
-            } catch (Exception ex) {
-                log.error("first" + ex.getMessage());
-            }
-
-            try {
-                log.info(new Gson().toJson(dirContext));
-            } catch (Exception ex) {
-                log.error("format" + ex.getMessage());
-            }
-
-            try {
-                log.info(new Gson().toJson(dirContext.getAttributes("")));
-            } catch (Exception ex) {
-                log.error("att" + ex.getMessage());
-            }
+            DirContext dirContext = contextSource.getContext((String) (attributes.get("distinguishedName").get()), password);
+            return true;
         } catch (Exception ex) {
-            log.error(ex.getMessage());
-            throw ex;
+            log.error("Error in authenticate {}", ex.getMessage());
+            return false;
         }
     }
 
     @Override
-    public List<String> search(String username) {
-        return ldapTemplate.search(
-                "",
-                "cn=" + username,
-                (AttributesMapper<String>) attrs -> (String) attrs
-                        .get("cn")
-                        .get());
+    public List<Attributes> search(String username) {
+        ldapTemplate.setIgnorePartialResultException(true);
+        try {
+            return ldapTemplate.search(
+                    "" ,
+                    "cn=" + username,
+                    (AttributesMapper<Attributes>) attrs -> attrs
+            );
+        } catch (Exception ex) {
+            log.error("Error in search {}", ex.getMessage());
+            return new ArrayList<>();
+        }
     }
+
+
+
+    private void printAttrs(Attributes attrs) {
+        System.out.println(">> printAttrs()");
+        if (attrs == null)
+        {
+            System.out.println("No attributes");
+        } else {
+            // Print every single attribute
+            try
+            {
+                for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();)
+                {
+                    Attribute attr = (Attribute) ae.next();
+                    System.out.print(attr.getID());
+
+                    // Print values of current attribute
+                    NamingEnumeration e = attr.getAll();
+                    while(e.hasMore())
+                    {
+                        String value = e.next().toString();
+                        System.out.print("=" + value + ",");
+                    }
+                }
+            } catch (NamingException e) { e.printStackTrace(); }
+        }
+        System.out.println("<< printAttrs()");
+    }
+
+    public void printLdapHierarchy(){
+
+        log.info("Starting printLdapHierarchy");
+
+        Hashtable env = new Hashtable();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        env.put(Context.PROVIDER_URL, ldapUrl + "/" + ldapBase);
+
+        env.put(Context.SECURITY_AUTHENTICATION, "simple");
+        env.put(Context.SECURITY_PRINCIPAL, ldapUsername);
+        env.put(Context.SECURITY_CREDENTIALS, ldapPassword);
+
+        DirContext ctx;
+        try {
+            ctx = new InitialDirContext(env);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+
+        //List<String> list = new LinkedList<String>();
+        NamingEnumeration results = null;
+        try {
+            SearchControls controls = new SearchControls();
+            controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            results = ctx.search("", "(objectclass=*)", controls);
+
+            while (results.hasMore()) {
+                SearchResult searchResult = (SearchResult) results.next();
+                System.out.println(searchResult.toString());
+                Attributes attributes = searchResult.getAttributes();
+                printAttrs(attributes);
+//                NamingEnumeration ne = attributes.getAll();
+//                while(ne.hasMore()){
+//                    Attribute attribute = (Attribute)ne.next();
+//                    System.out.print
+//                attribute.getID()
+//                }
+//                Attribute attr = attributes.get("cn");
+//                String cn = attr.get().toString();
+//                list.add(cn);
+            }
+        } catch (NameNotFoundException e) {
+            // The base context was not found.
+            // Just clean up and exit.
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (results != null) {
+                try {
+                    results.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+            if (ctx != null) {
+                try {
+                    ctx.close();
+                } catch (Exception e) {
+                    // Never mind this.
+                }
+            }
+        }
+    }
+
+
 
     @Override
     public void create(String username, String password) {

@@ -2,15 +2,13 @@ package com.hilabs.rostertracker.controller;
 
 import com.hilabs.rostertracker.config.RosterConfig;
 import com.hilabs.rostertracker.model.LoginDetails;
-import com.hilabs.rostertracker.model.UserDTO;
 import com.hilabs.rostertracker.model.jwt.JwtRequest;
 import com.hilabs.rostertracker.service.JwtUserDetailsService;
-import com.hilabs.roster.entity.RosterUser;
-import com.hilabs.rostertracker.service.LdapService;
 import com.hilabs.rostertracker.service.impl.LdapServiceImpl;
 import io.jsonwebtoken.impl.DefaultClaims;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,20 +16,18 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -49,92 +45,70 @@ public class JwtAuthenticationController {
     @Autowired
     private LdapServiceImpl ldapService;
 
+    @Value("${isAuthenticationNeeded}")
+    private String isAuthenticationNeeded;
+
+
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<LoginDetails> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request)
-            throws Exception {
-        try {
-            List<String> users = ldapService.search(authenticationRequest.getUsername().trim().toLowerCase());
-            log.info(users.stream().collect(Collectors.joining(", ")));
-        } catch (Exception ex) {
-            log.info(ex.getMessage());
+    public ResponseEntity<LoginDetails> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request) throws Exception {
+        boolean isAuthenticated = false;
+        String username = authenticationRequest.getUsername() == null ? null : authenticationRequest.getUsername().trim().toLowerCase();
+        String password = authenticationRequest.getPassword();
+        if (isAuthenticationNeeded.equalsIgnoreCase("true")) {
+            if (username != null) {
+                isAuthenticated = ldapService.authenticate(username, password);
+            }
+        } else {
+            isAuthenticated = username != null && !username.isEmpty() && password != null && !password.isEmpty();
         }
-        ldapService.authenticate(authenticationRequest.getUsername().trim().toLowerCase(), authenticationRequest.getPassword());
-        String username=authenticationRequest.getUsername().trim().toLowerCase();
-        authenticate(username, authenticationRequest.getPassword());
-        final UserDetails userDetails = jwtUserDetailsService
-                .loadUserByUsername(username);
+        if (!isAuthenticated) {
+            throw new BadCredentialsException("Unauthorized");
+        }
+        final UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
         LoginDetails loginDetails = jwtUserDetailsService.getLoginDetails(userDetails,username,authenticationRequest.getPassword());
-        HttpSession session = request.getSession();
-        session.setAttribute("userName", username);
         return new ResponseEntity<>(loginDetails, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public ResponseEntity saveUser(@RequestBody UserDTO user) throws Exception {
-        String userId = user.getUserId().toLowerCase();
-        RosterUser isExistingUser = jwtUserDetailsService.findUserbyUserId(userId);
-        if(null != isExistingUser  && isExistingUser.getActiveFlag() == 1) {
-            log.info("user already exists with the userId");
-            return new ResponseEntity<String>("user already exists with the userId", HttpStatus.CONFLICT);
-        }
-        RosterUser userSaved = jwtUserDetailsService.save(user);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
+//    @RequestMapping(value = "/updateUser", method = RequestMethod.POST)
+//    public ResponseEntity updateUser(@RequestBody UserDTO user) throws Exception {
+//        String userId=user.getUserId().toLowerCase();
+//        RosterUser isExistingUser = jwtUserDetailsService.findUserbyUserId(userId);
+//        if(null == isExistingUser) {
+//            log.info("user doesn't exist with the userId");
+//            return new ResponseEntity<String>("user doesn't exist with the userId", HttpStatus.CONFLICT);
+//        }
+//        //update only role
+//        RosterUser userUpdated = jwtUserDetailsService.updateExisting(isExistingUser,user);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
-    @RequestMapping(value = "/updateUser", method = RequestMethod.POST)
-    public ResponseEntity updateUser(@RequestBody UserDTO user) throws Exception {
-        String userId=user.getUserId().toLowerCase();
-        RosterUser isExistingUser = jwtUserDetailsService.findUserbyUserId(userId);
-        if(null == isExistingUser) {
-            log.info("user doesn't exist with the userId");
-            return new ResponseEntity<String>("user doesn't exist with the userId", HttpStatus.CONFLICT);
-        }
-        //update only role
-        RosterUser userUpdated = jwtUserDetailsService.updateExisting(isExistingUser,user);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    @RequestMapping(value = "/updatePassword", method = RequestMethod.POST)
+//    public ResponseEntity<RosterUser> updatePassword(@RequestBody UserDTO user) throws Exception {
+//        String userId=user.getUserId().toLowerCase();
+//        RosterUser isExistingUser = jwtUserDetailsService.findUserbyUserId(userId);
+//        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+//        if(null != isExistingUser && bCryptPasswordEncoder.matches(user.getPassword(), isExistingUser.getPassword())) {
+//            return new ResponseEntity<>(HttpStatus.CONFLICT);
+//        }
+//        jwtUserDetailsService.updatePassword(userId, user.getPassword());
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
+//
+//    @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
+//    public ResponseEntity<RosterUser> resetPassword(@RequestBody UserDTO user) throws Exception {
+//        String userId=user.getUserId().toLowerCase();
+//        jwtUserDetailsService.resetPassword(userId);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
+//
+//    @RequestMapping(value = "/deleteUser", method = RequestMethod.POST)
+//    public ResponseEntity<RosterUser> deleteUser(@RequestBody UserDTO user) throws Exception {
+//        String userId=user.getUserId().toLowerCase();
+//        jwtUserDetailsService.deleteUser(userId);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
-    @RequestMapping(value = "/updatePassword", method = RequestMethod.POST)
-    public ResponseEntity<RosterUser> updatePassword(@RequestBody UserDTO user) throws Exception {
-        String userId=user.getUserId().toLowerCase();
-        RosterUser isExistingUser = jwtUserDetailsService.findUserbyUserId(userId);
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        if(null != isExistingUser && bCryptPasswordEncoder.matches(user.getPassword(), isExistingUser.getPassword())) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-        jwtUserDetailsService.updatePassword(userId, user.getPassword());
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
-    public ResponseEntity<RosterUser> resetPassword(@RequestBody UserDTO user) throws Exception {
-        String userId=user.getUserId().toLowerCase();
-        jwtUserDetailsService.resetPassword(userId);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/deleteUser", method = RequestMethod.POST)
-    public ResponseEntity<RosterUser> deleteUser(@RequestBody UserDTO user) throws Exception {
-        String userId=user.getUserId().toLowerCase();
-        jwtUserDetailsService.deleteUser(userId);
-        return new ResponseEntity<>(HttpStatus.OK);
-
-    }
-
-    @RequestMapping(value = "/getRoles", method = RequestMethod.GET)
-    public ResponseEntity<List<String>> getRoles() throws Exception {
-        List<String> roles = jwtUserDetailsService.getRoles();
-        return new ResponseEntity<>(roles,HttpStatus.OK);
-
-    }
-
-    @RequestMapping(value = "/getUsers", method = RequestMethod.GET)
-    public ResponseEntity<List<UserDTO>> getUsers() throws Exception {
-        List<UserDTO> users = jwtUserDetailsService.getUsers();
-        return new ResponseEntity<>(users,HttpStatus.OK);
-
-    }
     @RequestMapping(value = "/refreshtoken", method = RequestMethod.GET)
     public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
         // From the HttpRequest get the claims

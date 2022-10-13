@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class LoginDetails {
     private String token;
-    private String userId;
+    private String username;
     private String roleCD;
     private String firstName;
     private Boolean isDefaultPassword=false;
