@@ -60,7 +60,7 @@ public class RASheetDetailsService {
                 continue;
             }
             //TODO demo
-            List<String> automatedAndTermRASheetTypes = Arrays.asList("NON_TERMS", "TERMS", "Automated");
+            List<String> automatedAndTermRASheetTypes = Arrays.asList("NON_TERMS", "TERMS", "Automated", "Data");
             String type = raSheetDetails.getType();
             if (automatedAndTermRASheetTypes.stream().anyMatch(p -> p.equalsIgnoreCase(type))) {
                 filteredRaSheetDetailsList.add(raSheetDetails);

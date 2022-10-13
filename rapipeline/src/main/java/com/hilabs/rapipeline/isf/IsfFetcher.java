@@ -50,15 +50,20 @@ public class IsfFetcher implements JobRetriever {
             log.info("raFileDetailsList size {}", raFileDetailsList.size());
             List<Task> executors = new ArrayList<>();
             int count = 0;
+            List<Long> inCompatibleFileIdList = new ArrayList<>();
+            List<Long> pickedFileIdList = new ArrayList<>();
+            List<Long> newlyAddedSheetIdList = new ArrayList<>();
             for (RAFileDetails raFileDetails : raFileDetailsList) {
                 Long raFileDetailsId = raFileDetails.getId();
                 List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
                 boolean isCompatible = raFileStatusUpdatingService.checkCompatibleOrNotAndUpdateFileStatus(raFileDetailsId, raSheetDetailsList);
                 if (!isCompatible) {
-                    log.error("raFileDetails is not eligible for {}", raFileDetails);
+//                    log.error("raFileDetails {} is not eligible for ISF", raFileDetails);
+                    inCompatibleFileIdList.add(raFileDetails.getId());
                     continue;
                 }
-                log.error("Picked raFileDetails is not eligible for {}", raFileDetails);
+//                log.error("Picked raFileDetails {} for ISF", raFileDetails);
+                pickedFileIdList.add(raFileDetails.getId());
                 if (raFileDetails.getStatusCode() == 27) {
                     raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 31);
                 }
@@ -74,11 +79,14 @@ public class IsfFetcher implements JobRetriever {
                     isfTask.setApplicationContext(applicationContext);
                     executors.add(isfTask);
                     raSheetDetailsService.updateRASheetDetailsStatus(raSheetDetailsId, 150);
+                    newlyAddedSheetIdList.add(raFileDetails.getId());
                     if (count >= tasks) {
                         break;
                     }
                 }
             }
+            log.info("ISF inCompatibleFileIdList {} pickedFileIdList {} newlyAddedSheetIdList {}",
+                    gson.toJson(inCompatibleFileIdList), gson.toJson(pickedFileIdList), gson.toJson(newlyAddedSheetIdList));
             return executors;
         } catch (Exception ex) {
             log.error("Error IsfFetcher {}", ex.getMessage());
