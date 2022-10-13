@@ -57,7 +57,7 @@ public class DartFetcher implements JobRetriever {
             for (RAFileDetails raFileDetails : raFileDetailsList) {
                 Long raFileDetailsId = raFileDetails.getId();
                 List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
-                boolean isCompatible = raFileStatusUpdatingService.checkCompatibleOrNotAndUpdateFileStatus(raFileDetailsId, raSheetDetailsList);
+                boolean isCompatible = raFileStatusUpdatingService.checkCompatibleOrNotAndUpdateFileStatusForDart(raFileDetailsId, raSheetDetailsList);
                 if (!isCompatible) {
 //                    log.info("raFileDetails {}  is not eligible for Dart", raFileDetails);
                     inCompatibleFileIdList.add(raFileDetails.getId());

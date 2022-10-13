@@ -29,7 +29,7 @@ public class RAFileStatusUpdatingService {
         return list1.stream().allMatch(l1 -> list2.stream().anyMatch(l2 -> Objects.equals(l1, l2)));
     }
 
-    public boolean checkCompatibleOrNotAndUpdateFileStatus(Long raFileDetailsId, List<RASheetDetails> raSheetDetailsList) {
+    public boolean checkCompatibleOrNotAndUpdateFileStatusForIsf(Long raFileDetailsId, List<RASheetDetails> raSheetDetailsList) {
         log.info("checkCompatibleOrNotAndUpdateFileStatus for raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId,
                 new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId())));
         List<Integer> sheetCodes = raSheetDetailsList.stream().map(s -> s.getStatusCode()).collect(Collectors.toList());
@@ -49,7 +49,26 @@ public class RAFileStatusUpdatingService {
         } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 155))) {
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 35);
             return false;
-        } else if (hasIntersection(Arrays.asList(163), sheetCodes)) {
+        }
+        return true;
+    }
+
+
+    public boolean checkCompatibleOrNotAndUpdateFileStatusForDart(Long raFileDetailsId, List<RASheetDetails> raSheetDetailsList) {
+        log.info("checkCompatibleOrNotAndUpdateFileStatus for raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId,
+                new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId())));
+        List<Integer> sheetCodes = raSheetDetailsList.stream().map(s -> s.getStatusCode()).collect(Collectors.toList());
+        if (sheetCodes.stream().anyMatch(Objects::isNull)) {
+            log.error("One of the status codes is null for raFileDetailsId {}", raFileDetailsId);
+            //TODO
+            return false;
+        }
+        if (sheetCodes.size() == 0) {
+            log.error("Zero status codes for raFileDetailsId {}", raFileDetailsId);
+            //TODO
+            return false;
+        }
+        if (hasIntersection(Arrays.asList(163), sheetCodes)) {
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 43);
             return false;
         } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165))) {
