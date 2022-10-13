@@ -55,8 +55,10 @@ public class IsfFetcher implements JobRetriever {
                 List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
                 boolean isCompatible = raFileStatusUpdatingService.checkCompatibleOrNotAndUpdateFileStatus(raFileDetailsId, raSheetDetailsList);
                 if (!isCompatible) {
+                    log.error("raFileDetails is not eligible for {}", raFileDetails);
                     continue;
                 }
+                log.error("Picked raFileDetails is not eligible for {}", raFileDetails);
                 if (raFileDetails.getStatusCode() == 27) {
                     raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 31);
                 }

@@ -77,8 +77,8 @@ public class IsfTaskService {
         List<String> commands = new ArrayList<>();
         try {
             File file = new File(appPropertiesConfig.getIsfWrapper());
-            pythonInvocationService.invokePythonProcess(file.getPath(), "--sheetId",  "" + raSheetDetails.getId(), "--rootPath",
-                    appPropertiesConfig.getRootPath());
+            pythonInvocationService.invokePythonProcess(file.getPath(),"--envConfigs", appPropertiesConfig.getEnvConfigs(),
+                    "--sheetDetailsId",  "" + raSheetDetails.getId());
         } catch (Exception ex) {
             log.info("Error in invokePythonProcess - commands {}", gson.toJson(commands));
             throw ex;

@@ -31,7 +31,7 @@ public class RAFileStatusUpdatingService {
 
     public boolean checkCompatibleOrNotAndUpdateFileStatus(Long raFileDetailsId, List<RASheetDetails> raSheetDetailsList) {
         log.info("checkCompatibleOrNotAndUpdateFileStatus for raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId,
-                new Gson().toJson(raSheetDetailsList));
+                new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId())));
         List<Integer> sheetCodes = raSheetDetailsList.stream().map(s -> s.getStatusCode()).collect(Collectors.toList());
         if (sheetCodes.stream().anyMatch(Objects::isNull)) {
             log.error("One of the status codes is null for raFileDetailsId {}", raFileDetailsId);

@@ -24,18 +24,22 @@ public class RARCRosterISFMap extends BaseEntity {
 
     @Column(name = "COLUMN_MAPPING_RNK")
     private Integer columnMappingRank;
+
+    @Column(name = "DISPLAY_ORDER")
+    private Integer displayOrder;
     
     @Column(name = "IS_ACTIVE")
     private Integer isActive;
 
     public RARCRosterISFMap() {}
 
-    public RARCRosterISFMap(final Long raSheetDetailsId, final String rosterColumnName, final String isfColumnName, final Integer columnMappingRank, final Integer isActive) {
+    public RARCRosterISFMap(final Long raSheetDetailsId, final String rosterColumnName, final String isfColumnName, final Integer columnMappingRank, Integer displayOrder, final Integer isActive) {
         super();
         this.raSheetDetailsId = raSheetDetailsId;
         this.rosterColumnName = rosterColumnName;
         this.isfColumnName = isfColumnName;
         this.columnMappingRank = columnMappingRank;
+        this.displayOrder = displayOrder;
         this.isActive = isActive;
     }
 }

@@ -9,5 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 public class RosterColumnMappingData {
     private String rosterColumnName;
+    private Integer displayOrder;
     private List<IsfColumnInfo> isfColumnValues;
 }

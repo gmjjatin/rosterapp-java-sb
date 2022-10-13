@@ -29,7 +29,7 @@ public class IsfTask extends Task {
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.dartRASystemErrorsService = (DartRASystemErrorsService) applicationContext.getBean("dartRASystemErrorsService");
-        this.isfTaskService = (IsfTaskService) applicationContext.getBean("ISFTaskService");
+        this.isfTaskService = (IsfTaskService) applicationContext.getBean("isfTaskService");
     }
 
     @Override
