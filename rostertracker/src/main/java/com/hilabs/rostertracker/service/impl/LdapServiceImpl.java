@@ -60,7 +60,7 @@ public class LdapServiceImpl implements LdapService {
     @Override
     public List<String> search(String username) {
         return ldapTemplate.search(
-                "ou=users",
+                "",
                 "cn=" + username,
                 (AttributesMapper<String>) attrs -> (String) attrs
                         .get("cn")
