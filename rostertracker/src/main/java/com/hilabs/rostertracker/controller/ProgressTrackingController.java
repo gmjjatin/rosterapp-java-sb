@@ -72,7 +72,8 @@ public class ProgressTrackingController {
             List<RAFileDetails> raFileDetailsList = raFileDetailsService
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
                             startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
+                    .map(p -> p.getId()).collect(Collectors.toList()), true);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
             return new ResponseEntity<>(raFileAndStatsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -101,7 +102,7 @@ public class ProgressTrackingController {
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
                             startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
-                    .map(p -> p.getId()).collect(Collectors.toList()));
+                    .map(p -> p.getId()).collect(Collectors.toList()), true);
             Map<Long, RAFileDetails> raFileDetailsMap = raFileStatsService.getRAFileDetailsMap(raFileDetailsList);
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
             for (RASheetDetails raSheetDetails : raSheetDetailsList) {
@@ -179,7 +180,7 @@ public class ProgressTrackingController {
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
                             startTime, endTime, statusCodes, limit, offset);
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
-                    .map(p -> p.getId()).collect(Collectors.toList()));
+                    .map(p -> p.getId()).collect(Collectors.toList()), true);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();

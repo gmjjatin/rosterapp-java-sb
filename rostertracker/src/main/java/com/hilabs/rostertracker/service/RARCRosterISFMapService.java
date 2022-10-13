@@ -54,6 +54,7 @@ public class RARCRosterISFMapService {
         Set<String> allPossibleRosterColumnSet = new HashSet<>(rarcRosterISFMapList.stream().map(RARCRosterISFMap::getRosterColumnName).collect(Collectors.toList()));
         List<RosterColumnMappingData> rosterColumnMappingDataList = new ArrayList<>();
         for (String rosterColumnName : allPossibleRosterColumnSet) {
+
             List<RARCRosterISFMap> isfRarcRosterISFMapList = rarcRosterISFMapList.stream().
                     filter(p -> p.getColumnMappingRank() != null && p.getRosterColumnName().equals(rosterColumnName))
                     .sorted((l1, l2) -> {
@@ -62,6 +63,7 @@ public class RARCRosterISFMapService {
                         }
                         return l1.getColumnMappingRank() > l2.getColumnMappingRank() ? 1 : -1;
                     }).collect(Collectors.toList());
+            Integer displayOrder = isfRarcRosterISFMapList.size() > 0 ? isfRarcRosterISFMapList.get(0).getDisplayOrder() : Integer.MAX_VALUE;
             List<IsfColumnInfo> isfColumnValues = new ArrayList<>();
             Set<String> alreadyAdded = new HashSet<>();
             for (RARCRosterISFMap rarcRosterISFMap : isfRarcRosterISFMapList) {
@@ -78,12 +80,17 @@ public class RARCRosterISFMapService {
                 isfColumnValues.add(new IsfColumnInfo(isfColumn, false));
                 alreadyAdded.add(isfColumn);
             }
-            rosterColumnMappingDataList.add(new RosterColumnMappingData(rosterColumnName, isfColumnValues));
+            rosterColumnMappingDataList.add(new RosterColumnMappingData(rosterColumnName, displayOrder, isfColumnValues));
         }
         rosterColumnMappingDataList.sort((l, r) -> {
-            String lStr = l.getRosterColumnName();
-            String rStr = r.getRosterColumnName();
-            return lStr.compareTo(rStr);
+            int lD = l.getDisplayOrder() == null ? Integer.MAX_VALUE : l.getDisplayOrder();
+            int rD = r.getDisplayOrder() == null ? Integer.MAX_VALUE : r.getDisplayOrder();
+            if (lD == rD) {
+                String lStr = l.getRosterColumnName();
+                String rStr = r.getRosterColumnName();
+                return lStr.compareTo(rStr);
+            }
+            return lD < rD ? -1 : 1;
         });
         return new RosterSheetColumnMappingInfo(raSheetDetailsId, rosterColumnMappingDataList);
     }

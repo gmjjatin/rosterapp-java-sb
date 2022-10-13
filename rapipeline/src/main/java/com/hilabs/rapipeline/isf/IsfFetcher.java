@@ -3,9 +3,10 @@ package com.hilabs.rapipeline.isf;
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.JobRetriever;
 import com.hilabs.mcheck.model.Task;
-import com.hilabs.rapipeline.service.IsfTaskService;
-import com.hilabs.rapipeline.service.RAFileMetaDataDetailsService;
+import com.hilabs.rapipeline.service.*;
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.repository.RASheetDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -25,29 +26,57 @@ public class IsfFetcher implements JobRetriever {
     private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
 
     @Autowired
+    private RAFileStatusUpdatingService raFileStatusUpdatingService;
+
+    @Autowired
+    private RASheetDetailsService raSheetDetailsService;
+
+    @Autowired
+    private RAFileDetailsService raFileDetailsService;
+
+    @Autowired
     private IsfTaskService isfTaskService;
+
+    @Autowired
+    private RASheetDetailsRepository raSheetDetailsRepository;
     @Autowired
     private ApplicationContext applicationContext;
 
+//    27, 31
     @Override
     public List<Task> refillQueue(Integer tasks) {
         try {
-            List<RAFileDetails> raFileDetailsList = isfTaskService.getEligibleRAFileDetailsList(tasks * 2);
+            List<RAFileDetails> raFileDetailsList = isfTaskService.getEligibleRAFileDetailsList(Math.max(tasks * 2, 50));
             log.info("raFileDetailsList size {}", raFileDetailsList.size());
             List<Task> executors = new ArrayList<>();
             int count = 0;
             for (RAFileDetails raFileDetails : raFileDetailsList) {
-                if (!isfTaskService.shouldRun(raFileDetails.getId())) {
+                Long raFileDetailsId = raFileDetails.getId();
+                List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
+                boolean isCompatible = raFileStatusUpdatingService.checkCompatibleOrNotAndUpdateFileStatus(raFileDetailsId, raSheetDetailsList);
+                if (!isCompatible) {
+                    log.error("raFileDetails is not eligible for {}", raFileDetails);
                     continue;
                 }
-                count++;
-                Map<String, Object> taskData = new HashMap<>();
-                taskData.put("data", raFileDetails.getId());
-                IsfTask isfTask = new IsfTask(taskData);
-                isfTask.setApplicationContext(applicationContext);
-                executors.add(isfTask);
-                if (count >= tasks) {
-                    break;
+                log.error("Picked raFileDetails is not eligible for {}", raFileDetails);
+                if (raFileDetails.getStatusCode() == 27) {
+                    raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 31);
+                }
+                for (RASheetDetails raSheetDetails : raSheetDetailsList) {
+                    Long raSheetDetailsId = raSheetDetails.getId();
+                    if (!isfTaskService.shouldRun(raSheetDetails, true)) {
+                        continue;
+                    }
+                    count++;
+                    Map<String, Object> taskData = new HashMap<>();
+                    taskData.put("data", raSheetDetails);
+                    IsfTask isfTask = new IsfTask(taskData);
+                    isfTask.setApplicationContext(applicationContext);
+                    executors.add(isfTask);
+                    raSheetDetailsService.updateRASheetDetailsStatus(raSheetDetailsId, 150);
+                    if (count >= tasks) {
+                        break;
+                    }
                 }
             }
             return executors;

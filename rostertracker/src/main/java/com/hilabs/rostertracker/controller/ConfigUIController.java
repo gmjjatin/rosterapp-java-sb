@@ -63,7 +63,7 @@ public class ConfigUIController {
             //TODO demo
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.getRAFileDetailsList(raFileDetailsId, market,
                     lineOfBusiness, startTime, endTime, statusCodes, limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()), true);
             Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
             List<ConfigUiFileData> configUiFileDataList = new ArrayList<>();
             for (RAFileDetails raFileDetails : raFileDetailsList) {
@@ -89,7 +89,7 @@ public class ConfigUIController {
 
     @GetMapping("/sheet-details")
     public ResponseEntity<List<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
-        List<SheetDetails> sheetDetailsList = raFileDetailsService.getRASheetDetailsList(raFileDetailsId);
+        List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId);
         //TODO demo
         return ResponseEntity.ok(sheetDetailsList);
     }
@@ -121,9 +121,10 @@ public class ConfigUIController {
     }
 
     @PostMapping("/approve-column-mapping")
-    public ResponseEntity<Map<String, String>> approveColumnMapping(@RequestBody ApproveColumnMappingRequest approveColumnMappingRequest) {
+    public ResponseEntity<Map<String, String>> approveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
         try {
-            Long raFileDetailsId = approveColumnMappingRequest.getRaFileDetailsId();
+            Long raFileDetailsId = updateColumnMappingRequest.getRaFileDetailsId();
+            saveColumnMapping(updateColumnMappingRequest);
             raFileDetailsService.updateManualActionRequiredInRAFileDetails(raFileDetailsId, 0);
             //TODO return better response
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);

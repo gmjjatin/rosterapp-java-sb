@@ -73,7 +73,7 @@ public class ErrorReportingController {
             List<RAFileDetails> raFileDetailsList = raFileDetailsService
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
                             startTime, endTime, statusCodes, limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(RAFileDetails::getId).collect(Collectors.toList()));
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(RAFileDetails::getId).collect(Collectors.toList()), true);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsList, raSheetDetailsList);
             return new ResponseEntity<>(raFileAndErrorStatsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -104,7 +104,7 @@ public class ErrorReportingController {
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
                             startTime, endTime, statusCodes, limit, offset);
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
-                    .map(RAFileDetails::getId).collect(Collectors.toList()));
+                    .map(RAFileDetails::getId).collect(Collectors.toList()), true);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsList, raSheetDetailsList);
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {

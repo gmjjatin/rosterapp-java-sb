@@ -65,8 +65,8 @@ public class PreProcessingTaskService {
         try {
             //TODO hardcode for now
             File file = new File(appPropertiesConfig.getPreProcessingWrapper());
-            pythonInvocationService.invokePythonProcess(file.getPath(), "--fileId",  "" + raFileDetailsId, "--rootPath",
-                    appPropertiesConfig.getRootPath());
+            pythonInvocationService.invokePythonProcess(file.getPath(), "--envConfigs", appPropertiesConfig.getEnvConfigs(),
+                    "--fileDetailsId",  "" + raFileDetailsId);
         } catch (Exception ex) {
             log.info("Error in invokePythonProcess - commands {}", gson.toJson(commands));
             throw ex;
