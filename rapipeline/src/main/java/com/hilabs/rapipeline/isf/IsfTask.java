@@ -34,7 +34,7 @@ public class IsfTask extends Task {
 
     @Override
     public void run() {
-        log.info("IsfTask stared for {}", gson.toJson(getTaskData()));
+        log.info("IsfTask started for {}", gson.toJson(getTaskData()));
         RASheetDetails raSheetDetails = getRASheetDetailsFromTaskData();
         if (raSheetDetails == null) {
             return;
