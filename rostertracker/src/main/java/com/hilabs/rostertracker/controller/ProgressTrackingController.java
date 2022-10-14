@@ -186,24 +186,19 @@ public class ProgressTrackingController {
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
             Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
             for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
-                List<RAFileErrorCodeDetails> raErrorLogs = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
+                List<RAFileErrorCodeDetails> raFileErrorCodeDetailsList = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
                 //TODO need to fix it
-                List<String> errorCodes = new ArrayList<>();
-                if (raErrorLogs.size() > 0) {
-                    errorCodes.add(raErrorLogs.get(0).getErrorCode());
-                }
+                List<String> fileErrorCodes = raFileErrorCodeDetailsList.stream().map(p -> p.getErrorCode()).collect(Collectors.toList());
+                List<String> sheetErrorCodes = new ArrayList<>();
                 if (raSheetDetailsListMap.containsKey(raFileAndStats.getRaFileDetailsId()) && raSheetDetailsListMap.get(raFileAndStats.getRaFileDetailsId()).size() > 0) {
                     for (RASheetDetails raSheetDetails : raSheetDetailsListMap.get(raFileAndStats.getRaFileDetailsId())) {
                         List<RASheetErrorCodeDetails> raSheetErrorCodeDetailsList = raSheetErrorCodeDetailRepository.findByRASheetDetailsId(raSheetDetails.getId());
-                        if (raSheetErrorCodeDetailsList.size() > 0) {
-                            RASheetErrorCodeDetails raSheetErrorCodeDetails = raSheetErrorCodeDetailsList.get(0);
-                            errorCodes.add(raSheetErrorCodeDetails.getErrorCode());
-                        }
+                        sheetErrorCodes.addAll(raSheetErrorCodeDetailsList.stream().map(RASheetErrorCodeDetails::getErrorCode).collect(Collectors.toList()));
                     }
                 }
-                errorCodes = errorCodes.stream().filter(Objects::nonNull).collect(Collectors.toList());
+                sheetErrorCodes = sheetErrorCodes.stream().filter(Objects::nonNull).collect(Collectors.toList());
                 InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(), raFileAndStats.getRosterRecordCount(),
-                        dartRaErrorCodeDetailsService.getErrorString(errorCodes), String.join(", ", errorCodes));
+                        dartRaErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes), String.join(", ", sheetErrorCodes));
                 inCompatibleRosterDetails.add(details);
             }
             return new ResponseEntity<>(inCompatibleRosterDetails, HttpStatus.OK);

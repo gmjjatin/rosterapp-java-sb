@@ -45,8 +45,8 @@ public class AppConfig {
                 .registerJobRetrievers(isfFetcher)
                 .build();
 
-        new BatchConfig("./config.json")
-                .registerJobRetrievers(dartFetcher)
-                .build();
+//        new BatchConfig("./config.json")
+//                .registerJobRetrievers(dartFetcher)
+//                .build();
     }
 }

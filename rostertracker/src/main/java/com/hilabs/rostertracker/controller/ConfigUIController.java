@@ -77,7 +77,7 @@ public class ConfigUIController {
                 configUiFileDataList.add(new ConfigUiFileData(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
                         raFileDetails.getCreatedDate().getTime(), status, optionalRAStatusEntity.map(RAStatusEntity::getStage).orElse(null),
                         //TODO demo
-                        !isManualActionReq));
+                        isManualActionReq));
             }
             return new ResponseEntity<>(configUiFileDataList, HttpStatus.OK);
         } catch (Exception ex) {

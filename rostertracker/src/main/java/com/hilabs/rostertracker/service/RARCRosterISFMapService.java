@@ -51,18 +51,25 @@ public class RARCRosterISFMapService {
             return null;
         }
         List<RARCRosterISFMap> rarcRosterISFMapList = getActiveRARCRosterISFMapListForSheetId(raSheetDetailsId);
-        Set<String> allPossibleRosterColumnSet = new HashSet<>(rarcRosterISFMapList.stream().map(RARCRosterISFMap::getRosterColumnName).collect(Collectors.toList()));
-        List<RosterColumnMappingData> rosterColumnMappingDataList = new ArrayList<>();
-        for (String rosterColumnName : allPossibleRosterColumnSet) {
+        rarcRosterISFMapList = rarcRosterISFMapList.stream().sorted((l1, l2) -> {
+                    if (Objects.equals(l1.getColumnMappingRank(), l2.getColumnMappingRank())) {
+                        return 0;
+                    }
+                    return l1.getColumnMappingRank() > l2.getColumnMappingRank() ? 1 : -1;
+                }).collect(Collectors.toList());
 
-            List<RARCRosterISFMap> isfRarcRosterISFMapList = rarcRosterISFMapList.stream().
-                    filter(p -> p.getColumnMappingRank() != null && p.getRosterColumnName().equals(rosterColumnName))
-                    .sorted((l1, l2) -> {
-                        if (l1.getColumnMappingRank() == l2.getColumnMappingRank()) {
-                            return 0;
-                        }
-                        return l1.getColumnMappingRank() > l2.getColumnMappingRank() ? 1 : -1;
-                    }).collect(Collectors.toList());
+        Map<String, List<RARCRosterISFMap>> rosterColumnRARCRosterISFMap = new HashMap<>();
+        for (RARCRosterISFMap rarcRosterISFMap : rarcRosterISFMapList) {
+            if (!rosterColumnRARCRosterISFMap.containsKey(rarcRosterISFMap.getRosterColumnName())) {
+                rosterColumnRARCRosterISFMap.put(rarcRosterISFMap.getRosterColumnName(), new ArrayList<>());
+            }
+            rosterColumnRARCRosterISFMap.get(rarcRosterISFMap.getRosterColumnName()).add(rarcRosterISFMap);
+        }
+
+        List<RosterColumnMappingData> rosterColumnMappingDataList = new ArrayList<>();
+        List<String> allIsfColumnList = getAllIsfColumnList();
+        for (String rosterColumnName : rosterColumnRARCRosterISFMap.keySet()) {
+            List<RARCRosterISFMap> isfRarcRosterISFMapList = rosterColumnRARCRosterISFMap.get(rosterColumnName);
             Integer displayOrder = isfRarcRosterISFMapList.size() > 0 ? isfRarcRosterISFMapList.get(0).getDisplayOrder() : Integer.MAX_VALUE;
             List<IsfColumnInfo> isfColumnValues = new ArrayList<>();
             Set<String> alreadyAdded = new HashSet<>();
@@ -73,7 +80,7 @@ public class RARCRosterISFMapService {
                 isfColumnValues.add(new IsfColumnInfo(rarcRosterISFMap.getIsfColumnName(), true));
                 alreadyAdded.add(rarcRosterISFMap.getIsfColumnName());
             }
-            for (String isfColumn : getAllIsfColumnList()) {
+            for (String isfColumn : allIsfColumnList) {
                 if (alreadyAdded.contains(isfColumn)) {
                     continue;
                 }
@@ -122,7 +129,8 @@ public class RARCRosterISFMapService {
                     rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0);
                 }
                 RARCRosterISFMap rarcRosterISFMap = new RARCRosterISFMap(raSheetDetailsId, columnName, selIsfColumnName,
-                        1, 1);
+                        //TODO for default display order
+                        1, colRARCRosterISFMapList.size() > 0 ? colRARCRosterISFMapList.get(0).getDisplayOrder() : 0,1);
                 rarcRosterISFMapRepository.save(rarcRosterISFMap);
             }
         }
