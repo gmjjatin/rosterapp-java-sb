@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface DartRaErrorCodeDetailsRepository extends JpaRepository<DartRaErrorCodeDetails, Long> {
-    @Query(value = "select * from DART_RA_ERROR_CODE_DETAILS where ERROR_CODE = :errorCode",
+    @Query(value = "select * from DART_RA_ERROR_CODE_DETAILS where ERROR_CODE = :errorCode and is_active = 1",
             nativeQuery = true)
     List<DartRaErrorCodeDetails> findByErrorCode(String errorCode);
 }

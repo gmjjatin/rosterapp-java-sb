@@ -24,6 +24,9 @@ public class RASheetErrorCodeDetails {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "IS_ACTIVE")
+    private Integer isActive;
+
     public RASheetErrorCodeDetails() {}
 
     public RASheetErrorCodeDetails(final Long raSheetDetailsId, final String errorCode, final String errorCodeTemplateParameters, final String status) {

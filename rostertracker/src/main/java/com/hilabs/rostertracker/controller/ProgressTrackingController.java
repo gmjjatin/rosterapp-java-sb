@@ -197,8 +197,10 @@ public class ProgressTrackingController {
                     }
                 }
                 sheetErrorCodes = sheetErrorCodes.stream().filter(Objects::nonNull).collect(Collectors.toList());
-                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(), raFileAndStats.getRosterRecordCount(),
-                        dartRaErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes), String.join(", ", sheetErrorCodes));
+                DartRaErrorCodeDetailsService.ErrorCodesAndDescription errorCodesAndDescription = dartRaErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes);
+                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(),
+                        raFileAndStats.getRosterRecordCount(), errorCodesAndDescription.errorDescription,
+                        String.join(", ", errorCodesAndDescription.errorCodes));
                 inCompatibleRosterDetails.add(details);
             }
             return new ResponseEntity<>(inCompatibleRosterDetails, HttpStatus.OK);

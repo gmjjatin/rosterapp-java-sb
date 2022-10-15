@@ -35,4 +35,7 @@ public class DartRaErrorCodeDetails extends BaseEntity {
 
     @Column(name = "ERROR_CODE_TEMPLATE_PARAMETERS")
     private String errorCodeTemplateParameters;
+
+    @Column(name = "IS_ACTIVE")
+    private Integer isActive;
 }
