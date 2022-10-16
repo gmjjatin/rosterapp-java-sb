@@ -70,9 +70,9 @@ public class ProgressTrackingController {
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
                             startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
-                    .map(p -> p.getId()).collect(Collectors.toList()), true);
+                    .map(RAFileDetails::getId).collect(Collectors.toList()), true);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
-            CollectionResponse collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList, 1000L);
+            CollectionResponse<RAFileAndStats> collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList, 1000L);
             return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
