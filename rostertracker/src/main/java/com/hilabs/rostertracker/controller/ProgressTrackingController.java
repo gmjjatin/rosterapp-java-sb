@@ -124,12 +124,17 @@ public class ProgressTrackingController {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "rosterSheetId " + rosterSheetId + " not found");
             }
             RASheetDetails raSheetDetails = optionalRASheetDetails.get();
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raSheetDetails.getRaFileDetailsId());
+            if (!optionalRAFileDetails.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "raFileDetailsId " + raSheetDetails.getRaFileDetailsId() + " not found");
+            }
+            RAFileDetails raFileDetails = optionalRAFileDetails.get();
             List<RAFalloutErrorInfo> raFalloutErrorInfoList = raFalloutReportService.getRASheetFalloutReport(rosterSheetId);
             List<ErrorDescriptionAndCount> errorDescriptionAndCountList = new ArrayList<>();
             for (RAFalloutErrorInfo raFalloutErrorInfo : raFalloutErrorInfoList) {
                 errorDescriptionAndCountList.add(new ErrorDescriptionAndCount(raFalloutErrorInfo.getErrorDescription(), raFalloutErrorInfo.getCount()));
             }
-            RASheetReport raSheetReport = getRASheetReportObj(raSheetDetails);
+            RASheetReport raSheetReport = raSheetDetailsService.getRASheetReport(raFileDetails, raSheetDetails);
             raSheetReport.setErrorDescriptionAndCountList(errorDescriptionAndCountList);
             return new ResponseEntity<>(raSheetReport, HttpStatus.OK);
         } catch (Exception ex) {
@@ -137,27 +142,6 @@ public class ProgressTrackingController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error in processing - errorMessage " + ex.getMessage());
         }
-    }
-
-    //TODO TEMP method
-    public static RASheetReport getRASheetReportObj(RASheetDetails raSheetDetails) {
-        RASheetReport raSheetReport = new RASheetReport();
-        raSheetReport.setApdoContact("-");
-        raSheetReport.setMarket("-");
-        raSheetReport.setPeContact("-");
-        raSheetReport.setTablesIdentifiedInRosterSheetCount(1);
-        raSheetReport.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
-        if (raSheetDetails.getTabName().contains("terms")) {
-            return raSheetReport;
-        }
-        raSheetReport.setIsfRowCount(raSheetDetails.getOutRowCount() / 2);
-        raSheetReport.setDartRowCount(raSheetDetails.getOutRowCount());
-        raSheetReport.setSpsLoadTransactionCount(raSheetDetails.getTargetLoadTransactionCount());
-        raSheetReport.setSuccessCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.75));
-        raSheetReport.setWarningCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.10));
-        raSheetReport.setFailedCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.15));
-        raSheetReport.setSpsLoadSuccessTransactionCount(raSheetDetails.getTargetLoadSuccessTransactionCount());
-        return raSheetReport;
     }
 
     @GetMapping("/non-compatible-file-list")
