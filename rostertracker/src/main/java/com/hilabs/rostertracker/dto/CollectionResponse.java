@@ -10,8 +10,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class CollectionResponse<T> {
-    private Long pageNum;
-    private Long pageSize;
+    private Integer pageNum;
+    private Integer pageSize;
     private List<T> items;
     private Long totalCount;
 

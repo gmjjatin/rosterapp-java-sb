@@ -4,6 +4,7 @@ import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RARCRosterISFMap;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.util.RAStatusEntity;
+import com.hilabs.rostertracker.dto.CollectionResponse;
 import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
 import com.hilabs.rostertracker.dto.SheetDetails;
 import com.hilabs.rostertracker.model.*;
@@ -45,13 +46,13 @@ public class ConfigUIController {
     private RAStatusService raStatusService;
 
     @GetMapping("/valid-file-list")
-    public ResponseEntity<List<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                           @RequestParam(defaultValue = "100") Integer pageSize,
-                                                                           @RequestParam(defaultValue = "") String market,
-                                                                           @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                           @RequestParam(defaultValue = "-1") Long raFileDetailsId,
-                                                                           @RequestParam(defaultValue = "-1") long startTime,
-                                                                           @RequestParam(defaultValue = "-1") long endTime) {
+    public ResponseEntity<CollectionResponse<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "1") Integer pageNo,
+                                                                                         @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                         @RequestParam(defaultValue = "") String market,
+                                                                                         @RequestParam(defaultValue = "") String lineOfBusiness,
+                                                                                         @RequestParam(defaultValue = "-1") Long raFileDetailsId,
+                                                                                         @RequestParam(defaultValue = "-1") long startTime,
+                                                                                         @RequestParam(defaultValue = "-1") long endTime) {
         try {
             List<Integer> statusCodes = getStatusCodes("config");
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
@@ -79,7 +80,8 @@ public class ConfigUIController {
                         //TODO demo
                         isManualActionReq));
             }
-            return new ResponseEntity<>(configUiFileDataList, HttpStatus.OK);
+            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, configUiFileDataList, 1000L);
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
@@ -88,10 +90,10 @@ public class ConfigUIController {
     }
 
     @GetMapping("/sheet-details")
-    public ResponseEntity<List<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
+    public ResponseEntity<CollectionResponse<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
         List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId);
         //TODO demo
-        return ResponseEntity.ok(sheetDetailsList);
+        return ResponseEntity.ok(new CollectionResponse(1, 100, sheetDetailsList, 1000L));
     }
 
     @GetMapping("/sheet-column-mapping")

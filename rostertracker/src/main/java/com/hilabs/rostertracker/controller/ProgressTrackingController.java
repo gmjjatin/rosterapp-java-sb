@@ -7,10 +7,7 @@ import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.entity.RASheetErrorCodeDetails;
 import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
-import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
-import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
-import com.hilabs.rostertracker.dto.RAFileAndStats;
-import com.hilabs.rostertracker.dto.RASheetReport;
+import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.RASheetProgressInfo;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
@@ -55,13 +52,13 @@ public class ProgressTrackingController {
 
 
     @GetMapping("/file-stats-list")
-    public ResponseEntity<List<RAFileAndStats>> getRosterTrackerFileStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                      @RequestParam(defaultValue = "100") Integer pageSize,
-                                                                      @RequestParam(defaultValue = "") String market,
-                                                                      @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                      @RequestParam(defaultValue = "-1") Long raFileDetailsId,
-                                                                      @RequestParam(defaultValue = "-1") long startTime,
-                                                                      @RequestParam(defaultValue = "-1") long endTime) {
+    public ResponseEntity<CollectionResponse<RAFileAndStats>> getRosterTrackerFileStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
+                                                                                            @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                            @RequestParam(defaultValue = "") String market,
+                                                                                            @RequestParam(defaultValue = "") String lineOfBusiness,
+                                                                                            @RequestParam(defaultValue = "-1") Long raFileDetailsId,
+                                                                                            @RequestParam(defaultValue = "-1") long startTime,
+                                                                                            @RequestParam(defaultValue = "-1") long endTime) {
         try {
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
@@ -75,7 +72,8 @@ public class ProgressTrackingController {
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
                     .map(p -> p.getId()).collect(Collectors.toList()), true);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
-            return new ResponseEntity<>(raFileAndStatsList, HttpStatus.OK);
+            CollectionResponse collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList, 1000L);
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
@@ -84,7 +82,7 @@ public class ProgressTrackingController {
     }
 
     @GetMapping("/progress-info-list")
-    public ResponseEntity<List<RASheetProgressInfo>> getRosterFileProgressInfoList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<CollectionResponse<RASheetProgressInfo>> getRosterFileProgressInfoList(@RequestParam(defaultValue = "1") Integer pageNo,
                                                                                    @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -108,7 +106,8 @@ public class ProgressTrackingController {
             for (RASheetDetails raSheetDetails : raSheetDetailsList) {
                 raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetailsMap.get(raSheetDetails.getRaFileDetailsId()), raSheetDetails));
             }
-            return new ResponseEntity<>(raSheetProgressInfoList, HttpStatus.OK);
+            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raSheetProgressInfoList, 1000L);
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRosterFileProgressInfoList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, startTime, endTime);
@@ -161,7 +160,7 @@ public class ProgressTrackingController {
     }
 
     @GetMapping("/non-compatible-file-list")
-    public ResponseEntity<List<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<CollectionResponse<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "1") Integer pageNo,
                                                                                     @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                     @RequestParam(defaultValue = "") String market,
                                                                                     @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -203,7 +202,8 @@ public class ProgressTrackingController {
                         String.join(", ", errorCodesAndDescription.errorCodes));
                 inCompatibleRosterDetails.add(details);
             }
-            return new ResponseEntity<>(inCompatibleRosterDetails, HttpStatus.OK);
+            CollectionResponse collectionResponse = new CollectionResponse<InCompatibleRosterDetails>(pageNo, pageSize, inCompatibleRosterDetails, 1000L);
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
