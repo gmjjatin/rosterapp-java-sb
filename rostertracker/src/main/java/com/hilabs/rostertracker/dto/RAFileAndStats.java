@@ -13,16 +13,21 @@ public class RAFileAndStats extends RosterStats {
     private int noOfSheets;
     private long fileReceivedTime;
 
+    private String lob;
+    private String market;
+
     private String status;
 //    private boolean isSPSLoadComplete;
     private List<RASheetAndStats> sheetStatsList;
 
-    public RAFileAndStats(long raFileDetailsId, String fileName, long fileReceivedTime, String status) {
+    public RAFileAndStats(long raFileDetailsId, String fileName, long fileReceivedTime, String lob, String market, String status) {
         this.raFileDetailsId = raFileDetailsId;
         this.fileName = fileName;
         this.fileReceivedTime = fileReceivedTime;
         this.status = status;
         this.sheetStatsList = new ArrayList<>();
+        this.market = market;
+        this.lob = lob;
     }
 
     public void addSheetDetails(RASheetAndStats raSheetAndStats) {
