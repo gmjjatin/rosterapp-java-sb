@@ -26,4 +26,7 @@ public class RosterConfig implements Serializable {
 
     @Value("${raArchiveFolder}")
     private String raArchiveFolder;
+
+    @Value("${raTargetFolder}")
+    private String raTargetFolder;
 }
