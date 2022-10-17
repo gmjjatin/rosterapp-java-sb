@@ -8,6 +8,8 @@ public class RASheetProgressInfo {
     private long receivedTime;
 
     private AutoMappedStageInfo autoMapped;
+
+    private ISFStageInfo isf;
     private ConvertedDartStageInfo convertedDart;
     private SpsLoadStageInfo spsLoad;
     private ReportStageInfo report;

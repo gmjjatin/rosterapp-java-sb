@@ -53,7 +53,7 @@ public class ConfigUIController {
                                                                            @RequestParam(defaultValue = "-1") long startTime,
                                                                            @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes("config");
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.CONFIGURATOR);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();

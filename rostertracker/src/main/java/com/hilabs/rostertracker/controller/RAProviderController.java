@@ -1,6 +1,7 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
@@ -36,7 +37,7 @@ public class RAProviderController {
                                                                            @RequestParam(defaultValue = "", name = "type") String type) {
         try {
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr);
-            List<Integer> statusCodes = getStatusCodes(type);
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             raFileDetailsList = raFileDetailsList.stream().filter(p -> {
                 if (p.getStatusCode() == null) {
                     return false;
@@ -54,7 +55,7 @@ public class RAProviderController {
     @GetMapping("/market/all")
     public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "", name = "type") String type) {
         try {
-            List<Integer> statusCodes = getStatusCodes(type);
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             List<String> markets = raFileDetailsService.findAllMarkets(statusCodes);
             return new ResponseEntity<>(markets, HttpStatus.OK);
         } catch (Exception ex) {
