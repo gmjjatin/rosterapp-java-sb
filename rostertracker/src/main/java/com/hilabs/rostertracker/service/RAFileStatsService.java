@@ -1,11 +1,12 @@
 package com.hilabs.rostertracker.service;
 
-import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
-import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.dto.AltIdType;
+import com.hilabs.roster.entity.*;
 import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
 import com.hilabs.roster.repository.RAConvProcessingDurationStatsRepository;
+import com.hilabs.roster.repository.RAFileDetailsLobRepository;
+import com.hilabs.roster.repository.RARTFileAltIdsRepository;
 import com.hilabs.roster.repository.RAStatusCDMasterRepository;
 import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.hilabs.roster.util.RosterStageUtils.computeTimeTakenInMillis;
 import static com.hilabs.roster.util.RosterStageUtils.getRosterStageState;
@@ -34,6 +36,12 @@ public class RAFileStatsService {
 
     @Autowired
     private RAStatusCDMasterRepository raStatusCDMasterRepository;
+
+    @Autowired
+    private RAFileDetailsLobRepository raFileDetailsLobRepository;
+
+    @Autowired
+    private RARTFileAltIdsRepository rartFileAltIdsRepository;
 
     @Autowired
     private RAStatusService raStatusService;
@@ -57,19 +65,46 @@ public class RAFileStatsService {
             rosterSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
             rosterSheetDetailsListMap.get(raSheetDetails.getRaFileDetailsId()).add(raSheetDetails);
         }
+
         List<RAFileAndStats> raFileAndStatsList = new ArrayList<>();
+        Map<Long, RAFileDetailsLob> raFileDetailsLobMap = getRAFileDetailsLobMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+        Map<Long, List<RARTFileAltIds>> rartFileAltIdsListMap = getRARTFileAltIdsListMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
         for (RAFileDetails raFileDetails : raFileDetailsList) {
-            raFileAndStatsList.add(getRAFileAndStats(raFileDetails, rosterSheetDetailsListMap.getOrDefault(raFileDetails.getId(), new ArrayList<>())));
+            String lob = raFileDetailsLobMap.containsKey(raFileDetails.getId()) ? raFileDetailsLobMap.get(raFileDetails.getId()).getLob() : "";
+            List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileDetails.getId()) ? rartFileAltIdsListMap
+                    .get(raFileDetails.getId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
+            String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
+            raFileAndStatsList.add(getRAFileAndStats(raFileDetails, lob, plmTicketId, rosterSheetDetailsListMap.getOrDefault(raFileDetails.getId(), new ArrayList<>())));
         }
         return raFileAndStatsList;
+    }
+
+    public Map<Long, List<RARTFileAltIds>> getRARTFileAltIdsListMap(List<Long> raFileDetailsIdList) {
+        List<RARTFileAltIds> raRTFileAltIdsList = rartFileAltIdsRepository.findByRAFileDetailsIdList(raFileDetailsIdList);
+        Map<Long, List<RARTFileAltIds>> raRTFileAltIdsListMap = new HashMap<>();
+        for (RARTFileAltIds rartFileAltIds : raRTFileAltIdsList) {
+            raRTFileAltIdsListMap.putIfAbsent(rartFileAltIds.getRaFileDetailsId(), new ArrayList<>());
+            raRTFileAltIdsListMap.get(rartFileAltIds.getRaFileDetailsId()).add(rartFileAltIds);
+        }
+        return raRTFileAltIdsListMap;
+    }
+
+    public Map<Long, RAFileDetailsLob> getRAFileDetailsLobMap(List<Long> raFileDetailsIdList) {
+        List<RAFileDetailsLob> raFileDetailsLobList = raFileDetailsLobRepository.findRAFileDetailsLobByFileId(raFileDetailsIdList);
+        Map<Long, RAFileDetailsLob> raFileDetailsLobMap = new HashMap<>();
+        for (RAFileDetailsLob raFileDetailsLob : raFileDetailsLobList) {
+            raFileDetailsLobMap.put(raFileDetailsLob.getRaFileDetailsId(), raFileDetailsLob);
+        }
+        return raFileDetailsLobMap;
     }
 
     public RAFileAndErrorStats getRAFileAndErrorStats(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
         return getRAFileAndErrorStatsFromSheetDetailsList(raFileDetails, raSheetDetailsList);
     }
 
-    public RAFileAndStats getRAFileAndStats(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
-        return getRAFileAndStatsFromSheetDetailsList(raFileDetails, raSheetDetailsList);
+    public RAFileAndStats getRAFileAndStats(RAFileDetails raFileDetails, String lob, String plmTicketId,
+                                            List<RASheetDetails> raSheetDetailsList) {
+        return getRAFileAndStatsFromSheetDetailsList(raFileDetails, lob, plmTicketId, raSheetDetailsList);
     }
 
     public List<RARTConvProcessingDurationStats> getRosConvProcessingDurationStatsList(long raSheetDetailsId) {
@@ -93,6 +128,15 @@ public class RAFileStatsService {
             rosterFileProgressInfo.setAutoMapped(new AutoMappedStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
+        RosterStageState isfRosterStageState = getRosterStageState(RosterSheetProcessStage.ISF_GENERATED, raSheetDetails.getStatusCode());
+        if (isfRosterStageState != RosterStageState.NOT_STARTED) {
+            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.ISF_GENERATED,
+                    isfRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterSheetProcessStage.ISF_GENERATED));
+            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo,
+                    raSheetDetails.getRosterRecordCount(), Utils.MILLIS_IN_HOUR);
+            rosterFileProgressInfo.setIsf(new ISFStageInfo(rosterFileProcessIntermediateStageInfo));
+        }
+
         RosterStageState dartRosterStageState = getRosterStageState(RosterSheetProcessStage.CONVERTED_DART, raSheetDetails.getStatusCode());
         if (dartRosterStageState != RosterStageState.NOT_STARTED) {
             BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.CONVERTED_DART,
@@ -111,11 +155,6 @@ public class RAFileStatsService {
             rosterFileProgressInfo.setConvertedDart(new ConvertedDartStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
-        if (spsLoadRosterStageState == RosterStageState.COMPLETED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.REPORT,
-                    RosterStageState.COMPLETED, 0);
-            rosterFileProgressInfo.setReport(new ReportStageInfo(baseRosterFileProcessStageInfo));
-        }
         return rosterFileProgressInfo;
     }
 
@@ -130,9 +169,10 @@ public class RAFileStatsService {
         return raFileAndErrorStats;
     }
 
-    public RAFileAndStats getRAFileAndStatsFromSheetDetailsList(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
+    public RAFileAndStats getRAFileAndStatsFromSheetDetailsList(RAFileDetails raFileDetails, String lob, String plmTicketId, List<RASheetDetails> raSheetDetailsList) {
         RAFileAndStats raFileAndStats = new RAFileAndStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
-                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1, raStatusService.getDisplayStatus(raFileDetails.getStatusCode()));
+                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1, lob, raFileDetails.getMarket(), plmTicketId,
+                raStatusService.getDisplayStatus(raFileDetails.getStatusCode()));
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
             RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, raStatusService.getDisplayStatus(raSheetDetails.getStatusCode()));
             raFileAndStats.addSheetDetails(raSheetAndStats);

@@ -8,9 +8,10 @@ public class RASheetProgressInfo {
     private long receivedTime;
 
     private AutoMappedStageInfo autoMapped;
+
+    private ISFStageInfo isf;
     private ConvertedDartStageInfo convertedDart;
     private SpsLoadStageInfo spsLoad;
-    private ReportStageInfo report;
 
     public RASheetProgressInfo(long raSheetDetailsId, long receivedTime) {
         this.raSheetDetailsId = raSheetDetailsId;
@@ -18,17 +19,15 @@ public class RASheetProgressInfo {
         this.autoMapped = new AutoMappedStageInfo();
         this.convertedDart = new ConvertedDartStageInfo();
         this.spsLoad = new SpsLoadStageInfo();
-        this.report = new ReportStageInfo();
     }
 
     public RASheetProgressInfo(long raSheetDetailsId, long receivedTime,
                                AutoMappedStageInfo autoMapped, ConvertedDartStageInfo convertedDart,
-                               SpsLoadStageInfo spsLoad, ReportStageInfo report) {
+                               SpsLoadStageInfo spsLoad) {
         this.raSheetDetailsId = raSheetDetailsId;
         this.receivedTime = receivedTime;
         this.autoMapped = autoMapped;
         this.convertedDart = convertedDart;
         this.spsLoad = spsLoad;
-        this.report = report;
     }
 }

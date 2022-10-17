@@ -5,6 +5,11 @@ import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.rostertracker.config.RosterConfig;
 import com.hilabs.rostertracker.dto.*;
+import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
+import com.hilabs.rostertracker.dto.RASheetAndColumnErrorStats;
+import com.hilabs.rostertracker.dto.RASheetAndErrorStats;
+import com.hilabs.rostertracker.dto.RASheetFalloutReport;
+import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.service.RAFalloutReportService;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.service.RAFileStatsService;
@@ -60,7 +65,7 @@ public class ErrorReportingController {
                                                                                          @RequestParam(defaultValue = "-1") long startTime,
                                                                                          @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes("error-reporting");
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.ERROR_REPORTING);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
@@ -92,7 +97,7 @@ public class ErrorReportingController {
                                                                                    @RequestParam(defaultValue = "-1") long startTime,
                                                                                    @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes("error-reporting");
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.ERROR_REPORTING);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();

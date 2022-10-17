@@ -8,6 +8,11 @@ import com.hilabs.roster.entity.RASheetErrorCodeDetails;
 import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
 import com.hilabs.rostertracker.dto.*;
+import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
+import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
+import com.hilabs.rostertracker.dto.RAFileAndStats;
+import com.hilabs.rostertracker.dto.RASheetReport;
+import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.model.RASheetProgressInfo;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
@@ -68,7 +73,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             List<RAFileDetails> raFileDetailsList = raFileDetailsService
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
+                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset);
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
                     .map(RAFileDetails::getId).collect(Collectors.toList()), true);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
@@ -98,7 +103,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             List<RAFileDetails> raFileDetailsList = raFileDetailsService
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
+                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset);
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
                     .map(p -> p.getId()).collect(Collectors.toList()), true);
             Map<Long, RAFileDetails> raFileDetailsMap = raFileStatsService.getRAFileDetailsMap(raFileDetailsList);
@@ -123,12 +128,17 @@ public class ProgressTrackingController {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "rosterSheetId " + rosterSheetId + " not found");
             }
             RASheetDetails raSheetDetails = optionalRASheetDetails.get();
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raSheetDetails.getRaFileDetailsId());
+            if (!optionalRAFileDetails.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "raFileDetailsId " + raSheetDetails.getRaFileDetailsId() + " not found");
+            }
+            RAFileDetails raFileDetails = optionalRAFileDetails.get();
             List<RAFalloutErrorInfo> raFalloutErrorInfoList = raFalloutReportService.getRASheetFalloutReport(rosterSheetId);
             List<ErrorDescriptionAndCount> errorDescriptionAndCountList = new ArrayList<>();
             for (RAFalloutErrorInfo raFalloutErrorInfo : raFalloutErrorInfoList) {
                 errorDescriptionAndCountList.add(new ErrorDescriptionAndCount(raFalloutErrorInfo.getErrorDescription(), raFalloutErrorInfo.getCount()));
             }
-            RASheetReport raSheetReport = getRASheetReportObj(raSheetDetails);
+            RASheetReport raSheetReport = raSheetDetailsService.getRASheetReport(raFileDetails, raSheetDetails);
             raSheetReport.setErrorDescriptionAndCountList(errorDescriptionAndCountList);
             return new ResponseEntity<>(raSheetReport, HttpStatus.OK);
         } catch (Exception ex) {
@@ -136,27 +146,6 @@ public class ProgressTrackingController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error in processing - errorMessage " + ex.getMessage());
         }
-    }
-
-    //TODO TEMP method
-    public static RASheetReport getRASheetReportObj(RASheetDetails raSheetDetails) {
-        RASheetReport raSheetReport = new RASheetReport();
-        raSheetReport.setApdoContact("-");
-        raSheetReport.setMarket("-");
-        raSheetReport.setPeContact("-");
-        raSheetReport.setTablesIdentifiedInRosterSheetCount(1);
-        raSheetReport.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
-        if (raSheetDetails.getTabName().contains("terms")) {
-            return raSheetReport;
-        }
-        raSheetReport.setIsfRowCount(raSheetDetails.getOutRowCount() / 2);
-        raSheetReport.setDartRowCount(raSheetDetails.getOutRowCount());
-        raSheetReport.setSpsLoadTransactionCount(raSheetDetails.getTargetLoadTransactionCount());
-        raSheetReport.setSuccessCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.75));
-        raSheetReport.setWarningCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.10));
-        raSheetReport.setFailedCount((int) (raSheetDetails.getTargetLoadTransactionCount() * 0.15));
-        raSheetReport.setSpsLoadSuccessTransactionCount(raSheetDetails.getTargetLoadSuccessTransactionCount());
-        return raSheetReport;
     }
 
     @GetMapping("/non-compatible-file-list")
@@ -168,7 +157,7 @@ public class ProgressTrackingController {
                                                                                     @RequestParam(defaultValue = "-1") long startTime,
                                                                                     @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes("non-compatible");
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.NON_COMPATIBLE);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();

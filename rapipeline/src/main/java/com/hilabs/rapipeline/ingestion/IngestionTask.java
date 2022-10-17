@@ -6,6 +6,7 @@ import com.hilabs.rapipeline.dto.ErrorDetails;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.service.*;
+import com.hilabs.roster.dto.AltIdType;
 import com.hilabs.roster.service.DartRASystemErrorsService;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -207,10 +208,10 @@ public class IngestionTask extends Task {
                 standardizedFileName, market, statusCode);
         raFileMetaDataDetailsService.insertRAFileDetailsLob(raFileDetailsId, lob, 1);
         if (raFileMetaData.getDcnId() != null) {
-            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getDcnId(), "DCN_ID", 1);
+            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getDcnId(), AltIdType.DCN_ID.name(), 1);
         }
         if (raFileMetaData.getRoId() != null) {
-            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getRoId(), "RO_ID", 1);
+            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getRoId(), AltIdType.RO_ID.name(), 1);
         }
         //TODO need to get contact from file
 //        raFileMetaDataDetailsService.insertRARTContactDetails(raFileDetailsId, null,
