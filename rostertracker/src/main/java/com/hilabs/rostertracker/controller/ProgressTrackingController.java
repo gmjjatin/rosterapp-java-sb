@@ -11,6 +11,7 @@ import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
 import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
 import com.hilabs.rostertracker.dto.RASheetReport;
+import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.model.RASheetProgressInfo;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
@@ -71,7 +72,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             List<RAFileDetails> raFileDetailsList = raFileDetailsService
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
+                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset);
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
                     .map(p -> p.getId()).collect(Collectors.toList()), true);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
@@ -100,7 +101,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             List<RAFileDetails> raFileDetailsList = raFileDetailsService
                     .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes("roster-tracker"), limit, offset);
+                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset);
             List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
                     .map(p -> p.getId()).collect(Collectors.toList()), true);
             Map<Long, RAFileDetails> raFileDetailsMap = raFileStatsService.getRAFileDetailsMap(raFileDetailsList);
@@ -153,7 +154,7 @@ public class ProgressTrackingController {
                                                                                     @RequestParam(defaultValue = "-1") long startTime,
                                                                                     @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes("non-compatible");
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.NON_COMPATIBLE);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
