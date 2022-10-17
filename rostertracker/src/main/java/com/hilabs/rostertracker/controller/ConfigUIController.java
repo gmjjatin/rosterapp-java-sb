@@ -4,9 +4,7 @@ import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RARCRosterISFMap;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.util.RAStatusEntity;
-import com.hilabs.rostertracker.dto.CollectionResponse;
-import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
-import com.hilabs.rostertracker.dto.SheetDetails;
+import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
@@ -22,6 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
+import static com.hilabs.rostertracker.utils.SheetTypeUtils.allTypeList;
 
 @RestController
 @RequestMapping("/api/v1/config-ui")
@@ -62,16 +61,11 @@ public class ConfigUIController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             //TODO demo
-            List<RAFileDetails> raFileDetailsList = raFileDetailsService.getRAFileDetailsList(raFileDetailsId, market,
-                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()), true);
-            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(raFileDetailsId, market,
+                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true);
             List<ConfigUiFileData> configUiFileDataList = new ArrayList<>();
-            for (RAFileDetails raFileDetails : raFileDetailsList) {
-                if (!raSheetDetailsListMap.containsKey(raFileDetails.getId())
-                        || raSheetDetailsListMap.get(raFileDetails.getId()).size() == 0) {
-                    continue;
-                }
+            for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
+                RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
                 String status = raStatusService.getDisplayStatus(raFileDetails.getStatusCode());
                 Optional<RAStatusEntity> optionalRAStatusEntity = RAStatusEntity.getRAFileStatusEntity(raFileDetails.getStatusCode());
                 boolean isManualActionReq = (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 1);
@@ -80,7 +74,8 @@ public class ConfigUIController {
                         //TODO demo
                         isManualActionReq));
             }
-            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, configUiFileDataList, 1000L);
+            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, configUiFileDataList,
+                    raFileDetailsWithSheetsListResponse.getTotalCount());
             return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
@@ -91,9 +86,9 @@ public class ConfigUIController {
 
     @GetMapping("/sheet-details")
     public ResponseEntity<CollectionResponse<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
-        List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId);
+        List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId, allTypeList);
         //TODO demo
-        return ResponseEntity.ok(new CollectionResponse(1, 100, sheetDetailsList, 1000L));
+        return ResponseEntity.ok(new CollectionResponse(1, 100, sheetDetailsList, new Long(sheetDetailsList.size())));
     }
 
     @GetMapping("/sheet-column-mapping")

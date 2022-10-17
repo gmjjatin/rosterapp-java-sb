@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
+import static com.hilabs.rostertracker.service.RAFileStatsService.getFileReceivedTime;
 
 @RestController
 @RequestMapping("/api/v1/progress-tracking")
@@ -71,13 +72,12 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            List<RAFileDetails> raFileDetailsList = raFileDetailsService
-                    .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
-                    .map(RAFileDetails::getId).collect(Collectors.toList()), true);
-            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
-            CollectionResponse<RAFileAndStats> collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList, 1000L);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
+                    .getRAFileDetailsWithSheetsList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true);
+            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
+            CollectionResponse<RAFileAndStats> collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList,
+                    raFileDetailsWithSheetsListResponse.getTotalCount());
             return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
@@ -101,17 +101,17 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            List<RAFileDetails> raFileDetailsList = raFileDetailsService
-                    .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
-                    .map(p -> p.getId()).collect(Collectors.toList()), true);
-            Map<Long, RAFileDetails> raFileDetailsMap = raFileStatsService.getRAFileDetailsMap(raFileDetailsList);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
+                    .getRAFileDetailsWithSheetsList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true);
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
-            for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-                raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetailsMap.get(raSheetDetails.getRaFileDetailsId()), raSheetDetails));
+            for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
+                RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
+                for (RASheetDetails raSheetDetails : raFileDetailsWithSheets.getRaSheetDetailsList()) {
+                    raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetails, raSheetDetails));
+                }
             }
-            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raSheetProgressInfoList, 1000L);
+            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raSheetProgressInfoList, raFileDetailsWithSheetsListResponse.getTotalCount());
             return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRosterFileProgressInfoList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",
@@ -164,31 +164,30 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            List<RAFileDetails> raFileDetailsList = raFileDetailsService
-                    .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
-                    .map(p -> p.getId()).collect(Collectors.toList()), true);
-            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsList, raSheetDetailsList);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(raFileDetailsId, market, lineOfBusiness,
+                            startTime, endTime, statusCodes, limit, offset, true);
+//            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
+//                    .map(p -> p.getId()).collect(Collectors.toList()), true);
+//            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
-            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
-            for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
-                List<RAFileErrorCodeDetails> raFileErrorCodeDetailsList = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
+            for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
+                RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
+                List<RAFileErrorCodeDetails> raFileErrorCodeDetailsList = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileDetails.getId());
                 //TODO need to fix it
                 List<String> fileErrorCodes = raFileErrorCodeDetailsList.stream().map(p -> p.getErrorCode()).collect(Collectors.toList());
                 List<String> sheetErrorCodes = new ArrayList<>();
-                if (raSheetDetailsListMap.containsKey(raFileAndStats.getRaFileDetailsId()) && raSheetDetailsListMap.get(raFileAndStats.getRaFileDetailsId()).size() > 0) {
-                    for (RASheetDetails raSheetDetails : raSheetDetailsListMap.get(raFileAndStats.getRaFileDetailsId())) {
-                        List<RASheetErrorCodeDetails> raSheetErrorCodeDetailsList = raSheetErrorCodeDetailRepository.findByRASheetDetailsId(raSheetDetails.getId());
-                        sheetErrorCodes.addAll(raSheetErrorCodeDetailsList.stream().map(RASheetErrorCodeDetails::getErrorCode).collect(Collectors.toList()));
-                    }
+                Integer rosterRecordCount = 0;
+                for (RASheetDetails raSheetDetails : raFileDetailsWithSheets.getRaSheetDetailsList()) {
+                    List<RASheetErrorCodeDetails> raSheetErrorCodeDetailsList = raSheetErrorCodeDetailRepository.findByRASheetDetailsId(raSheetDetails.getId());
+                    sheetErrorCodes.addAll(raSheetErrorCodeDetailsList.stream().map(RASheetErrorCodeDetails::getErrorCode).collect(Collectors.toList()));
+                    rosterRecordCount += raSheetDetails.getRosterRecordCount();
                 }
                 sheetErrorCodes = sheetErrorCodes.stream().filter(Objects::nonNull).collect(Collectors.toList());
                 DartRaErrorCodeDetailsService.ErrorCodesAndDescription errorCodesAndDescription = dartRaErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes);
-                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(),
-                        raFileAndStats.getRosterRecordCount(), errorCodesAndDescription.errorDescription,
-                        String.join(", ", errorCodesAndDescription.errorCodes));
+                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
+                        getFileReceivedTime(raFileDetails), rosterRecordCount,
+                        errorCodesAndDescription.errorDescription, String.join(", ", errorCodesAndDescription.errorCodes));
                 inCompatibleRosterDetails.add(details);
             }
             CollectionResponse collectionResponse = new CollectionResponse<InCompatibleRosterDetails>(pageNo, pageSize, inCompatibleRosterDetails, 1000L);
