@@ -18,7 +18,6 @@ public class RAFileAndStats extends RosterStats {
     private String plmTicketId;
 
     private String status;
-//    private boolean isSPSLoadComplete;
     private List<RASheetAndStats> sheetStatsList;
 
     public RAFileAndStats(long raFileDetailsId, String fileName, long fileReceivedTime, String lob, String market, String plmTicketId, String status) {

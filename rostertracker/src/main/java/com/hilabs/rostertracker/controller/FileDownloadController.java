@@ -7,6 +7,7 @@ import com.hilabs.rostertracker.service.RAFalloutReportService;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.service.RAFileStatsService;
 import com.hilabs.rostertracker.service.RASheetDetailsService;
+import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -61,7 +62,7 @@ public class FileDownloadController {
     }
 
     @RequestMapping(path = "/download-sheet-report", method = RequestMethod.GET)
-    public ResponseEntity<InputStreamResource> downloadSampleReport(@RequestParam() Long raSheetDetailsId) throws IOException {
+    public ResponseEntity<InputStreamResource> downloadSheetReport(@RequestParam() Long raSheetDetailsId) throws IOException {
         try {
             Optional<RASheetDetails> optionalRASheetDetails = raSheetDetailsService.findRASheetDetailsById(raSheetDetailsId);
             if (!optionalRASheetDetails.isPresent()) {
@@ -73,10 +74,15 @@ public class FileDownloadController {
                 return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
             }
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
-            File file = new File(rosterConfig.getRaArchiveFolder(), raFileDetails.getOriginalFileName());
+            String standardizedFileName = raFileDetails.getStandardizedFileName();
+            if (standardizedFileName != null && standardizedFileName.endsWith(".xlsx")) {
+                standardizedFileName = raFileDetails.getStandardizedFileName().replaceAll(".xlsx", "");
+            }
+            String trackerFileName = String.format("%s_%s_Tracker.xlsx", standardizedFileName, raSheetDetails.getId());
+            File file = new File(rosterConfig.getRaTargetFolder(), trackerFileName);
             return getDownloadFileResponseEntity(file);
         } catch (Exception ex) {
-            log.error("Error in downloadSampleReport - ex {}", ex.getMessage());
+            log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             throw ex;
         }
     }
