@@ -87,6 +87,10 @@ public class RARCRosterISFMapService {
                 isfColumnValues.add(new IsfColumnInfo(isfColumn, false));
                 alreadyAdded.add(isfColumn);
             }
+            if (!alreadyAdded.contains("auto reject")) {
+                isfColumnValues.add(new IsfColumnInfo("auto reject", false));
+                alreadyAdded.add("auto reject");
+            }
             rosterColumnMappingDataList.add(new RosterColumnMappingData(rosterColumnName, displayOrder, isfColumnValues));
         }
         rosterColumnMappingDataList.sort((l, r) -> {

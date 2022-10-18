@@ -112,7 +112,8 @@ public class RAFileStatsService {
     }
     public static RASheetProgressInfo getBaseRosterSheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         //TODO received time when created is null
-        return new RASheetProgressInfo(raSheetDetails.getId(), raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : 0);
+        return new RASheetProgressInfo(raSheetDetails.getId(), raSheetDetails.getTabName(),
+                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : 0);
     }
 
     public RASheetProgressInfo getRASheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {

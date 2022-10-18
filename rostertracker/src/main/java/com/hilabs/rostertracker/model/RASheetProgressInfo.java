@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class RASheetProgressInfo {
     private long raSheetDetailsId;
+    private String sheetName;
     private long receivedTime;
 
     private AutoMappedStageInfo autoMapped;
@@ -13,20 +14,27 @@ public class RASheetProgressInfo {
     private ConvertedDartStageInfo convertedDart;
     private SpsLoadStageInfo spsLoad;
 
-    public RASheetProgressInfo(long raSheetDetailsId, long receivedTime) {
+    public RASheetProgressInfo(long raSheetDetailsId, String sheetName, long receivedTime) {
         this.raSheetDetailsId = raSheetDetailsId;
+        this.sheetName = sheetName;
         this.receivedTime = receivedTime;
         this.autoMapped = new AutoMappedStageInfo();
+        this.isf = new ISFStageInfo();
         this.convertedDart = new ConvertedDartStageInfo();
         this.spsLoad = new SpsLoadStageInfo();
     }
 
-    public RASheetProgressInfo(long raSheetDetailsId, long receivedTime,
-                               AutoMappedStageInfo autoMapped, ConvertedDartStageInfo convertedDart,
+    public RASheetProgressInfo(long raSheetDetailsId, String sheetName,
+                               long receivedTime,
+                               AutoMappedStageInfo autoMapped,
+                               ISFStageInfo isf,
+                               ConvertedDartStageInfo convertedDart,
                                SpsLoadStageInfo spsLoad) {
         this.raSheetDetailsId = raSheetDetailsId;
+        this.sheetName = sheetName;
         this.receivedTime = receivedTime;
         this.autoMapped = autoMapped;
+        this.isf = isf;
         this.convertedDart = convertedDart;
         this.spsLoad = spsLoad;
     }
