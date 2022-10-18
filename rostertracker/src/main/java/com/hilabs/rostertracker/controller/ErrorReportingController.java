@@ -112,7 +112,6 @@ public class ErrorReportingController {
                 for (RASheetAndErrorStats raSheetAndErrorStats : raFileAndErrorStats.getSheetStatsList()) {
                     raSheetAndColumnErrorStatsList.add(new RASheetAndColumnErrorStats(raSheetAndErrorStats.getRaSheetDetailsId(), raSheetAndErrorStats.getSheetName()));
                 }
-
             }
             return new ResponseEntity<>(raSheetAndColumnErrorStatsList, HttpStatus.OK);
         } catch (Exception ex) {

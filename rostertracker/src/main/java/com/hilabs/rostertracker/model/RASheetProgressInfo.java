@@ -6,6 +6,7 @@ import lombok.Data;
 public class RASheetProgressInfo {
     private long raSheetDetailsId;
     private String sheetName;
+    private String standardizedFileName;
     private long receivedTime;
 
     private AutoMappedStageInfo autoMapped;
@@ -14,9 +15,10 @@ public class RASheetProgressInfo {
     private ConvertedDartStageInfo convertedDart;
     private SpsLoadStageInfo spsLoad;
 
-    public RASheetProgressInfo(long raSheetDetailsId, String sheetName, long receivedTime) {
+    public RASheetProgressInfo(long raSheetDetailsId, String sheetName, String standardizedFileName, long receivedTime) {
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
+        this.standardizedFileName = standardizedFileName;
         this.receivedTime = receivedTime;
         this.autoMapped = new AutoMappedStageInfo();
         this.isf = new ISFStageInfo();
@@ -25,6 +27,7 @@ public class RASheetProgressInfo {
     }
 
     public RASheetProgressInfo(long raSheetDetailsId, String sheetName,
+                               String standardizedFileName,
                                long receivedTime,
                                AutoMappedStageInfo autoMapped,
                                ISFStageInfo isf,
@@ -32,6 +35,7 @@ public class RASheetProgressInfo {
                                SpsLoadStageInfo spsLoad) {
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
+        this.standardizedFileName = standardizedFileName;
         this.receivedTime = receivedTime;
         this.autoMapped = autoMapped;
         this.isf = isf;

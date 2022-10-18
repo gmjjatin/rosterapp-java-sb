@@ -46,4 +46,8 @@ public class Utils {
         Set<String> set = new HashSet<>(list);
         return new ArrayList<>(set);
     }
+
+    public static String removeFileExtensionFromExcelFile(String fileName) {
+        return fileName.replaceAll(".xlsx", "");
+    }
 }

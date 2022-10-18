@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Optional;
 
+import static com.hilabs.rostertracker.utils.Utils.removeFileExtensionFromExcelFile;
+
 
 @RestController
 @RequestMapping("/api/v1/file-download")
@@ -76,7 +78,7 @@ public class FileDownloadController {
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
             String standardizedFileName = raFileDetails.getStandardizedFileName();
             if (standardizedFileName != null && standardizedFileName.endsWith(".xlsx")) {
-                standardizedFileName = raFileDetails.getStandardizedFileName().replaceAll(".xlsx", "");
+                standardizedFileName = removeFileExtensionFromExcelFile(raFileDetails.getStandardizedFileName());
             }
             String trackerFileName = String.format("%s_%s_Tracker.xlsx", standardizedFileName, raSheetDetails.getId());
             File file = new File(rosterConfig.getRaTargetFolder(), trackerFileName);

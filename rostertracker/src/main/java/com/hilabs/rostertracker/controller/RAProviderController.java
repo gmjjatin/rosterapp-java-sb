@@ -1,6 +1,8 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.rostertracker.model.ConfigUiFileData;
 import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.utils.Utils;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
@@ -37,6 +40,7 @@ public class RAProviderController {
                                                                            @RequestParam(defaultValue = "", name = "type") String type) {
         try {
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr);
+            RosterFilterType rosterFilterType = RosterFilterType.getRosterFilterTypeFromStr(type);
             List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             raFileDetailsList = raFileDetailsList.stream().filter(p -> {
                 if (p.getStatusCode() == null) {

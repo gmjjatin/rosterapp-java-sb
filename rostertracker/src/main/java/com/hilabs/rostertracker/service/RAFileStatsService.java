@@ -112,14 +112,13 @@ public class RAFileStatsService {
     }
     public static RASheetProgressInfo getBaseRosterSheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         //TODO received time when created is null
-        return new RASheetProgressInfo(raSheetDetails.getId(), raSheetDetails.getTabName(),
+        return new RASheetProgressInfo(raSheetDetails.getId(), raSheetDetails.getTabName(), raFileDetails.getStandardizedFileName(),
                 raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : 0);
     }
 
     public RASheetProgressInfo getRASheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         RASheetProgressInfo rosterFileProgressInfo = getBaseRosterSheetProgressInfo(raFileDetails, raSheetDetails);
         List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList = getRosConvProcessingDurationStatsList(raSheetDetails.getId());
-
         RosterStageState autoMappedRosterStageState = getRosterStageState(RosterSheetProcessStage.AUTO_MAPPED, raSheetDetails.getStatusCode());
         if (autoMappedRosterStageState != RosterStageState.NOT_STARTED) {
             BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.AUTO_MAPPED,
