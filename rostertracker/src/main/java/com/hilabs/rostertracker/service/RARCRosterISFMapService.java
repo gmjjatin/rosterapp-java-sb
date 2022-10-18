@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @Service
 @Log4j2
 public class RARCRosterISFMapService {
+    public static String AUTO_REJECT = "auto reject";
     @Autowired
     private RARCRosterISFMapRepository rarcRosterISFMapRepository;
 
@@ -87,9 +88,9 @@ public class RARCRosterISFMapService {
                 isfColumnValues.add(new IsfColumnInfo(isfColumn, false));
                 alreadyAdded.add(isfColumn);
             }
-            if (!alreadyAdded.contains("auto reject")) {
-                isfColumnValues.add(new IsfColumnInfo("auto reject", false));
-                alreadyAdded.add("auto reject");
+            if (!alreadyAdded.contains(AUTO_REJECT)) {
+                isfColumnValues.add(new IsfColumnInfo(AUTO_REJECT, false));
+                alreadyAdded.add(AUTO_REJECT);
             }
             rosterColumnMappingDataList.add(new RosterColumnMappingData(rosterColumnName, displayOrder, isfColumnValues));
         }
