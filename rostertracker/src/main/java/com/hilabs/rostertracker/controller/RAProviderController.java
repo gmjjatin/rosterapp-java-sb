@@ -1,6 +1,9 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.rostertracker.model.ConfigUiFileData;
+import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
@@ -36,7 +40,8 @@ public class RAProviderController {
                                                                            @RequestParam(defaultValue = "", name = "type") String type) {
         try {
             List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr);
-            List<Integer> statusCodes = getStatusCodes(type);
+            RosterFilterType rosterFilterType = RosterFilterType.getRosterFilterTypeFromStr(type);
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             raFileDetailsList = raFileDetailsList.stream().filter(p -> {
                 if (p.getStatusCode() == null) {
                     return false;
@@ -54,7 +59,7 @@ public class RAProviderController {
     @GetMapping("/market/all")
     public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "", name = "type") String type) {
         try {
-            List<Integer> statusCodes = getStatusCodes(type);
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             List<String> markets = raFileDetailsService.findAllMarkets(statusCodes);
             return new ResponseEntity<>(markets, HttpStatus.OK);
         } catch (Exception ex) {

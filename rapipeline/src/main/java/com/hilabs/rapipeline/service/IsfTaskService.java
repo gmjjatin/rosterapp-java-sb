@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
@@ -63,13 +60,15 @@ public class IsfTaskService {
     }
 
     public List<RAFileDetails> getEligibleRAFileDetailsList(int count) {
-        List<RAFileDetails> raFileDetailsList = raFileDetailsService.findFileDetailsByStatusCodes(isfFileStatusCodes, count, 0);
-        List<RAFileDetails> eligibleRaFileDetailsList = new ArrayList<>();
-        for (RAFileDetails raFileDetails : raFileDetailsList) {
-            if (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 0) {
-                eligibleRaFileDetailsList.add(raFileDetails);
-            }
-        }
+        //TODO fix it.
+        List<RAFileDetails> eligibleRaFileDetailsList = raFileDetailsService.findFileDetailsByStatusCodesWithManualActionReqList(isfFileStatusCodes,
+                Collections.singletonList(0), count, 0);
+//        List<RAFileDetails> eligibleRaFileDetailsList = new ArrayList<>();
+//        for (RAFileDetails raFileDetails : raFileDetailsList) {
+//            if (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 0) {
+//                eligibleRaFileDetailsList.add(raFileDetails);
+//            }
+//        }
         return eligibleRaFileDetailsList;
     }
 

@@ -1,10 +1,13 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.rostertracker.config.RosterConfig;
 import com.hilabs.rostertracker.service.RAFalloutReportService;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.service.RAFileStatsService;
+import com.hilabs.rostertracker.service.RASheetDetailsService;
+import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -18,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Optional;
+
+import static com.hilabs.rostertracker.utils.Utils.removeFileExtensionFromExcelFile;
 
 
 @RestController
@@ -33,6 +38,9 @@ public class FileDownloadController {
     RAFileDetailsService raFileDetailsService;
 
     @Autowired
+    RASheetDetailsService raSheetDetailsService;
+
+    @Autowired
     RAFalloutReportService raFalloutReportService;
 
     @Autowired
@@ -40,7 +48,7 @@ public class FileDownloadController {
 
     //TODO remove
     @RequestMapping(path = "/download-roster", method = RequestMethod.GET)
-    public ResponseEntity<InputStreamResource> downloadSampleReport(@RequestParam() Long raFileDetailsId) throws IOException {
+    public ResponseEntity<InputStreamResource> downloadRoster(@RequestParam() Long raFileDetailsId) throws IOException {
         try {
             Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raFileDetailsId);
             if (!optionalRAFileDetails.isPresent()) {
@@ -51,6 +59,32 @@ public class FileDownloadController {
             return getDownloadFileResponseEntity(file);
         } catch (Exception ex) {
             log.error("Error in downloadSampleReport - ex {}", ex.getMessage());
+            throw ex;
+        }
+    }
+
+    @RequestMapping(path = "/download-sheet-report", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> downloadSheetReport(@RequestParam() Long raSheetDetailsId) throws IOException {
+        try {
+            Optional<RASheetDetails> optionalRASheetDetails = raSheetDetailsService.findRASheetDetailsById(raSheetDetailsId);
+            if (!optionalRASheetDetails.isPresent()) {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+            RASheetDetails raSheetDetails = optionalRASheetDetails.get();
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raSheetDetails.getRaFileDetailsId());
+            if (!optionalRAFileDetails.isPresent()) {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+            RAFileDetails raFileDetails = optionalRAFileDetails.get();
+            String standardizedFileName = raFileDetails.getStandardizedFileName();
+            if (standardizedFileName != null && standardizedFileName.endsWith(".xlsx")) {
+                standardizedFileName = removeFileExtensionFromExcelFile(raFileDetails.getStandardizedFileName());
+            }
+            String trackerFileName = String.format("%s_%s_Tracker.xlsx", standardizedFileName, raSheetDetails.getId());
+            File file = new File(rosterConfig.getRaTargetFolder(), trackerFileName);
+            return getDownloadFileResponseEntity(file);
+        } catch (Exception ex) {
+            log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             throw ex;
         }
     }

@@ -1,9 +1,13 @@
 package com.hilabs.rostertracker.service;
 
+import com.hilabs.roster.dto.ContactType;
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RARTContactDetails;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
+import com.hilabs.roster.repository.RARTContactDetailsRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
+import com.hilabs.rostertracker.dto.RASheetReport;
 import com.hilabs.rostertracker.dto.SheetDetails;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +24,9 @@ public class RASheetDetailsService {
 
     @Autowired
     RASheetDetailsRepository raSheetDetailsRepository;
+
+    @Autowired
+    RARTContactDetailsRepository rartContactDetailsRepository;
 
     @Autowired
     private RARCRosterISFMapService rarcRosterISFMapService;
@@ -67,5 +74,29 @@ public class RASheetDetailsService {
             }
         }
         return filteredRaSheetDetailsList;
+    }
+
+
+    public RASheetReport getRASheetReport(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
+        RASheetReport raSheetReport = new RASheetReport();
+        List<RARTContactDetails> rartContactDetailsList = rartContactDetailsRepository.findRARTContactDetailsByFileDetailsId(raFileDetails.getId());
+        Optional<RARTContactDetails> apdoRARTContactDetailsOptional = rartContactDetailsList.stream().filter(p -> p.getContactType() != null
+                && p.getContactType().equals(ContactType.APDO_CONTACT.name())).findFirst();
+        Optional<RARTContactDetails> peRARTContactDetailsOptional = rartContactDetailsList.stream().filter(p -> p.getContactType() != null
+                && p.getContactType().equals(ContactType.PE_CONTACT.name())).findFirst();
+        raSheetReport.setApdoContact(apdoRARTContactDetailsOptional.isPresent() ? apdoRARTContactDetailsOptional.get().getContact() : "-");
+        raSheetReport.setPeContact(peRARTContactDetailsOptional.isPresent() ? peRARTContactDetailsOptional.get().getContact() : "-");
+        raSheetReport.setMarket(raFileDetails.getMarket());
+        //TODO tables identified
+        raSheetReport.setTablesIdentifiedInRosterSheetCount(1);
+        raSheetReport.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
+        raSheetReport.setIsfRowCount(raSheetDetails.getIsfRowCount());
+        raSheetReport.setDartRowCount(raSheetDetails.getOutRowCount());
+        raSheetReport.setSpsLoadTransactionCount(raSheetDetails.getTargetLoadTransactionCount());
+//        raSheetReport.setSuccessCount();
+//        raSheetReport.setWarningCount();
+//        raSheetReport.setFailedCount();
+        raSheetReport.setSpsLoadSuccessTransactionCount(raSheetDetails.getTargetLoadSuccessTransactionCount());
+        return raSheetReport;
     }
 }

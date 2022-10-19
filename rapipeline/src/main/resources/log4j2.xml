@@ -4,8 +4,8 @@
         <Console name="LogToConsole" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
-        <RollingFile name="LogToRollingFile" fileName="../logs/app-roster-tracker.log"
-                     filePattern="../logs/$${date:yyyy-MM}/app-roster-tracker-%d{MM-dd-yyyy}-%i.log.gz">
+        <RollingFile name="LogToRollingFile" fileName="../logs/app-ra-pipeline.log"
+                     filePattern="../logs/$${date:yyyy-MM}/app-ra-pipeline-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>
@@ -15,8 +15,8 @@
             </Policies>
         </RollingFile>
 
-        <RollingFile name="ErrorLogToRollingFile" fileName="../logs/error-roster-tracker.log"
-                     filePattern="../logs/$${date:yyyy-MM}/error-roster-tracker-%d{MM-dd-yyyy}-%i.log.gz">
+        <RollingFile name="ErrorLogToRollingFile" fileName="../logs/error-ra-pipeline.log"
+                     filePattern="../logs/$${date:yyyy-MM}/error-ra-pipeline-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>

@@ -63,13 +63,14 @@ public class DartTaskService {
     }
 
     public List<RAFileDetails> getEligibleRAFileDetailsList(int count) {
-        List<RAFileDetails> raFileDetailsList = raFileDetailsService.findFileDetailsByStatusCodes(dartStatusCodes, count, 0);
-        List<RAFileDetails> eligibleRaFileDetailsList = new ArrayList<>();
-        for (RAFileDetails raFileDetails : raFileDetailsList) {
-            if (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 0) {
-                eligibleRaFileDetailsList.add(raFileDetails);
-            }
-        }
+        List<RAFileDetails> eligibleRaFileDetailsList = raFileDetailsService
+                .findFileDetailsByStatusCodesWithManualActionReqList(dartStatusCodes, Arrays.asList(0), count, 0);
+//        List<RAFileDetails> eligibleRaFileDetailsList = new ArrayList<>();
+//        for (RAFileDetails raFileDetails : raFileDetailsList) {
+//            if (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 0) {
+//                eligibleRaFileDetailsList.add(raFileDetails);
+//            }
+//        }
         return eligibleRaFileDetailsList;
     }
 
