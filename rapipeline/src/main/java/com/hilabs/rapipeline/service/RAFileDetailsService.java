@@ -42,8 +42,8 @@ public class RAFileDetailsService {
         return raFileDetailsRepository.findByRAFileDetailsId(raFileDetailsId);
     }
 
-    public List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, int limit, int offset) {
-        return raFileDetailsRepository.findFileDetailsByStatusCodes(statusCodes, limit, offset);
+    public List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, List<Integer> manualActionRequiredList ,int limit, int offset) {
+        return raFileDetailsRepository.findFileDetailsByStatusCodes(statusCodes, manualActionRequiredList, limit, offset);
     }
 
     public void updateRAFileDetailsStatus(Long raFileDetailsId, Integer status) {
