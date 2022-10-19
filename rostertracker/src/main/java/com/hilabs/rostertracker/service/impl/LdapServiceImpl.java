@@ -44,14 +44,14 @@ public class LdapServiceImpl implements LdapService {
 
     @Override
     public boolean authenticate(String username, String password) {
-        List<Attributes> attributesList = search(username);
-        if (attributesList.size() == 0) {
+        String distinguishedName = getDistinguishedName(username);
+        if (distinguishedName == null) {
+            log.error("User not found - {}", username);
             return false;
         }
-        //TODO Assuming uniqueness for username
-        Attributes attributes = attributesList.get(0);
         try {
-            DirContext dirContext = contextSource.getContext((String) (attributes.get("distinguishedName").get()), password);
+            DirContext dirContext = contextSource.getContext(distinguishedName, password);
+            log.info(new Gson().toJson(getUserGroups(username)));
             return true;
         } catch (Exception ex) {
             log.error("Error in authenticate {}", ex.getMessage());
@@ -59,15 +59,49 @@ public class LdapServiceImpl implements LdapService {
         }
     }
 
+    public String getDistinguishedName(String username) {
+        List<Attributes> attributesList = search("cn=" + username);
+        if (attributesList.size() == 0) {
+            return null;
+        }
+        //TODO Assuming uniqueness for username
+        Attributes attributes = attributesList.get(0);
+        try {
+            return (String) attributes.get("distinguishedName").get();
+        } catch (Exception ex) {
+            log.error("Error in authenticate {}", ex.getMessage());
+            return null;
+        }
+    }
+
+    public List<String> getUserGroups(String userName) {
+        String distinguishedName = getDistinguishedName(userName);
+        List<Attributes> attributesList = search(String.format("(&(objectClass=group)(member=%s))", distinguishedName));
+        List<String> groups = new ArrayList<>();
+        for (int i = 0; i < attributesList.size(); i++) {
+            Attributes attributes = attributesList.get(i);
+            if (attributes.get("cn") != null) {
+                try {
+                    groups.add((String) attributes.get("cn").get());
+                } catch (Exception ex) {
+                    log.error("CN key not found in - userName {} distinguishedName {}", userName, distinguishedName);
+                }
+            }
+        }
+        return groups;
+    }
+
     @Override
     public List<Attributes> search(String username) {
         ldapTemplate.setIgnorePartialResultException(true);
         try {
-            return ldapTemplate.search(
+            List<Attributes> attributesList = ldapTemplate.search(
                     "" ,
-                    "cn=" + username,
+                    username,
                     (AttributesMapper<Attributes>) attrs -> attrs
             );
+            log.info("username {} attributesList size {}", username, attributesList.size());
+            return attributesList;
         } catch (Exception ex) {
             log.error("Error in search {}", ex.getMessage());
             return new ArrayList<>();
