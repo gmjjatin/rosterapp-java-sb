@@ -79,7 +79,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/v1/file-download/download-roster").permitAll()
                 .antMatchers("/api/v1/file-download/download-roster**").permitAll()
                 .anyRequest().authenticated()
-                .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                //.and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         // Add a filter to validate the tokens with every request

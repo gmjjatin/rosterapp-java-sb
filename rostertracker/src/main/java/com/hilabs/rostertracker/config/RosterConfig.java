@@ -12,8 +12,8 @@ public class RosterConfig implements Serializable {
 
     private static final long serialVersionUID = -2650185165626007488L;
 
-    @Value("${downloadFolder}")
-    private String downloadFolder;
+//    @Value("${downloadFolder}")
+//    private String downloadFolder;
 
     @Value("${templatesFolder}")
     private String templatesFolder;

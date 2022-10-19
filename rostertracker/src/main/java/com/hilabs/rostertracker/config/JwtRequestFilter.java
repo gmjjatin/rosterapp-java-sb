@@ -1,13 +1,17 @@
 package com.hilabs.rostertracker.config;
 
+import com.hilabs.roster.entity.RAAuthPrivilege;
+import com.hilabs.rostertracker.exception.UnAuthorizedException;
+import com.hilabs.rostertracker.dto.JWTAuthentication;
 import com.hilabs.rostertracker.service.JwtUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -16,6 +20,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @Log4j2
@@ -26,6 +33,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -61,13 +70,47 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
             // if token is valid configure Spring Security to manually set authentication
             if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // After setting the Authentication in the context, we specify
-                // that the current user is authenticated. So it passes the Spring Security Configurations successfully.
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+
+                //get user privileges
+                //validate api-url-pattern,method for resource,operation
+                //if valid create jwtAuthentication and set securityContext
+                // otherwise 403
+
+
+
+
+                List<RAAuthPrivilege> userPrivileges =  jwtUserDetailsService.getUserPrivileges(username);
+                System.out.println("UserPrivileges: " + userPrivileges);
+
+
+                String requestURI = request.getRequestURI();
+                String requestMethod = request.getMethod();
+
+                Optional<RAAuthPrivilege> matchingPrivilege = userPrivileges.stream()
+                                                    .filter(userPrivilege -> requestMethod.equals(userPrivilege.getOperationType()) && isUrlMatchingWithPattern(userPrivilege.getResourceLocation(),requestURI)).findFirst();
+
+                if(matchingPrivilege.isPresent()){
+
+                    JWTAuthentication jwtAuthentication = new JWTAuthentication(new User(username,"",new ArrayList<>()),
+                                                                                jwtTokenUtil.getAllClaimsFromToken(jwtToken),
+                                                                                null
+                            );
+                    jwtAuthentication.setAuthenticated(true);
+                    SecurityContextHolder.getContext().setAuthentication(jwtAuthentication);
+                    //UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                    //        userDetails, null, userDetails.getAuthorities());
+                    //usernamePasswordAuthenticationToken
+                     //       .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // After setting the Authentication in the context, we specify
+                    // that the current user is authenticated. So it passes the Spring Security Configurations successfully.
+                    //SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                }
+                else{
+                    //throw new NullPointerException("Testing");
+                    throw new UnAuthorizedException("User does not have access for requested resource.");
+                }
+
             }
         }
 
@@ -77,6 +120,27 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         response.setHeader("Access-Control-Allow-Headers", "*");
         response.setHeader("Cache-Control", "no-cache");
         chain.doFilter(request, response);
+    }
+
+
+    private boolean isUrlMatchingWithPattern(String pattern, String url) {
+        //Splitting by ? and taking first part so that we ignore query param if any in url and pattern
+        String[] patternParts = pattern.split("\\?")[0].split("/");
+        String[] urlParts = url.split("\\?")[0].split("/");
+        if (patternParts.length != urlParts.length) {
+            return false;
+        }
+        for (int i = 0; i < patternParts.length; i++) {
+            String patternPath = patternParts[i];
+            String urlPath = urlParts[i];
+            if (patternPath.startsWith("{") && patternPath.endsWith("}")) {
+                continue;
+            }
+            if (!patternPath.equals(urlPath)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
