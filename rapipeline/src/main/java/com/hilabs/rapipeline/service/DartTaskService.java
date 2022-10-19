@@ -64,7 +64,7 @@ public class DartTaskService {
 
     public List<RAFileDetails> getEligibleRAFileDetailsList(int count) {
         List<RAFileDetails> eligibleRaFileDetailsList = raFileDetailsService
-                .findFileDetailsByStatusCodes(dartStatusCodes, Arrays.asList(0), count, 0);
+                .findFileDetailsByStatusCodesWithManualActionReqList(dartStatusCodes, Arrays.asList(0), count, 0);
 //        List<RAFileDetails> eligibleRaFileDetailsList = new ArrayList<>();
 //        for (RAFileDetails raFileDetails : raFileDetailsList) {
 //            if (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 0) {

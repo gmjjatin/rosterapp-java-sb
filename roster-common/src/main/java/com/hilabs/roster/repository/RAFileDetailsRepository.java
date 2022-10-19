@@ -80,7 +80,11 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
 
     @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) and MANUAL_ACTN_REQ in (:manualActionRequiredList) " +
             "offset :offset rows fetch next :limit rows only", nativeQuery = true)
-    List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, List<Integer> manualActionRequiredList, int limit, int offset);
+    List<RAFileDetails> findFileDetailsByStatusCodesWithManualActionReqList(List<Integer> statusCodes, List<Integer> manualActionRequiredList, int limit, int offset);
+
+    @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) " +
+            "offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, int limit, int offset);
 
     @Modifying
     @Transactional

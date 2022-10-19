@@ -61,7 +61,7 @@ public class IsfTaskService {
 
     public List<RAFileDetails> getEligibleRAFileDetailsList(int count) {
         //TODO fix it.
-        List<RAFileDetails> eligibleRaFileDetailsList = raFileDetailsService.findFileDetailsByStatusCodes(isfFileStatusCodes,
+        List<RAFileDetails> eligibleRaFileDetailsList = raFileDetailsService.findFileDetailsByStatusCodesWithManualActionReqList(isfFileStatusCodes,
                 Collections.singletonList(0), count, 0);
 //        List<RAFileDetails> eligibleRaFileDetailsList = new ArrayList<>();
 //        for (RAFileDetails raFileDetails : raFileDetailsList) {

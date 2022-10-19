@@ -2,8 +2,6 @@ package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.config.AppPropertiesConfig;
-import com.hilabs.rapipeline.service.PythonInvocationService;
-import com.hilabs.rapipeline.service.RAFileDetailsService;
 import com.hilabs.roster.entity.RAFileDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +56,7 @@ public class PreProcessingTaskService {
 
 
     public List<RAFileDetails> getEligibleRAFileDetailsList(int count) {
-        return raFileDetailsService.findFileDetailsByStatusCodes(preProcessingStatusCodes, Arrays.asList(0, 1), count, 0);
+        return raFileDetailsService.findFileDetailsByStatusCodes(preProcessingStatusCodes, count, 0);
     }
 
     public void invokePythonProcessForPreProcessingTask(Long raFileDetailsId) throws Exception {

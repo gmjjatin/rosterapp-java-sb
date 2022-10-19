@@ -34,6 +34,7 @@ public class RAFileDetailsService {
         raFileDetails.setLastUpdatedUserId("SYSTEM");
         raFileDetails.setCreatedDate(new Date());
         raFileDetails.setLastUpdatedDate(new Date());
+        raFileDetails.setManualActionRequired(0);
         raFileDetails = raFileDetailsRepository.save(raFileDetails);
         return raFileDetails.getId();
     }
@@ -42,8 +43,12 @@ public class RAFileDetailsService {
         return raFileDetailsRepository.findByRAFileDetailsId(raFileDetailsId);
     }
 
-    public List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, List<Integer> manualActionRequiredList ,int limit, int offset) {
-        return raFileDetailsRepository.findFileDetailsByStatusCodes(statusCodes, manualActionRequiredList, limit, offset);
+    public List<RAFileDetails> findFileDetailsByStatusCodesWithManualActionReqList(List<Integer> statusCodes, List<Integer> manualActionRequiredList ,int limit, int offset) {
+        return raFileDetailsRepository.findFileDetailsByStatusCodesWithManualActionReqList(statusCodes, manualActionRequiredList, limit, offset);
+    }
+
+    public List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes ,int limit, int offset) {
+        return raFileDetailsRepository.findFileDetailsByStatusCodes(statusCodes, limit, offset);
     }
 
     public void updateRAFileDetailsStatus(Long raFileDetailsId, Integer status) {
