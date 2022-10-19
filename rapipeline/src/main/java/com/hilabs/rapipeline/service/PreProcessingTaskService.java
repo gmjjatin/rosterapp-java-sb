@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,7 +58,7 @@ public class PreProcessingTaskService {
 
 
     public List<RAFileDetails> getEligibleRAFileDetailsList(int count) {
-        return raFileDetailsService.findFileDetailsByStatusCodes(preProcessingStatusCodes, count, 0);
+        return raFileDetailsService.findFileDetailsByStatusCodes(preProcessingStatusCodes, Arrays.asList(0, 1), count, 0);
     }
 
     public void invokePythonProcessForPreProcessingTask(Long raFileDetailsId) throws Exception {
