@@ -83,13 +83,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 List<RAAuthPrivilege> userPrivileges =  jwtUserDetailsService.getUserPrivileges(username);
                 System.out.println("UserPrivileges: " + userPrivileges);
 
-
                 String requestURI = request.getRequestURI();
                 String requestMethod = request.getMethod();
 
                 Optional<RAAuthPrivilege> matchingPrivilege = userPrivileges.stream()
                                                     .filter(userPrivilege -> requestMethod.equals(userPrivilege.getOperationType()) && isUrlMatchingWithPattern(userPrivilege.getResourceLocation(),requestURI)).findFirst();
-
                 if(matchingPrivilege.isPresent()){
 
                     JWTAuthentication jwtAuthentication = new JWTAuthentication(new User(username,"",new ArrayList<>()),

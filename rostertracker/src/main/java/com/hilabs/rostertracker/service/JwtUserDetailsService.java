@@ -5,6 +5,7 @@ import com.hilabs.roster.repository.RAAuthPrivilegeRepository;
 import com.hilabs.rostertracker.config.JwtTokenUtil;
 import com.hilabs.rostertracker.dto.RAAuthPrivilegeDTO;
 import com.hilabs.rostertracker.model.LoginDetails;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class JwtUserDetailsService implements UserDetailsService {
     @Autowired
     private PasswordEncoder bcryptEncoder;
@@ -46,6 +48,7 @@ public class JwtUserDetailsService implements UserDetailsService {
             return raAuthPrivilegeRepository.findAll();
         }
         List<String> userGroupNames = ldapService.getUserGroups(username);
+
         return raAuthPrivilegeRepository.findGroupPrivileges(userGroupNames);
     }
 
