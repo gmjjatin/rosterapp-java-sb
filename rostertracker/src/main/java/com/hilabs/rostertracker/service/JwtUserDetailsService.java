@@ -54,7 +54,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     public boolean authenticate(String username, String password){
         if("false".equals(isAuthenticationNeeded)){
-            return true;
+            return username == null || !username.equals("invalid_user");
         }
         return ldapService.authenticate(username,password);
     }
