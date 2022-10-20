@@ -88,7 +88,7 @@ public class RAFileDetailsService {
             if (fileSearchStrCache.contains(providerSearchStr)) {
                 return fileSearchStrCache.get(providerSearchStr);
             }
-            String adjustedKey = getAdjustedString(providerSearchStr, 10);
+            String adjustedKey = getAdjustedString(providerSearchStr, 50);
             //TODO
             populateFileSearchStrCache(providerSearchStr);
             return fileSearchStrCache.get(adjustedKey);
