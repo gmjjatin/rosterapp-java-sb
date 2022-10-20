@@ -38,7 +38,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select * from RA_RT_FILE_DETAILS where id = :raFileDetailsId", nativeQuery = true)
     Optional<RAFileDetails> findByRAFileDetailsId(@Param("raFileDetailsId") Long raFileDetailsId);
 
-    @Query(value = "select * from RA_RT_FILE_DETAILS where UPPER(orgnl_file_nm) like '%' || UPPER(:searchStr) || '%'", nativeQuery = true)
+    @Query(value = "select * from RA_RT_FILE_DETAILS where UPPER(orgnl_file_nm) like UPPER(:searchStr) || '%'", nativeQuery = true)
     List<RAFileDetails> findByFileSearchStr(@Param("searchStr") String searchStr);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB where " +
