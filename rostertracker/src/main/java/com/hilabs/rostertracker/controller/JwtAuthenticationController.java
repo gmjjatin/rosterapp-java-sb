@@ -1,10 +1,13 @@
 package com.hilabs.rostertracker.controller;
 
+import com.hilabs.roster.entity.RAAuthPrivilege;
+import com.hilabs.roster.entity.RAAuthRole;
 import com.hilabs.rostertracker.config.RosterConfig;
+import com.hilabs.rostertracker.dto.CollectionResponse;
+import com.hilabs.rostertracker.dto.JWTAuthentication;
 import com.hilabs.rostertracker.model.LoginDetails;
 import com.hilabs.rostertracker.model.jwt.JwtRequest;
 import com.hilabs.rostertracker.service.JwtUserDetailsService;
-import com.hilabs.rostertracker.service.impl.LdapServiceImpl;
 import io.jsonwebtoken.impl.DefaultClaims;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,10 +29,8 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 
 @RestController
@@ -42,8 +45,7 @@ public class JwtAuthenticationController {
     @Autowired
     private JwtUserDetailsService jwtUserDetailsService;
 
-    @Autowired
-    private LdapServiceImpl ldapService;
+
 
     @Value("${isAuthenticationNeeded}")
     private String isAuthenticationNeeded;
@@ -55,19 +57,33 @@ public class JwtAuthenticationController {
         boolean isAuthenticated = false;
         String username = authenticationRequest.getUsername() == null ? null : authenticationRequest.getUsername().trim().toLowerCase();
         String password = authenticationRequest.getPassword();
-        if (isAuthenticationNeeded.equalsIgnoreCase("true")) {
+        //if (isAuthenticationNeeded.equalsIgnoreCase("true")) {
             if (username != null) {
-                isAuthenticated = ldapService.authenticate(username, password);
+                isAuthenticated = jwtUserDetailsService.authenticate(username, password);
+                JWTAuthentication jwtAuthentication = new JWTAuthentication(new User(username,"",new ArrayList<>()),
+                        null,
+                        null
+                );
+                jwtAuthentication.setAuthenticated(true);
+                SecurityContextHolder.getContext().setAuthentication(jwtAuthentication);
             }
-        } else {
-            isAuthenticated = username != null && !username.isEmpty() && password != null && !password.isEmpty();
-        }
+        //} else {
+        //    isAuthenticated = username != null && !username.isEmpty() && password != null && !password.isEmpty();
+        //}
         if (!isAuthenticated) {
             throw new BadCredentialsException("Unauthorized");
         }
         final UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
-        LoginDetails loginDetails = jwtUserDetailsService.getLoginDetails(userDetails,username,authenticationRequest.getPassword());
+        LoginDetails loginDetails = jwtUserDetailsService.getLoginDetails(userDetails,username);
         return new ResponseEntity<>(loginDetails, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/user-privileges", method = RequestMethod.GET)
+    public ResponseEntity<CollectionResponse<RAAuthPrivilege>> getUserPrivileges(){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<RAAuthPrivilege> userPrivileges = jwtUserDetailsService.getUserPrivileges(username);
+        return new ResponseEntity<>(new CollectionResponse<RAAuthPrivilege>(1L,new Long(userPrivileges.size()),userPrivileges,new Long(userPrivileges.size())), HttpStatus.OK);
+
     }
 
 //    @RequestMapping(value = "/updateUser", method = RequestMethod.POST)
@@ -123,21 +139,24 @@ public class JwtAuthenticationController {
 
     public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
         Map<String, Object> expectedMap = new HashMap<String, Object>();
-        for (Entry<String, Object> entry : claims.entrySet()) {
-            expectedMap.put(entry.getKey(), entry.getValue());
+        if(claims != null){
+            for (Entry<String, Object> entry : claims.entrySet()) {
+                expectedMap.put(entry.getKey(), entry.getValue());
+            }
         }
+
         return expectedMap;
     }
 
-    private void authenticate(String username, String password) throws Exception {
-        Objects.requireNonNull(username);
-        Objects.requireNonNull(password);
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED", e);
-        } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
-        }
-    }
+//    private void authenticate(String username, String password) throws Exception {
+//        Objects.requireNonNull(username);
+//        Objects.requireNonNull(password);
+//        try {
+//            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+//        } catch (DisabledException e) {
+//            throw new Exception("USER_DISABLED", e);
+//        } catch (BadCredentialsException e) {
+//            throw new Exception("INVALID_CREDENTIALS", e);
+//        }
+//    }
 }

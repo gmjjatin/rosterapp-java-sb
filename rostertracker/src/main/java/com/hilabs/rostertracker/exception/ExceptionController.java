@@ -16,17 +16,25 @@ import java.util.Map;
 @ControllerAdvice
 @Log4j2
 public class ExceptionController {
+
+
+    @ExceptionHandler(value = BadCredentialsException.class)
+    public ResponseEntity<Map<String, String>> exception(BadCredentialsException exception) {
+        log.error("exception {}", exception.getMessage());
+        return new ResponseEntity<>(Collections.singletonMap("UNAUTHENTICATED", "true"), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(value = UnAuthorizedException.class)
+    public ResponseEntity<Map<String, String>> exception(UnAuthorizedException exception) {
+        log.error("exception {}", exception.getMessage());
+        return new ResponseEntity<>(Collections.singletonMap("UNAUTHORIZED", "true"), HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<String> exception(Exception exception) {
         log.error("exception {}", exception.getMessage());
         return new ResponseEntity<>("Unexpected error " + exception.getMessage() + " " +
                 "stackTrace" + ExceptionUtils.getStackTrace(exception),
                 HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(value = BadCredentialsException.class)
-    public ResponseEntity<Map<String, String>> exception(BadCredentialsException exception) {
-        log.error("exception {}", exception.getMessage());
-        return new ResponseEntity<>(Collections.singletonMap("UNAUTHORIZED", "true"), HttpStatus.UNAUTHORIZED);
     }
 }

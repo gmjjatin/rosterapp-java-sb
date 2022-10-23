@@ -6,6 +6,7 @@ import com.hilabs.rapipeline.dto.ErrorDetails;
 import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.service.*;
+import com.hilabs.roster.dto.AltIdType;
 import com.hilabs.roster.service.DartRASystemErrorsService;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -87,6 +88,18 @@ public class IngestionTask extends Task {
                 return;
             }
             ingestionTaskRunningMap.put(raFileMetaData.getRaPlmRoFileDataId(), fileName);
+
+            //Already checked in validateMetaDataAndGetErrorList
+            //Step 0 - File validation
+            if (raFileMetaData.getFileName() != null) {
+                ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
+                if (validateFileErrorDetails != null) {
+                    upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED, null,
+                            validateFileErrorDetails, false);
+                    return;
+                }
+            }
+
             //Step 1 - Meta data validation
             ErrorDetails validationErrorDetails = ingestionTaskService.validateMetaDataAndGetErrorList(raFileMetaData);
             if (validationErrorDetails != null) {
@@ -95,18 +108,16 @@ public class IngestionTask extends Task {
                 //TODO fix status code
                 upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED,null,
                         validationErrorDetails, false);
+                //TODO fix below block
+                try {
+                    String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);
+                    String archiveFilePath = fileSystemUtilService.getArchiveFilePath(fileName);
+                    fileSystemUtilService.copyFileToDest(sourceFilePath, archiveFilePath);
+                } catch (Exception ex) {
+                    log.error("Error in copying file on meta data validation failure {}", ex.getMessage());
+                }
                 return;
             }
-
-            //Already checked in validateMetaDataAndGetErrorList
-            //Step 2 - File validation
-            ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
-            if (validateFileErrorDetails != null) {
-                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED, null,
-                        validateFileErrorDetails, false);
-                return;
-            }
-
 
             String standardizedFileName = getStandardizedFileName(raFileMetaData);
             String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);
@@ -207,10 +218,10 @@ public class IngestionTask extends Task {
                 standardizedFileName, market, statusCode);
         raFileMetaDataDetailsService.insertRAFileDetailsLob(raFileDetailsId, lob, 1);
         if (raFileMetaData.getDcnId() != null) {
-            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getDcnId(), "DCN_ID", 1);
+            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getDcnId(), AltIdType.DCN_ID.name(), 1);
         }
         if (raFileMetaData.getRoId() != null) {
-            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getRoId(), "RO_ID", 1);
+            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getRoId(), AltIdType.RO_ID.name(), 1);
         }
         //TODO need to get contact from file
 //        raFileMetaDataDetailsService.insertRARTContactDetails(raFileDetailsId, null,

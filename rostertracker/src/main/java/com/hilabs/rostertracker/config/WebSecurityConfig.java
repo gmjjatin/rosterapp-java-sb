@@ -73,13 +73,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/*.jpeg").permitAll()
                 .antMatchers("/*.png").permitAll()
                 .antMatchers("/*.json").permitAll()
-                .antMatchers("/download-roster").permitAll()
-                .antMatchers("/download-roster**").permitAll()
-                .antMatchers("/api/v1/file-download/**").permitAll()
-                .antMatchers("/api/v1/file-download/download-roster").permitAll()
-                .antMatchers("/api/v1/file-download/download-roster**").permitAll()
+                .antMatchers("/swagger-ui/**").permitAll()
+                .antMatchers("/swagger-ui/**/**").permitAll()
+                .antMatchers("/swagger-ui**").permitAll()
+                .antMatchers("/swagger**").permitAll()
+                .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/v2/**").permitAll()
                 .anyRequest().authenticated()
-                .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                //.and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         // Add a filter to validate the tokens with every request

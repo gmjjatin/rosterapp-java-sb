@@ -1,11 +1,10 @@
 package com.hilabs.rostertracker.service;
 
 import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RAFileDetailsLobRepository;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
-import com.hilabs.rostertracker.dto.SheetDetails;
+import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.utils.RosterUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +88,7 @@ public class RAFileDetailsService {
             if (fileSearchStrCache.contains(providerSearchStr)) {
                 return fileSearchStrCache.get(providerSearchStr);
             }
-            String adjustedKey = getAdjustedString(providerSearchStr, 10);
+            String adjustedKey = getAdjustedString(providerSearchStr, 50);
             //TODO
             populateFileSearchStrCache(providerSearchStr);
             return fileSearchStrCache.get(adjustedKey);
@@ -198,17 +197,17 @@ public class RAFileDetailsService {
         return RosterUtils.removeDuplicateRAProvList(allRAProvDetailsList);
     }
 
-    public static List<Integer> getStatusCodes(String type) {
-        if (type.isEmpty()) {
+    public static List<Integer> getStatusCodes(RosterFilterType rosterFilterType) {
+        if (rosterFilterType == null) {
             return getNonFailedWithoutNonCompatibleFileStatusCodes();
-        } else if (type.equalsIgnoreCase("roster-tracker")) {
+        } else if (rosterFilterType == RosterFilterType.ROSTER_TRACKER) {
             return getNonFailedWithoutNonCompatibleFileStatusCodes();
-        } else if (type.equalsIgnoreCase("error-reporting")) {
+        } else if (rosterFilterType == RosterFilterType.ERROR_REPORTING) {
             return getNonFailedWithoutNonCompatibleFileStatusCodes();
-        } else if (type.equalsIgnoreCase("config")) {
+        } else if (rosterFilterType == RosterFilterType.CONFIGURATOR) {
             List<Integer> statusCodes = getNonFailedFileStatusCodes();
             return statusCodes.stream().filter(p -> p >= 27).collect(Collectors.toList());
-        } else if (type.equalsIgnoreCase("non-compatible")) {
+        } else if (rosterFilterType == RosterFilterType.NON_COMPATIBLE) {
             return getFailedAndNonCompatibleStatusCodes();
         }
         return getNonFailedWithoutNonCompatibleFileStatusCodes();
