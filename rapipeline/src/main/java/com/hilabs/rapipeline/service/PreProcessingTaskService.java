@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.preProcessingInQueueStatus;
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.preProcessingStatusCodes;
 
 @Service
@@ -33,8 +33,8 @@ public class PreProcessingTaskService {
 
     public boolean shouldRun(Long raFileDetailsId) {
         if (preProcessingRunningMap.containsKey(raFileDetailsId)) {
+            //Just logging
             log.warn("PreProcessingTask task in progress for raFileDetailsId {}", raFileDetailsId);
-            return false;
         }
         return isFileIdEligibleForPreProcessingTask(raFileDetailsId);
     }
@@ -48,7 +48,7 @@ public class PreProcessingTaskService {
         if (raFileDetails.getStatusCode() == null) {
             return false;
         }
-        if (!preProcessingStatusCodes.stream().anyMatch(p -> raFileDetails.getStatusCode().equals(p))) {
+        if (!raFileDetails.getStatusCode().equals(preProcessingInQueueStatus)) {
             return false;
         }
         return true;
