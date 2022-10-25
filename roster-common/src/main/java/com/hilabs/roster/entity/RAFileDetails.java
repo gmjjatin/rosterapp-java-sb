@@ -36,6 +36,9 @@ public class RAFileDetails extends BaseEntity {
     @Column(name = "source_nm")
     private String sourceName;
 
+    @Version
+    private Long version;
+
     public RAFileDetails() {}
     @Override
     public String toString() {

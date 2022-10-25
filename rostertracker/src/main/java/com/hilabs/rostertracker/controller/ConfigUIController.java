@@ -103,15 +103,7 @@ public class ConfigUIController {
     @PostMapping("/save-column-mapping")
     public ResponseEntity<Map<String, String>> saveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
         try {
-            List<UpdateColumnMappingSheetData> sheetDataList = updateColumnMappingRequest.getSheetDataList();
-            for (UpdateColumnMappingSheetData sheetData : sheetDataList) {
-                Long raSheetDetailsId = sheetData.getRaSheetDetailsId();
-                Map<String, String> data = sheetData.getData();
-                //TODO get only whatever is needed
-                List<RARCRosterISFMap> rarcRosterISFMapList = raRcRosterISFMapService
-                        .getActiveRARCRosterISFMapListForSheetId(raSheetDetailsId);
-                raRcRosterISFMapService.updateSheetMapping(rarcRosterISFMapList, data, raSheetDetailsId);
-            }
+            raRcRosterISFMapService.saveColumnMappingWithLock(updateColumnMappingRequest, false);
             //TODO return better response
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
         } catch (Exception ex) {
@@ -123,9 +115,7 @@ public class ConfigUIController {
     @PostMapping("/approve-column-mapping")
     public ResponseEntity<Map<String, String>> approveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
         try {
-            Long raFileDetailsId = updateColumnMappingRequest.getRaFileDetailsId();
-            saveColumnMapping(updateColumnMappingRequest);
-            raFileDetailsService.updateManualActionRequiredInRAFileDetails(raFileDetailsId, 0);
+            raRcRosterISFMapService.saveColumnMappingWithLock(updateColumnMappingRequest, true);
             //TODO return better response
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
         } catch (Exception ex) {

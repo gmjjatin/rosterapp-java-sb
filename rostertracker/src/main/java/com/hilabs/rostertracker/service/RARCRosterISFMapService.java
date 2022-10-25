@@ -1,15 +1,21 @@
 package com.hilabs.rostertracker.service;
 
 import com.hilabs.roster.entity.RADLISFTemplate;
+import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RARCRosterISFMap;
 import com.hilabs.roster.repository.RADLISFTemplateRepository;
+import com.hilabs.roster.repository.RAFileDetailsRepository;
 import com.hilabs.roster.repository.RARCRosterISFMapRepository;
+import com.hilabs.roster.repository.RASheetDetailsRepository;
 import com.hilabs.rostertracker.dto.IsfColumnInfo;
 import com.hilabs.rostertracker.dto.RosterColumnMappingData;
 import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
+import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
+import com.hilabs.rostertracker.model.UpdateColumnMappingSheetData;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,6 +26,12 @@ public class RARCRosterISFMapService {
     public static String NOT_RELEVANT_TO_ISF = "Not relevant to ISF";
     @Autowired
     private RARCRosterISFMapRepository rarcRosterISFMapRepository;
+
+    @Autowired
+    private RASheetDetailsRepository raSheetDetailsRepository;
+
+    @Autowired
+    private RAFileDetailsRepository raFileDetailsRepository;
 
     @Autowired
     private RADLISFTemplateRepository radlisfTemplateRepository;
@@ -143,5 +155,53 @@ public class RARCRosterISFMapService {
 
     public int countMappingCountForSheetDetailsId(Long raSheetDetailsId) {
         return rarcRosterISFMapRepository.countMappingCountForSheetDetailsId(raSheetDetailsId);
+    }
+
+
+    @Transactional
+    public void saveColumnMappingWithLock(UpdateColumnMappingRequest updateColumnMappingRequest, boolean isFromApproved) {
+        try {
+            Long raFileDetailsId = updateColumnMappingRequest.getRaFileDetailsId();
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository
+                    .findRAFileDetailsById(raFileDetailsId);
+
+            if (!optionalRAFileDetails.isPresent()) {
+                //TODO
+                return;
+            }
+            RAFileDetails raFileDetails = optionalRAFileDetails.get();
+            if (updateColumnMappingRequest.getVersion() == null || !raFileDetails.getVersion().equals(updateColumnMappingRequest.getVersion())) {
+                //TODO throw add new exception and throw that exception. 400
+                return;
+            }
+            List<UpdateColumnMappingSheetData> sheetDataList = updateColumnMappingRequest.getSheetDataList();
+            if (sheetDataList == null) {
+                return;
+            }
+            for (UpdateColumnMappingSheetData sheetData : sheetDataList) {
+                saveColumnMappingForSheet(sheetData);
+            }
+//            if (isFromApproved) {
+//                raFileDetailsRepository.updateManualActionRequiredInRAFileDetails(raFileDetailsId, 0);
+//            }
+            //TODO demo remove
+            raFileDetails.setStatusCode((int) (Math.random() * 10000));
+//            if (updateColumnMappingRequest.getVersion() != null) {
+//                raFileDetails.setVersion(updateColumnMappingRequest.getVersion());
+//            }
+            raFileDetailsRepository.save(raFileDetails);
+        } catch (Exception ex) {
+            log.error("Error in updateColumnMapping updateColumnMappingRequest {}", updateColumnMappingRequest);
+            throw ex;
+        }
+    }
+
+
+    public void saveColumnMappingForSheet(UpdateColumnMappingSheetData sheetData) {
+        Long raSheetDetailsId = sheetData.getRaSheetDetailsId();
+        Map<String, String> data = sheetData.getData();
+        //TODO get only whatever is needed
+        List<RARCRosterISFMap> rarcRosterISFMapList = getActiveRARCRosterISFMapListForSheetId(raSheetDetailsId);
+        updateSheetMapping(rarcRosterISFMapList, data, raSheetDetailsId);
     }
 }
