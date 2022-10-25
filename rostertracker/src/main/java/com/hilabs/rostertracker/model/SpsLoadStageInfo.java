@@ -9,8 +9,8 @@ public class SpsLoadStageInfo extends RosterFileProcessIntermediateStageInfo {
         super(RosterSheetProcessStage.SPS_LOAD);
     }
 
-    public SpsLoadStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis) {
-        super(baseRosterFileProcessStageInfo, noOfRecords, processingThresholdInMillis);
+    public SpsLoadStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis) {
+        super(baseRosterFileProcessStageInfo, processingThresholdInMillis);
     }
 
     public SpsLoadStageInfo(RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo) {

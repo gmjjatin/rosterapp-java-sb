@@ -14,7 +14,7 @@ public class AutoMappedStageInfo extends RosterFileProcessIntermediateStageInfo 
         super(rosterFileProcessIntermediateStageInfo);
     }
 
-    public AutoMappedStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis) {
-        super(baseRosterFileProcessStageInfo, noOfRecords, processingThresholdInMillis);
+    public AutoMappedStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis) {
+        super(baseRosterFileProcessStageInfo, processingThresholdInMillis);
     }
 }

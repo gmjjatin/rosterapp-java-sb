@@ -14,7 +14,7 @@ public class ISFStageInfo extends RosterFileProcessIntermediateStageInfo {
         super(rosterFileProcessIntermediateStageInfo);
     }
 
-    public ISFStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis) {
-        super(baseRosterFileProcessStageInfo, noOfRecords, processingThresholdInMillis);
+    public ISFStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis) {
+        super(baseRosterFileProcessStageInfo, processingThresholdInMillis);
     }
 }

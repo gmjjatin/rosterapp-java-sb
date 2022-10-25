@@ -7,7 +7,7 @@ import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.entity.RASheetErrorCodeDetails;
 import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
-import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
+import com.hilabs.rostertracker.dto.ErrorSummaryElement;
 import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
 import com.hilabs.rostertracker.dto.RASheetReport;
@@ -131,12 +131,14 @@ public class ProgressTrackingController {
             }
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
             List<RAFalloutErrorInfo> raFalloutErrorInfoList = raFalloutReportService.getRASheetFalloutReport(rosterSheetId);
-            List<ErrorDescriptionAndCount> errorDescriptionAndCountList = new ArrayList<>();
-            for (RAFalloutErrorInfo raFalloutErrorInfo : raFalloutErrorInfoList) {
-                errorDescriptionAndCountList.add(new ErrorDescriptionAndCount(raFalloutErrorInfo.getErrorDescription(), raFalloutErrorInfo.getCount()));
-            }
+            List<ErrorSummaryElement> errorSummaryElementList = new ArrayList<>();
+            //TODO demo
+//            for (RAFalloutErrorInfo raFalloutErrorInfo : raFalloutErrorInfoList) {
+//                errorSummaryElementList.add(new ErrorSummaryElement(raFalloutErrorInfo.getErrorDescription(),
+//                        raFalloutErrorInfo.getCount()));
+//            }
             RASheetReport raSheetReport = raSheetDetailsService.getRASheetReport(raFileDetails, raSheetDetails);
-            raSheetReport.setErrorDescriptionAndCountList(errorDescriptionAndCountList);
+            raSheetReport.setErrorSummaryElementList(errorSummaryElementList);
             return new ResponseEntity<>(raSheetReport, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRosterFileProgressInfoList rosterSheetId {} - ex {}", rosterSheetId, ex.getMessage());

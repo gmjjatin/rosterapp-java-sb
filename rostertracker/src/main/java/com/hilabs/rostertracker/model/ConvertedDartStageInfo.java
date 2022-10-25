@@ -9,8 +9,8 @@ public class ConvertedDartStageInfo extends RosterFileProcessIntermediateStageIn
         super(RosterSheetProcessStage.CONVERTED_DART);
     }
 
-    public ConvertedDartStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis) {
-        super(baseRosterFileProcessStageInfo, noOfRecords, processingThresholdInMillis);
+    public ConvertedDartStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis) {
+        super(baseRosterFileProcessStageInfo, processingThresholdInMillis);
     }
 
     public ConvertedDartStageInfo(RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo) {
