@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hilabs.rapipeline.service.PreProcessingTaskService.preProcessingRunningMap;
+
 @Component
 @Slf4j
 public class PreProcessingFetcher implements JobRetriever {
@@ -28,7 +30,10 @@ public class PreProcessingFetcher implements JobRetriever {
     public List<Task> refillQueue(Integer tasks) {
         try {
             List<RAFileDetails> raFileDetailsList = preProcessingTaskService.getEligibleRAFileDetailsList(2 * tasks);
-            log.info("raFileDetailsList size {}", raFileDetailsList.size());
+            if (tasks == null || tasks.equals(10)) {
+
+            }
+            log.info("raFileDetailsList size {} preProcessingRunningMap {} emptySlots {}", raFileDetailsList.size(), preProcessingRunningMap, tasks);
             List<Task> executors = new ArrayList<>();
             int count = 0;
             for (RAFileDetails raFileDetails : raFileDetailsList) {
