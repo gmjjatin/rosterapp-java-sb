@@ -75,7 +75,7 @@ public class IngestionTaskService {
         if (raFileMetaData.getCntState() == null) {
             missingFields.add("Cnt State");
         }
-        if (raFileMetaData.getPlmNetwork() == null) {
+        if (raFileMetaData.getLob() == null) {
             missingFields.add("PLM Network");
         }
         List<String> errorList = new ArrayList<>();
@@ -85,9 +85,9 @@ public class IngestionTaskService {
         if (!raFileMetaData.getFileName().endsWith(".xlsx")) {
             errorList.add("File name doesn't end with .xlsx");
         }
-        if (raFileMetaData.getPlmNetwork() != null && raFileMetaData.getCntState() != null) {
+        if (raFileMetaData.getLob() != null && raFileMetaData.getCntState() != null) {
             String market = raFileMetaData.getCntState();
-            String lob = raFileMetaData.getPlmNetwork();
+            String lob = raFileMetaData.getLob();
             List<RARTMarketLobVald> marketLobValds = rartMarketLobValdRepository.getByMarket(market);
             if (!marketLobValds.stream().anyMatch(p -> p.getLob() != null && p.getLob().equals(lob))) {
                 errorCode = "RI_ERR_MD_2";
