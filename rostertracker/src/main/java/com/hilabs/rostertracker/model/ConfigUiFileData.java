@@ -12,5 +12,8 @@ public class ConfigUiFileData {
     private Long rosterReceivedTime;
     private String status;
     private RosterSheetProcessStage stage;
+    private String lob;
+    private String market;
+    private String plmTicketId;
     private boolean isEditable;
 }
