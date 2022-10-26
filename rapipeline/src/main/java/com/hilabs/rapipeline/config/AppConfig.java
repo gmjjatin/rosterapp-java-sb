@@ -9,6 +9,7 @@ import com.hilabs.rapipeline.preprocessing.PreProcessingFetcher;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -29,24 +30,36 @@ public class AppConfig {
     @Autowired
     private DartFetcher dartFetcher;
 
+    @Value("${ingestionConfigPath}")
+    private String ingestionConfigPath;
+
+    @Value("${preProcessingConfigPath}")
+    private String preProcessingConfigPath;
+
+    @Value("${isfConfigPath}")
+    private String isfConfigPath;
+
+    @Value("${dartConfigPath}")
+    private String dartConfigPath;
+
     @PostConstruct
     public void initialize() throws SchedulerException, ApplicationException {
         log.info("Initiate the scheduler");
 
-        new BatchConfig("./config.json")
+        new BatchConfig(ingestionConfigPath)
                 .registerJobRetrievers(ingestionFetcher)
                 .build();
 
-        new BatchConfig("./config.json")
+        new BatchConfig(preProcessingConfigPath)
                 .registerJobRetrievers(preProcessingFetcher)
                 .build();
 
-        new BatchConfig("./config.json")
+        new BatchConfig(isfConfigPath)
                 .registerJobRetrievers(isfFetcher)
                 .build();
 
-//        new BatchConfig("./config.json")
-//                .registerJobRetrievers(dartFetcher)
-//                .build();
+        new BatchConfig(dartConfigPath)
+                .registerJobRetrievers(dartFetcher)
+                .build();
     }
 }

@@ -1,9 +1,9 @@
 {
-  "name": "Roster Pipeline",
+  "name": "Ingestion",
   "jobs": [
     {
-      "id": "roster_ingestion",
-      "name": "Roster Ingestion",
+      "id": "ingestion",
+      "name": "Ingestion",
       "noTaskSleepTime": 1,
       "interTaskSleepTime": 0,
       "period": [
