@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, Long> {
-    @Query(value = "select * from RA_RT_SHEET_DETAILS where ra_file_details_id in (:raFileDetailsIds) and type in (:types)", nativeQuery = true)
+    @Query(value = "select * from RA_RT_SHEET_DETAILS where ra_file_details_id in (:raFileDetailsIds) and type in (:types) and is_active = 1", nativeQuery = true)
     List<RASheetDetails> findRASheetDetailsListForFileIdsList(List<Long> raFileDetailsIds, List<String> types);
 
-    @Query(value = "select * from RA_RT_SHEET_DETAILS where RA_FILE_DETAILS_ID = :raFileDetailsId  and type in (:types)", nativeQuery = true)
+    @Query(value = "select * from RA_RT_SHEET_DETAILS where RA_FILE_DETAILS_ID = :raFileDetailsId  and type in (:types) and is_active = 1", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsForAFileId(Long raFileDetailsId, List<String> types);
 
     @Modifying

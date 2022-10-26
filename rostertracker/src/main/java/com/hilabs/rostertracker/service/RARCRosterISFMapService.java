@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @Service
 @Log4j2
 public class RARCRosterISFMapService {
+    public static String NOT_RELEVANT_TO_ISF = "Not relevant to ISF";
     @Autowired
     private RARCRosterISFMapRepository rarcRosterISFMapRepository;
 
@@ -86,6 +87,10 @@ public class RARCRosterISFMapService {
                 }
                 isfColumnValues.add(new IsfColumnInfo(isfColumn, false));
                 alreadyAdded.add(isfColumn);
+            }
+            if (!alreadyAdded.contains(NOT_RELEVANT_TO_ISF)) {
+                isfColumnValues.add(new IsfColumnInfo(NOT_RELEVANT_TO_ISF, false));
+                alreadyAdded.add(NOT_RELEVANT_TO_ISF);
             }
             rosterColumnMappingDataList.add(new RosterColumnMappingData(rosterColumnName, displayOrder, isfColumnValues));
         }

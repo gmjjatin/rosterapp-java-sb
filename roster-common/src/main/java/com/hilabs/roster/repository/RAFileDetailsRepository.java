@@ -38,7 +38,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select * from RA_RT_FILE_DETAILS where id = :raFileDetailsId", nativeQuery = true)
     Optional<RAFileDetails> findByRAFileDetailsId(@Param("raFileDetailsId") Long raFileDetailsId);
 
-    @Query(value = "select * from RA_RT_FILE_DETAILS where UPPER(orgnl_file_nm) like '%' || UPPER(:searchStr) || '%'", nativeQuery = true)
+    @Query(value = "select * from RA_RT_FILE_DETAILS where UPPER(orgnl_file_nm) like UPPER(:searchStr) || '%'", nativeQuery = true)
     List<RAFileDetails> findByFileSearchStr(@Param("searchStr") String searchStr);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB where " +
@@ -112,6 +112,10 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
             nativeQuery = true)
     Integer countByMarketAndLineOfBusiness(String market, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes,
                                            List<String> types);
+    @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) and MANUAL_ACTN_REQ in (:manualActionRequiredList) " +
+            "offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findFileDetailsByStatusCodesWithManualActionReqList(List<Integer> statusCodes, List<Integer> manualActionRequiredList, int limit, int offset);
+
     @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) " +
             "offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, int limit, int offset);

@@ -88,6 +88,18 @@ public class IngestionTask extends Task {
                 return;
             }
             ingestionTaskRunningMap.put(raFileMetaData.getRaPlmRoFileDataId(), fileName);
+
+            //Already checked in validateMetaDataAndGetErrorList
+            //Step 0 - File validation
+            if (raFileMetaData.getFileName() != null) {
+                ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
+                if (validateFileErrorDetails != null) {
+                    upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED, null,
+                            validateFileErrorDetails, false);
+                    return;
+                }
+            }
+
             //Step 1 - Meta data validation
             ErrorDetails validationErrorDetails = ingestionTaskService.validateMetaDataAndGetErrorList(raFileMetaData);
             if (validationErrorDetails != null) {
@@ -96,18 +108,16 @@ public class IngestionTask extends Task {
                 //TODO fix status code
                 upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED,null,
                         validationErrorDetails, false);
+                //TODO fix below block
+                try {
+                    String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);
+                    String archiveFilePath = fileSystemUtilService.getArchiveFilePath(fileName);
+                    fileSystemUtilService.copyFileToDest(sourceFilePath, archiveFilePath);
+                } catch (Exception ex) {
+                    log.error("Error in copying file on meta data validation failure {}", ex.getMessage());
+                }
                 return;
             }
-
-            //Already checked in validateMetaDataAndGetErrorList
-            //Step 2 - File validation
-            ErrorDetails validateFileErrorDetails = validateFile(raFileMetaData);
-            if (validateFileErrorDetails != null) {
-                upsertIngestionStatus(raFileMetaData, REJECTED, ROSTER_INGESTION_VALIDATION_FAILED, null,
-                        validateFileErrorDetails, false);
-                return;
-            }
-
 
             String standardizedFileName = getStandardizedFileName(raFileMetaData);
             String sourceFilePath = fileSystemUtilService.getSourceFilePath(fileName);

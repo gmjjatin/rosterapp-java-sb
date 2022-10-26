@@ -21,5 +21,5 @@ public class RASheetReport {
     //TODO manikanta. confirm???
     private Integer isfFalloutRecordCount;
     private Integer brmFalloutRecordCount;
-    private List<ErrorDescriptionAndCount> errorDescriptionAndCountList;
+    private List<ErrorSummaryElement> errorSummaryElementList;
 }

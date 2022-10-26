@@ -4,15 +4,13 @@ import com.google.gson.Gson;
 import com.hilabs.rapipeline.config.AppPropertiesConfig;
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.repository.RASheetDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
@@ -26,6 +24,9 @@ public class DartTaskService {
 
     @Autowired
     private RASheetDetailsService raSheetDetailsService;
+
+    @Autowired
+    private RASheetDetailsRepository raSheetDetailsRepository;
 
     @Autowired
     private RAFileStatusUpdatingService raFileStatusUpdatingService;
@@ -63,10 +64,12 @@ public class DartTaskService {
     }
 
     public List<RAFileDetails> getEligibleRAFileDetailsList(int count) {
-        List<RAFileDetails> raFileDetailsList = raFileDetailsService.findFileDetailsByStatusCodes(dartStatusCodes, count, 0);
+        List<RAFileDetails> raFileDetailsList = raFileDetailsService
+                .findFileDetailsByStatusCodesWithManualActionReqList(dartStatusCodes, Collections.singletonList(0), count, 0);
         List<RAFileDetails> eligibleRaFileDetailsList = new ArrayList<>();
         for (RAFileDetails raFileDetails : raFileDetailsList) {
-            if (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 0) {
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetails.getId());
+            if (raSheetDetailsList.size() > 0) {
                 eligibleRaFileDetailsList.add(raFileDetails);
             }
         }

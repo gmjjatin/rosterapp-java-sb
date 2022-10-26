@@ -1,14 +1,11 @@
 package com.hilabs.rostertracker.controller;
 
+import com.hilabs.roster.dto.AltIdType;
 import com.hilabs.roster.dto.RAFalloutErrorInfo;
-import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RAFileErrorCodeDetails;
-import com.hilabs.roster.entity.RASheetDetails;
-import com.hilabs.roster.entity.RASheetErrorCodeDetails;
+import com.hilabs.roster.entity.*;
 import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
-import com.hilabs.rostertracker.dto.*;
-import com.hilabs.rostertracker.dto.ErrorDescriptionAndCount;
+import com.hilabs.rostertracker.dto.ErrorSummaryElement;
 import com.hilabs.rostertracker.dto.InCompatibleRosterDetails;
 import com.hilabs.rostertracker.dto.RAFileAndStats;
 import com.hilabs.rostertracker.dto.RASheetReport;
@@ -134,12 +131,14 @@ public class ProgressTrackingController {
             }
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
             List<RAFalloutErrorInfo> raFalloutErrorInfoList = raFalloutReportService.getRASheetFalloutReport(rosterSheetId);
-            List<ErrorDescriptionAndCount> errorDescriptionAndCountList = new ArrayList<>();
-            for (RAFalloutErrorInfo raFalloutErrorInfo : raFalloutErrorInfoList) {
-                errorDescriptionAndCountList.add(new ErrorDescriptionAndCount(raFalloutErrorInfo.getErrorDescription(), raFalloutErrorInfo.getCount()));
-            }
+            List<ErrorSummaryElement> errorSummaryElementList = new ArrayList<>();
+            //TODO demo
+//            for (RAFalloutErrorInfo raFalloutErrorInfo : raFalloutErrorInfoList) {
+//                errorSummaryElementList.add(new ErrorSummaryElement(raFalloutErrorInfo.getErrorDescription(),
+//                        raFalloutErrorInfo.getCount()));
+//            }
             RASheetReport raSheetReport = raSheetDetailsService.getRASheetReport(raFileDetails, raSheetDetails);
-            raSheetReport.setErrorDescriptionAndCountList(errorDescriptionAndCountList);
+            raSheetReport.setErrorSummaryElementList(errorSummaryElementList);
             return new ResponseEntity<>(raSheetReport, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRosterFileProgressInfoList rosterSheetId {} - ex {}", rosterSheetId, ex.getMessage());
@@ -171,9 +170,11 @@ public class ProgressTrackingController {
 //            List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
-            for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
-                RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
-                List<RAFileErrorCodeDetails> raFileErrorCodeDetailsList = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileDetails.getId());
+            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
+            Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+            Map<Long, List<RARTFileAltIds>> rartFileAltIdsListMap = raFileStatsService.getRARTFileAltIdsListMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+            for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
+                List<RAFileErrorCodeDetails> raFileErrorCodeDetailsList = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
                 //TODO need to fix it
                 List<String> fileErrorCodes = raFileErrorCodeDetailsList.stream().map(p -> p.getErrorCode()).collect(Collectors.toList());
                 List<String> sheetErrorCodes = new ArrayList<>();
@@ -185,9 +186,13 @@ public class ProgressTrackingController {
                 }
                 sheetErrorCodes = sheetErrorCodes.stream().filter(Objects::nonNull).collect(Collectors.toList());
                 DartRaErrorCodeDetailsService.ErrorCodesAndDescription errorCodesAndDescription = dartRaErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes);
-                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
-                        getFileReceivedTime(raFileDetails), rosterRecordCount,
-                        errorCodesAndDescription.errorDescription, String.join(", ", errorCodesAndDescription.errorCodes));
+                String lob = raFileDetailsLobMap.containsKey(raFileAndStats.getRaFileDetailsId()) ? raFileDetailsLobMap.get(raFileAndStats.getRaFileDetailsId()).getLob() : "-";
+                List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileAndStats.getRaFileDetailsId()) ? rartFileAltIdsListMap
+                        .get(raFileAndStats.getRaFileDetailsId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
+                String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
+                InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(),
+                        raFileAndStats.getRosterRecordCount(), errorCodesAndDescription.errorDescription,
+                        String.join(", ", errorCodesAndDescription.errorCodes), lob, raFileAndStats.getMarket(), plmTicketId);
                 inCompatibleRosterDetails.add(details);
             }
             CollectionResponse collectionResponse = new CollectionResponse<InCompatibleRosterDetails>(pageNo, pageSize, inCompatibleRosterDetails, 1000L);

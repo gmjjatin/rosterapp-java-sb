@@ -1,8 +1,7 @@
 package com.hilabs.rostertracker.controller;
 
-import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RARCRosterISFMap;
-import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.dto.AltIdType;
+import com.hilabs.roster.entity.*;
 import com.hilabs.roster.util.RAStatusEntity;
 import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.*;
@@ -63,15 +62,25 @@ public class ConfigUIController {
             //TODO demo
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(raFileDetailsId, market,
                     lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true);
+            List<RAFileDetails> raFileDetailsList = raFileDetailsService.getRAFileDetailsList(raFileDetailsId, market,
+                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset);
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()), true);
+            Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
+            Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+            Map<Long, List<RARTFileAltIds>> rartFileAltIdsListMap = raFileStatsService.getRARTFileAltIdsListMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
             List<ConfigUiFileData> configUiFileDataList = new ArrayList<>();
             for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
                 RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
                 String status = raStatusService.getDisplayStatus(raFileDetails.getStatusCode());
                 Optional<RAStatusEntity> optionalRAStatusEntity = RAStatusEntity.getRAFileStatusEntity(raFileDetails.getStatusCode());
                 boolean isManualActionReq = (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 1);
+                String lob = raFileDetailsLobMap.containsKey(raFileDetails.getId()) ? raFileDetailsLobMap.get(raFileDetails.getId()).getLob() : "-";
+                List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileDetails.getId()) ? rartFileAltIdsListMap
+                        .get(raFileDetails.getId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
+                String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
                 configUiFileDataList.add(new ConfigUiFileData(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
                         raFileDetails.getCreatedDate().getTime(), status, optionalRAStatusEntity.map(RAStatusEntity::getStage).orElse(null),
-                        //TODO demo
+                        lob, raFileDetails.getMarket(), plmTicketId,
                         isManualActionReq));
             }
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, configUiFileDataList,

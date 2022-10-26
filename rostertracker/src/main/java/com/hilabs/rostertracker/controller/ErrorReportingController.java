@@ -137,21 +137,21 @@ public class ErrorReportingController {
         }
     }
 
-    @RequestMapping(path = "/downloadErrorReport", method = RequestMethod.GET)
-    public ResponseEntity<InputStreamResource> downloadErrorReport(@RequestParam() Long rosterFileId) throws IOException {
-        try {
-            Optional<RAFileDetails> optionalRosterFileDetails = raFileDetailsService.findRAFileDetailsById(rosterFileId);
-            if (!optionalRosterFileDetails.isPresent()) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_GATEWAY);
-            }
-            RAFileDetails raFileDetails = optionalRosterFileDetails.get();
-            File file = new File(rosterConfig.getDownloadFolder(), raFileDetails.getOriginalFileName());
-            return getDownloadFileResponseEntity(file);
-        } catch (Exception ex) {
-            log.error("Error in downloadErrorReport rosterFileId {} - ex {}", rosterFileId, ex.getMessage());
-            throw ex;
-        }
-    }
+//    @RequestMapping(path = "/downloadErrorReport", method = RequestMethod.GET)
+//    public ResponseEntity<InputStreamResource> downloadErrorReport(@RequestParam() Long rosterFileId) throws IOException {
+//        try {
+//            Optional<RAFileDetails> optionalRosterFileDetails = raFileDetailsService.findRAFileDetailsById(rosterFileId);
+//            if (!optionalRosterFileDetails.isPresent()) {
+//                return new ResponseEntity<>(null, HttpStatus.BAD_GATEWAY);
+//            }
+//            RAFileDetails raFileDetails = optionalRosterFileDetails.get();
+//            File file = new File(rosterConfig.getDownloadFolder(), raFileDetails.getOriginalFileName());
+//            return getDownloadFileResponseEntity(file);
+//        } catch (Exception ex) {
+//            log.error("Error in downloadErrorReport rosterFileId {} - ex {}", rosterFileId, ex.getMessage());
+//            throw ex;
+//        }
+//    }
 
     //TODO remove
     @RequestMapping(path = "/downloadRoster", method = RequestMethod.GET)
