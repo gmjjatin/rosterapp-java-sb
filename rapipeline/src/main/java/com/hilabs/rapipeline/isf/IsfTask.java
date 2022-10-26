@@ -48,12 +48,12 @@ public class IsfTask extends Task {
             isfTaskService.invokePythonProcessForIsfTask(raSheetDetails);
             log.debug("IsfTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
+            log.error("Error in IsfTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
+                    ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
             dartRASystemErrorsService.saveDartRASystemErrors(raSheetDetails.getRaFileDetailsId(), raSheetDetails.getId(),
                     "ISF", null, "UNKNOWN", ex.getMessage(),
                     stacktrace, 1);
-            log.error("Error in IsfTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
-                    ex.getMessage(), stacktrace);
         } finally {
             log.info("Finally in Isf task for {}", gson.toJson(getTaskData()));
             isfTaskRunningMap.remove(raSheetDetails.getId());

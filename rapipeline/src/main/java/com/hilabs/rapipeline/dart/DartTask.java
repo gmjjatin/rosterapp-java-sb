@@ -47,12 +47,12 @@ public class DartTask extends Task {
             dartTaskService.invokePythonProcessForDartTask(raSheetDetails);
             log.debug("DartTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
+            log.error("Error in DartTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
+                    ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
             dartRASystemErrorsService.saveDartRASystemErrors(raSheetDetails.getRaFileDetailsId(), raSheetDetails.getId(),
                     "DART", null, "UNKNOWN", ex.getMessage(),
                     stacktrace, 1);
-            log.error("Error in DartTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
-                    ex.getMessage(), stacktrace);
         } finally {
             log.info("Finally in Dart task for {}", gson.toJson(getTaskData()));
             dartTaskRunningMap.remove(raSheetDetails.getId());
