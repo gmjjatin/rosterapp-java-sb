@@ -25,7 +25,7 @@ public class RASheetProgressInfo {
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
         this.standardizedFileName = standardizedFileName;
-        this.rosterReceived = new RosterReceivedStageInfo(receivedTime);
+        this.rosterReceived = new RosterReceivedStageInfo();
         this.autoMapped = new AutoMappedStageInfo();
         this.isf = new ISFStageInfo();
         this.convertedDart = new ConvertedDartStageInfo();
