@@ -55,6 +55,7 @@ public class IsfTask extends Task {
             log.error("Error in IsfTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
                     ex.getMessage(), stacktrace);
         } finally {
+            log.info("Finally in Isf task for {}", gson.toJson(getTaskData()));
             isfTaskRunningMap.remove(raSheetDetails.getId());
         }
     }

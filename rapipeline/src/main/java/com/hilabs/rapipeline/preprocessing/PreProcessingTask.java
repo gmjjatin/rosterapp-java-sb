@@ -16,7 +16,6 @@ import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 
 @Slf4j
 public class PreProcessingTask extends Task {
-
     private PreProcessingTaskService preProcessingTaskService;
 
     private DartRASystemErrorsService dartRASystemErrorsService;
@@ -34,7 +33,7 @@ public class PreProcessingTask extends Task {
 
     @Override
     public void run() {
-        log.info("PreProcessingTask stared for {}", gson.toJson(getTaskData()));
+        log.info("PreProcessingTask started for {}", gson.toJson(getTaskData()));
         Long raFileDetailsId = getRAFileDetailsIdFromTaskData();
         try {
             //TODO demo
@@ -44,7 +43,7 @@ public class PreProcessingTask extends Task {
             preProcessingRunningMap.put(raFileDetailsId, true);
             //TODO change it
             preProcessingTaskService.invokePythonProcessForPreProcessingTask(raFileDetailsId);
-            log.debug("PreProcessingTask done for {}", gson.toJson(getTaskData()));
+            log.info("PreProcessingTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
             String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
             dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
@@ -53,6 +52,7 @@ public class PreProcessingTask extends Task {
             log.error("Error in PreProcessingTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
                     ex.getMessage(), stacktrace);
         } finally {
+            log.info("Finally in PreProcessing task for {}", gson.toJson(getTaskData()));
             preProcessingRunningMap.remove(raFileDetailsId);
         }
     }

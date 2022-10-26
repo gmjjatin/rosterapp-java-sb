@@ -161,6 +161,7 @@ public class IngestionTask extends Task {
                         stacktrace, 1);
             }
         } finally {
+            log.info("Finally in Ingestion task for {}", gson.toJson(getTaskData()));
             ingestionTaskRunningMap.remove(raFileMetaData.getRaPlmRoFileDataId());
         }
     }

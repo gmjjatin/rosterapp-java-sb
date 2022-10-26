@@ -1,4 +1,4 @@
-package com.hilabs.rapipeline.preprocessing;
+package com.hilabs.rapipeline.test;
 
 
 import com.google.gson.Gson;

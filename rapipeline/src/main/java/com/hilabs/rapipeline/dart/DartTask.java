@@ -54,6 +54,7 @@ public class DartTask extends Task {
             log.error("Error in DartTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
                     ex.getMessage(), stacktrace);
         } finally {
+            log.info("Finally in Dart task for {}", gson.toJson(getTaskData()));
             dartTaskRunningMap.remove(raSheetDetails.getId());
         }
     }

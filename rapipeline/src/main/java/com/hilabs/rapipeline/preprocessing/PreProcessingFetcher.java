@@ -33,6 +33,7 @@ public class PreProcessingFetcher implements JobRetriever {
 
     @Override
     public List<Task> refillQueue(Integer tasks) {
+        log.info("PreProcessingFetcher started - tasks {}", tasks);
         try {
             List<RAFileDetails> raFileDetailsList = preProcessingTaskService.getEligibleRAFileDetailsList(tasks);
             log.info("raFileDetailsList size {} preProcessingRunningMap {} tasks {}", raFileDetailsList.size(), gson.toJson(preProcessingRunningMap),
@@ -55,6 +56,7 @@ public class PreProcessingFetcher implements JobRetriever {
                     break;
                 }
             }
+            log.info("PreProcessingFetcher ended - tasks {} executors size {}", tasks, executors.size());
             return executors;
         } catch (Exception ex) {
             log.error("Error PreProcessingFetcher {}", ex.getMessage());

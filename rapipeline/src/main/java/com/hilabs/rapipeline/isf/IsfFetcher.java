@@ -45,6 +45,7 @@ public class IsfFetcher implements JobRetriever {
 //    27, 31
     @Override
     public List<Task> refillQueue(Integer tasks) {
+        log.info("IsfFetcher started - tasks {}", tasks);
         try {
             List<RAFileDetails> raFileDetailsList = isfTaskService.getEligibleRAFileDetailsList(Math.max(tasks * 2, 50));
             log.info("raFileDetailsList size {}", raFileDetailsList.size());
@@ -87,6 +88,7 @@ public class IsfFetcher implements JobRetriever {
             }
             log.info("ISF inCompatibleFileIdList {} pickedFileIdList {} newlyAddedSheetIdList {}",
                     gson.toJson(inCompatibleFileIdList), gson.toJson(pickedFileIdList), gson.toJson(newlyAddedSheetIdList));
+            log.info("IsfFetcher ended - tasks {} executors size {}", tasks, executors.size());
             return executors;
         } catch (Exception ex) {
             log.error("Error IsfFetcher {}", ex.getMessage());

@@ -46,6 +46,7 @@ public class DartFetcher implements JobRetriever {
     //    27, 31
     @Override
     public List<Task> refillQueue(Integer tasks) {
+        log.info("DartFetcher started - tasks {}", tasks);
         try {
             List<RAFileDetails> raFileDetailsList = dartTaskService.getEligibleRAFileDetailsList(Math.max(tasks * 2, 50));
             log.info("DartFetcher - raFileDetailsList size {}", raFileDetailsList.size());
@@ -88,6 +89,7 @@ public class DartFetcher implements JobRetriever {
             }
             log.info("Dart inCompatibleFileIdList {} pickedFileIdList {} newlyAddedSheetIdList {}",
                     gson.toJson(inCompatibleFileIdList), gson.toJson(pickedFileIdList), gson.toJson(newlyAddedSheetIdList));
+            log.info("DartFetcher ended - tasks {} executors {}", tasks, executors.size());
             return executors;
         } catch (Exception ex) {
             log.error("Error DartFetcher {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
