@@ -93,4 +93,6 @@ public class IsfFetcher implements JobRetriever {
             throw ex;
         }
     }
+
+    //
 }

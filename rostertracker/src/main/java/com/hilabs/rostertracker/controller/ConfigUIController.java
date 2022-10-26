@@ -4,6 +4,7 @@ import com.hilabs.roster.dto.AltIdType;
 import com.hilabs.roster.entity.*;
 import com.hilabs.roster.util.RAStatusEntity;
 import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
+import com.hilabs.rostertracker.dto.RosterSheetDetails;
 import com.hilabs.rostertracker.dto.SheetDetails;
 import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.service.*;
@@ -14,7 +15,9 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -92,11 +95,34 @@ public class ConfigUIController {
         }
     }
 
+    //TODO demo remove api
     @GetMapping("/sheet-details")
     public ResponseEntity<List<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
         List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId);
         //TODO demo
         return ResponseEntity.ok(sheetDetailsList);
+    }
+
+    @GetMapping("/roster-sheet-details")
+    public ResponseEntity<RosterSheetDetails> getRosterSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
+        List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId);
+        Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raFileDetailsId);
+        if (!optionalRAFileDetails.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "raFileDetailsId " + raFileDetailsId);
+        }
+        RAFileDetails raFileDetails = optionalRAFileDetails.get();
+        Optional<RAFileDetailsLob> optionalRAFileDetailsLob = raFileStatsService.getRAFileDetailsLob(raFileDetailsId);
+        String lob = optionalRAFileDetailsLob.isPresent() ? optionalRAFileDetailsLob.get().getLob() : "-";
+        List<RARTFileAltIds> rartFileAltIdsList = raFileStatsService.getRARTFileAltIdsList(raFileDetailsId)
+                .stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList());
+        String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
+        //TODO demo
+        Long lastApprovedTime = raFileDetails.getLastApprovedDate() != null ? raFileDetails.getLastApprovedDate().getTime() : -1;
+        Long lastSavedTime = raFileDetails.getLastSavedDate() != null ? raFileDetails.getLastSavedDate().getTime() : -1;
+        String lastSavedBy = raFileDetails.getLastSavedBy();
+        String lastApprovedBy = raFileDetails.getLastApprovedBy();
+        return ResponseEntity.ok(new RosterSheetDetails(raFileDetailsId, sheetDetailsList, lob, raFileDetails.getMarket(),
+                plmTicketId, lastSavedTime, lastSavedBy, lastApprovedTime, lastApprovedBy, raFileDetails.getVersion()));
     }
 
     @GetMapping("/sheet-column-mapping")
@@ -108,7 +134,8 @@ public class ConfigUIController {
     @PostMapping("/save-column-mapping")
     public ResponseEntity<Map<String, String>> saveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
         try {
-            raRcRosterISFMapService.saveColumnMappingWithLock(updateColumnMappingRequest, false);
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            raRcRosterISFMapService.saveColumnMappingWithLock(updateColumnMappingRequest, false, username);
             //TODO return better response
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
         } catch (Exception ex) {
@@ -120,7 +147,8 @@ public class ConfigUIController {
     @PostMapping("/approve-column-mapping")
     public ResponseEntity<Map<String, String>> approveColumnMapping(@RequestBody UpdateColumnMappingRequest updateColumnMappingRequest) {
         try {
-            raRcRosterISFMapService.saveColumnMappingWithLock(updateColumnMappingRequest, true);
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            raRcRosterISFMapService.saveColumnMappingWithLock(updateColumnMappingRequest, true, username);
             //TODO return better response
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
         } catch (Exception ex) {

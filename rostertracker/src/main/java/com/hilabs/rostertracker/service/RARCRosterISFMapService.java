@@ -14,6 +14,8 @@ import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
 import com.hilabs.rostertracker.model.UpdateColumnMappingSheetData;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -159,7 +161,7 @@ public class RARCRosterISFMapService {
 
 
     @Transactional
-    public void saveColumnMappingWithLock(UpdateColumnMappingRequest updateColumnMappingRequest, boolean isFromApproved) {
+    public void saveColumnMappingWithLock(UpdateColumnMappingRequest updateColumnMappingRequest, boolean isFromApproved, String username) {
         try {
             Long raFileDetailsId = updateColumnMappingRequest.getRaFileDetailsId();
             Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository
@@ -171,8 +173,7 @@ public class RARCRosterISFMapService {
             }
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
             if (updateColumnMappingRequest.getVersion() == null || !raFileDetails.getVersion().equals(updateColumnMappingRequest.getVersion())) {
-                //TODO throw add new exception and throw that exception. 400
-                return;
+                throw new OptimisticLockingFailureException("Old version key");
             }
             List<UpdateColumnMappingSheetData> sheetDataList = updateColumnMappingRequest.getSheetDataList();
             if (sheetDataList == null) {
@@ -181,15 +182,18 @@ public class RARCRosterISFMapService {
             for (UpdateColumnMappingSheetData sheetData : sheetDataList) {
                 saveColumnMappingForSheet(sheetData);
             }
-//            if (isFromApproved) {
-//                raFileDetailsRepository.updateManualActionRequiredInRAFileDetails(raFileDetailsId, 0);
-//            }
-            //TODO demo remove
-            raFileDetails.setStatusCode((int) (Math.random() * 10000));
-//            if (updateColumnMappingRequest.getVersion() != null) {
-//                raFileDetails.setVersion(updateColumnMappingRequest.getVersion());
-//            }
+            if (isFromApproved) {
+                raFileDetails.setManualActionRequired(0);
+                raFileDetails.setLastApprovedBy(username);
+                raFileDetails.setLastUpdatedDate(new Date());
+            } else {
+                raFileDetails.setLastSavedBy(username);
+                raFileDetails.setLastUpdatedDate(new Date());
+            }
             raFileDetailsRepository.save(raFileDetails);
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            log.error("Error in updateColumnMapping updateColumnMappingRequest {}", updateColumnMappingRequest);
+            throw ex;
         } catch (Exception ex) {
             log.error("Error in updateColumnMapping updateColumnMappingRequest {}", updateColumnMappingRequest);
             throw ex;
