@@ -45,9 +45,11 @@ public class RosterStageUtils {
     }
 
     //TODO recheck logic
-    public static long computeTimeTakenInMillis(List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, RosterSheetProcessStage rosterSheetProcessStage) {
+    public static ProcessDurationInfo computeProcessDurationInfo(List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, RosterSheetProcessStage rosterSheetProcessStage) {
         List<RAStatusEntity> raStatusEntities = sheetStatusEntities.stream().filter(p -> p.getStage() == rosterSheetProcessStage).collect(Collectors.toList());
         long timeTakenInMillis = 0;
+        long startTime = -1;
+        long endTime = -1;
         for (RARTConvProcessingDurationStats rartConvProcessingDurationStats : raConvProcessingDurationStatsList) {
             if (rartConvProcessingDurationStats.getStatusCode() == null) {
                 continue;
@@ -58,12 +60,18 @@ public class RosterStageUtils {
             }
             Date completedDate = rartConvProcessingDurationStats.getCompletionDate();
             Date startDate = rartConvProcessingDurationStats.getStartDate();
+            if (startDate != null && (startTime == -1 || startTime > startDate.getTime())) {
+                startTime = startDate.getTime();
+            }
+            if (completedDate != null && (endTime == -1 || endTime < completedDate.getTime())) {
+                endTime = completedDate.getTime();
+            }
             if (completedDate == null || startDate == null) {
                 continue;
             }
             timeTakenInMillis += completedDate.getTime() - startDate.getTime();
         }
-        return timeTakenInMillis;
+        return new ProcessDurationInfo(startTime, endTime, timeTakenInMillis);
     }
 
     public static List<Integer> getFailedSheetStatusCodes() {
