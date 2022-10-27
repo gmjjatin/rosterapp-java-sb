@@ -1,0 +1,30 @@
+{
+  "name": "Dart",
+  "jobs": [
+    {
+      "id": "dart",
+      "name": "Dart",
+      "noTaskSleepTime": 10,
+      "interTaskSleepTime": 0,
+      "period": [
+        {
+          "dayOfWeek": [
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat",
+            "Sun"
+          ],
+          "startTime": "00:00",
+          "duration": 24,
+          "unit": "H"
+        }
+      ],
+      "minPoolSize": 2,
+      "maxPoolSize": 10,
+      "parallelTasks": 4
+    }
+  ]
+}

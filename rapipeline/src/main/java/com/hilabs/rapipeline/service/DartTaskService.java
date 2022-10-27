@@ -12,7 +12,10 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.hasIntersection;
+import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.isSubset;
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 
 @Service
@@ -39,41 +42,36 @@ public class DartTaskService {
 
     public static ConcurrentHashMap<Long, Boolean> dartTaskRunningMap = new ConcurrentHashMap<>();
 
-    public boolean shouldRun(RASheetDetails raSheetDetails, boolean isFetcher) {
-        if (dartTaskRunningMap.containsKey(raSheetDetails.getId())) {
-            log.warn("DartTask task in progress for raSheetDetails {}", raSheetDetails);
-            return false;
-        }
-        return isSheetIdEligibleForIsfTask(raSheetDetails, isFetcher);
-    }
+//    public boolean shouldRun(RASheetDetails raSheetDetails, boolean isFetcher) {
+//        if (dartTaskRunningMap.containsKey(raSheetDetails.getId())) {
+//            log.warn("DartTask task in progress for raSheetDetails {}", raSheetDetails);
+//            return false;
+//        }
+//        return isSheetIdEligibleForIsfTask(raSheetDetails, isFetcher);
+//    }
 
-    public boolean isSheetIdEligibleForIsfTask(RASheetDetails raSheetDetails, boolean isFetcher) {
-        if (raSheetDetails.getStatusCode() == null) {
-            return false;
-        }
-        if (isFetcher) {
-            if (!Arrays.asList(155).stream().anyMatch(p -> raSheetDetails.getStatusCode().equals(p))) {
-                return false;
-            }
-        } else {
-            if (!Arrays.asList(155, 160).stream().anyMatch(p -> raSheetDetails.getStatusCode().equals(p))) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    public boolean isSheetIdEligibleForIsfTask(RASheetDetails raSheetDetails, boolean isFetcher) {
+//        if (raSheetDetails.getStatusCode() == null) {
+//            return false;
+//        }
+//        if (isFetcher) {
+//            if (!Arrays.asList(155).stream().anyMatch(p -> raSheetDetails.getStatusCode().equals(p))) {
+//                return false;
+//            }
+//        } else {
+//            if (!Arrays.asList(155, 160).stream().anyMatch(p -> raSheetDetails.getStatusCode().equals(p))) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
-    public List<RAFileDetails> getEligibleRAFileDetailsList(int count) {
-        List<RAFileDetails> raFileDetailsList = raFileDetailsService
-                .findFileDetailsByStatusCodesWithManualActionReqList(dartStatusCodes, Collections.singletonList(0), count, 0);
-        List<RAFileDetails> eligibleRaFileDetailsList = new ArrayList<>();
-        for (RAFileDetails raFileDetails : raFileDetailsList) {
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetails.getId());
-            if (raSheetDetailsList.size() > 0) {
-                eligibleRaFileDetailsList.add(raFileDetails);
-            }
-        }
-        return eligibleRaFileDetailsList;
+    public List<RASheetDetails> getEligibleRAFileDetailsList(int count) {
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(dartStatusCodes,
+                Collections.singletonList(155), Collections.singletonList(0), count);
+        List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
+        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, 160);
+        return raSheetDetailsList;
     }
 
     public void invokePythonProcessForDartTask(RASheetDetails raSheetDetails) throws Exception {
@@ -86,5 +84,30 @@ public class DartTaskService {
             log.info("Error in invokePythonProcess - commands {}", gson.toJson(commands));
             throw ex;
         }
+    }
+
+    public boolean consolidateDart(Long raFileDetailsId) {
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
+        log.info("consolidateDart for raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId,
+                new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId())));
+        List<Integer> sheetCodes = raSheetDetailsList.stream().map(s -> s.getStatusCode()).collect(Collectors.toList());
+        if (sheetCodes.stream().anyMatch(Objects::isNull)) {
+            log.error("One of the status codes is null for raFileDetailsId {}", raFileDetailsId);
+            //TODO
+            return false;
+        }
+        if (sheetCodes.size() == 0) {
+            log.error("Zero status codes for raFileDetailsId {}", raFileDetailsId);
+            //TODO
+            return false;
+        }
+        if (hasIntersection(Arrays.asList(163), sheetCodes)) {
+            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 43);
+            return false;
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165))) {
+            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 45);
+            return false;
+        }
+        return true;
     }
 }

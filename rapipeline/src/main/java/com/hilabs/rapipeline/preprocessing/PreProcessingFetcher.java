@@ -33,28 +33,20 @@ public class PreProcessingFetcher implements JobRetriever {
 
     @Override
     public List<Task> refillQueue(Integer tasks) {
+        log.info("PreProcessingFetcher started - tasks {}", tasks);
         try {
-            List<RAFileDetails> raFileDetailsList = preProcessingTaskService.getEligibleRAFileDetailsList(tasks);
-            log.info("raFileDetailsList size {} preProcessingRunningMap {} tasks {}", raFileDetailsList.size(), gson.toJson(preProcessingRunningMap),
-                    tasks);
+            List<RAFileDetails> raFileDetailsList = preProcessingTaskService.getEligibleRAFileDetailsListAndUpdate(tasks);
+            log.info("raFileDetailsList size {} preProcessingRunningMap {} tasks {}", raFileDetailsList.size(),
+                    gson.toJson(preProcessingRunningMap), tasks);
             List<Task> executors = new ArrayList<>();
-            int count = 0;
             for (RAFileDetails raFileDetails : raFileDetailsList) {
-//                if (!preProcessingTaskService.shouldRun(raFileDetails.getId())) {
-//                    continue;
-//                }
-                count++;
                 Map<String, Object> taskData = new HashMap<>();
-//                taskData.put("id", "" + raFileDetails.getId());
                 taskData.put("data", raFileDetails.getId());
-                raFileDetailsRepository.updateRAFileDetailsStatus(raFileDetails.getId(), preProcessingInQueueStatus);
                 PreProcessingTask preProcessingTask = new PreProcessingTask(taskData);
                 preProcessingTask.setApplicationContext(applicationContext);
                 executors.add(preProcessingTask);
-                if (count >= tasks) {
-                    break;
-                }
             }
+            log.info("PreProcessingFetcher ended - tasks {} executors size {}", tasks, executors.size());
             return executors;
         } catch (Exception ex) {
             log.error("Error PreProcessingFetcher {}", ex.getMessage());
