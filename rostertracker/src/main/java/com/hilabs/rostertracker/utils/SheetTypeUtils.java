@@ -26,13 +26,13 @@ public class SheetTypeUtils {
         List<String> list = new ArrayList<>();
         list.addAll(getAllPossibleCombos("TERM"));
         list.addAll(getAllPossibleCombos("DATA"));
+        list.addAll(getAllPossibleCombos("NON_TERM"));
         return list;
     }
 
     private static List<String> getAllTypeList() {
         List<String> list = new ArrayList<>();
-        list.addAll(getAllPossibleCombos("TERM"));
-        list.addAll(getAllPossibleCombos("DATA"));
+        list.addAll(getDataSheetTypeList());
         list.addAll(getAllPossibleCombos("INFORMATION"));
         return list;
     }

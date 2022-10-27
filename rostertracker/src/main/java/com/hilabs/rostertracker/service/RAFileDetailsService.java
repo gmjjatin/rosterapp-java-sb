@@ -93,19 +93,19 @@ public class RAFileDetailsService {
         //TODO handle limit and offset
         if ((market != null && !market.isEmpty()) && (lineOfBusiness != null && !lineOfBusiness.isEmpty())) {
             raFileDetailsList = raFileDetailsRepository.findByMarketAndLineOfBusiness(market, lineOfBusiness, startDate,
-                    endDate, statusCodes, types, limit, offset);
+                    endDate, statusCodes, limit, offset);
             count = raFileDetailsRepository.countByMarketAndLineOfBusiness(market, lineOfBusiness, startDate,
-                    endDate, statusCodes, types);
+                    endDate, statusCodes);
         } else if (market != null && !market.isEmpty()) {
-            raFileDetailsList = raFileDetailsRepository.findByMarket(market, startDate, endDate, statusCodes, limit, offset, types);
-            count = raFileDetailsRepository.countByMarket(market, startDate, endDate, statusCodes, types);
+            raFileDetailsList = raFileDetailsRepository.findByMarket(market, startDate, endDate, statusCodes, limit, offset);
+            count = raFileDetailsRepository.countByMarket(market, startDate, endDate, statusCodes);
         } else if (lineOfBusiness != null && !lineOfBusiness.isEmpty()) {
-            raFileDetailsList = raFileDetailsRepository.findByLineOfBusiness(lineOfBusiness, startDate, endDate, statusCodes, limit, offset, types);
-            count = raFileDetailsRepository.countByLineOfBusiness(lineOfBusiness, startDate, endDate, statusCodes, types);
+            raFileDetailsList = raFileDetailsRepository.findByLineOfBusiness(lineOfBusiness, startDate, endDate, statusCodes, limit, offset);
+            count = raFileDetailsRepository.countByLineOfBusiness(lineOfBusiness, startDate, endDate, statusCodes);
         } else {
             raFileDetailsList =  raFileDetailsRepository.findRAFileDetailsListBetweenDates(startDate, endDate, statusCodes,
-                    limit, offset, types);
-            count = raFileDetailsRepository.countRAFileDetailsListBetweenDates(startDate, endDate, statusCodes, types);
+                    limit, offset);
+            count = raFileDetailsRepository.countRAFileDetailsListBetweenDates(startDate, endDate, statusCodes);
         }
         List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
                 .map(RAFileDetails::getId).collect(Collectors.toList()), types);

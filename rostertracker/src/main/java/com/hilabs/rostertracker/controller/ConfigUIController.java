@@ -106,12 +106,12 @@ public class ConfigUIController {
 
     @GetMapping("/roster-sheet-details")
     public ResponseEntity<RosterSheetDetails> getRosterSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
-        List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId);
         Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raFileDetailsId);
         if (!optionalRAFileDetails.isPresent()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "raFileDetailsId " + raFileDetailsId);
         }
         RAFileDetails raFileDetails = optionalRAFileDetails.get();
+        List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId, allTypeList);
         Optional<RAFileDetailsLob> optionalRAFileDetailsLob = raFileStatsService.getRAFileDetailsLob(raFileDetailsId);
         String lob = optionalRAFileDetailsLob.isPresent() ? optionalRAFileDetailsLob.get().getLob() : "-";
         List<RARTFileAltIds> rartFileAltIdsList = raFileStatsService.getRARTFileAltIdsList(raFileDetailsId)
