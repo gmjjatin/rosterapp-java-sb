@@ -31,6 +31,7 @@ public class TestFetcher implements JobRetriever {
                 taskData.put("date", new Date());
                 executors.add(new TestTask(taskData));
             }
+            log.info("TestFetcher started tasks {} size {}", tasks, executors.size());
             return executors;
         } catch (Exception ex) {
             log.error("Error PreProcessingFetcher {}", ex.getMessage());

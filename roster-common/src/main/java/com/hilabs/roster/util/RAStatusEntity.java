@@ -56,6 +56,7 @@ public class RAStatusEntity {
             new RAStatusEntity(17, ROSTER_RECEIVED, "Roster Ingestion Failed", true, true, false),
             new RAStatusEntity(19, ROSTER_RECEIVED, "Roster Received", true, false, false),
 
+            new RAStatusEntity(20, AUTO_MAPPED, "Roster Normalization/Preprocesing in Queue", false, false, false),
             new RAStatusEntity(21, AUTO_MAPPED, "Roster Normalization/Preprocesing in Progress", false, false, false),
             new RAStatusEntity(23, AUTO_MAPPED, "Roster Normalization/Preprocesing Failed Incompatible File", true, false, true),
             new RAStatusEntity(25, AUTO_MAPPED, "Roster Normalization/Preprocesing Failed", true, true, false),

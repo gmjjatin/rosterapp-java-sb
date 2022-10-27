@@ -9,4 +9,5 @@ import java.util.List;
 public class UpdateColumnMappingRequest implements Serializable {
     private Long raFileDetailsId;
     private List<UpdateColumnMappingSheetData> sheetDataList;
+    private Long version;
 }

@@ -231,7 +231,7 @@ public class IngestionTask extends Task {
         if (errorDetails != null) {
             //TODO what should be errorCodeDetailsId
             raErrorLogsService.insertRASystemErrors(raFileDetailsId, errorDetails.getErrorCode(),
-                    errorDetails.getErrorDescription());
+                    errorDetails.getErrorDescription(), statusCode);
         }
         return raFileDetailsId;
     }

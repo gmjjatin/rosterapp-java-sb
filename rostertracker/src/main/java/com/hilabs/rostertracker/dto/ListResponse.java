@@ -9,11 +9,7 @@ import java.util.List;
 @ToString
 @Data
 @AllArgsConstructor
-public class CollectionResponse<T> {
-    private Integer pageNum;
-    private Integer pageSize;
+public class ListResponse<T> {
     private List<T> items;
     private Long totalCount;
-
-    
 }

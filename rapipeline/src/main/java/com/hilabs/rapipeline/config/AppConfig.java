@@ -50,7 +50,7 @@ public class AppConfig {
     public void initialize() throws SchedulerException, ApplicationException {
         log.info("Initiate the scheduler");
 
-//        new BatchConfig(preProcessingConfigPath)
+//        new BatchConfig("./test-config.json")
 //                .registerJobRetrievers(testFetcher)
 //                .build();
 

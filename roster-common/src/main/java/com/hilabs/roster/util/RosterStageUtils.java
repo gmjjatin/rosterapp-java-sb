@@ -106,4 +106,25 @@ public class RosterStageUtils {
         return fileStatusEntities.stream().filter(p -> !p.isFailure() && !p.isNotCompatible())
                 .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
+
+    public static long computeTimeTakenInMillis(List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, RosterSheetProcessStage rosterSheetProcessStage) {
+        List<RAStatusEntity> raStatusEntities = sheetStatusEntities.stream().filter(p -> p.getStage() == rosterSheetProcessStage).collect(Collectors.toList());
+        long timeTakenInMillis = 0;
+        for (RARTConvProcessingDurationStats rartConvProcessingDurationStats : raConvProcessingDurationStatsList) {
+            if (rartConvProcessingDurationStats.getStatusCode() == null) {
+                continue;
+            }
+            Integer statusCode = rartConvProcessingDurationStats.getStatusCode();
+            if (!raStatusEntities.stream().anyMatch(p -> p.getCode() == statusCode)) {
+                continue;
+            }
+            Date completedDate = rartConvProcessingDurationStats.getCompletionDate();
+            Date startDate = rartConvProcessingDurationStats.getStartDate();
+            if (completedDate == null || startDate == null) {
+                continue;
+            }
+            timeTakenInMillis += completedDate.getTime() - startDate.getTime();
+        }
+        return timeTakenInMillis;
+    }
 }
