@@ -18,6 +18,9 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
     @Query(value = "select * from RA_RT_SHEET_DETAILS where RA_FILE_DETAILS_ID = :raFileDetailsId  and type in (:types) and is_active = 1", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsForAFileId(Long raFileDetailsId, List<String> types);
 
+    @Query(value = "select * from RA_RT_SHEET_DETAILS where RA_FILE_DETAILS_ID = :raFileDetailsId  and is_active = 1", nativeQuery = true)
+    List<RASheetDetails> getSheetDetailsForAFileId(Long raFileDetailsId);
+
     @Modifying
     @Transactional
     @Query(value = "update RA_RT_SHEET_DETAILS set status_cd = :statusCode where id = :raSheetDetailsId", nativeQuery = true)
