@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 import static com.hilabs.rostertracker.service.RAFileStatsService.getRosterReceivedTime;
+import static com.hilabs.rostertracker.utils.SheetTypeUtils.dataTypeList;
 
 @RestController
 @RequestMapping("/api/v1/progress-tracking")
@@ -81,35 +82,21 @@ public class ProgressTrackingController {
     }
 
     @GetMapping("/progress-info-list")
-    public ResponseEntity<List<RASheetProgressInfo>> getRosterFileProgressInfoList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                                   @RequestParam(defaultValue = "100") Integer pageSize,
-                                                                                   @RequestParam(defaultValue = "") String market,
-                                                                                   @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                                   @RequestParam(defaultValue = "") String fileName,
-                                                                                   @RequestParam(name = "startTime", defaultValue = "-1") long startTime,
-                                                                                   @RequestParam(name = "endTime", defaultValue = "-1") long endTime) {
+    public ResponseEntity<List<RASheetProgressInfo>> getRosterFileProgressInfoList(@RequestParam(defaultValue = "1") Long raFileDetailsId) {
         try {
-            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
-            int limit = limitAndOffset.getLimit();
-            int offset = limitAndOffset.getOffset();
-            Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
-            startTime = startAndEndTime.startTime;
-            endTime = startAndEndTime.endTime;
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
-                    .getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true, 0);
-            List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
-            for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
-                RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
-                for (RASheetDetails raSheetDetails : raFileDetailsWithSheets.getRaSheetDetailsList()) {
-                    raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetails, raSheetDetails));
-                }
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raFileDetailsId);
+            if (!optionalRAFileDetails.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "raFileDetailsId " + raFileDetailsId + " not found");
             }
-            CollectionResponse<RASheetProgressInfo> collectionResponse = new CollectionResponse<RASheetProgressInfo>(pageNo, pageSize, raSheetProgressInfoList, raFileDetailsWithSheetsListResponse.getTotalCount());
-            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
+            List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
+            RAFileDetails raFileDetails = optionalRAFileDetails.get();
+            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.getRASheetDetailsList(raFileDetails.getId(), dataTypeList);
+            for (RASheetDetails raSheetDetails : raSheetDetailsList) {
+                raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetails, raSheetDetails));
+            }
+            return new ResponseEntity<>(raSheetProgressInfoList, HttpStatus.OK);
         } catch (Exception ex) {
-            log.error("Error in getRosterFileProgressInfoList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",
-                    pageNo, pageSize, market, lineOfBusiness, startTime, endTime);
+            log.error("Error in getRosterFileProgressInfoList raFileDetailsId {}", raFileDetailsId);
             throw ex;
         }
     }

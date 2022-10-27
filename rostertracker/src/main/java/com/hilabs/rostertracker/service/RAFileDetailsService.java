@@ -70,14 +70,6 @@ public class RAFileDetailsService {
     public ListResponse<RAFileDetailsWithSheets> getRAFileDetailsWithSheetsList(String fileName, String market, String lineOfBusiness, long startTime, long endTime,
                                                             List<Integer> statusCodes, int limit, int offset, boolean onlyDataSheets, int minSheetCount) {
         List<String> types = onlyDataSheets ? dataTypeList : allTypeList;
-//        if (raFileDetailsId != null && raFileDetailsId > 0) {
-//            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository.findById(raFileDetailsId);
-//            if (optionalRAFileDetails.isPresent()) {
-//                 RAFileDetails raFileDetails = optionalRAFileDetails.get();
-//                List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetails.getId(), types);
-//                return new ListResponse<RAFileDetailsWithSheets>(Collections.singletonList(new RAFileDetailsWithSheets(raFileDetails, raSheetDetailsList)), 1L);
-//            }
-//        }
         Date startDate = new Date(startTime);
         Date endDate = new Date(endTime);
         return getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness, startDate, endDate, statusCodes, limit, offset, types, minSheetCount);
