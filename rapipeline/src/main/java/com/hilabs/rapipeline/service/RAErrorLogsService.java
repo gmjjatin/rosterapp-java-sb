@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 public class RAErrorLogsService {
     @Autowired
     private RAFileErrorCodeDetailRepository raFileErrorCodeDetailRepository;
-    public void insertRASystemErrors(Long raFileDetailsId, String errorCode, String errorDescription) {
+    public void insertRASystemErrors(Long raFileDetailsId, String errorCode, String errorDescription, Integer statusCode) {
         try {
-            RAFileErrorCodeDetails raErrorLogs = new RAFileErrorCodeDetails(raFileDetailsId, errorCode, errorDescription, "INGESTION");
+            RAFileErrorCodeDetails raErrorLogs = new RAFileErrorCodeDetails(raFileDetailsId, errorCode, errorDescription, statusCode);
             raFileErrorCodeDetailRepository.save(raErrorLogs);
         } catch (Exception ex) {
             log.error("Error in insertRASystemErrors - ex {}", ex.getMessage());

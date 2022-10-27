@@ -8,7 +8,7 @@ import java.util.List;
 
 
 public interface RAFileErrorCodeDetailRepository extends JpaRepository<RAFileErrorCodeDetails, Long> {
-    @Query(value = "select * from DART_RA_FILE_ERROR_CODE_DETAILS where ra_file_details_id = :raFileDetailsId",
+    @Query(value = "select * from RA_FILE_ERROR_CODE_DETAILS where ra_file_details_id = :raFileDetailsId",
             nativeQuery = true)
     List<RAFileErrorCodeDetails> findByRAFileDetailsId(@Param("raFileDetailsId") Long raFileDetailsId);
 }

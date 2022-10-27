@@ -36,19 +36,11 @@ public class RAProviderController {
 
     @GetMapping("/file/search")
     //TODO don;t use entites
-    public ResponseEntity<List<RAFileDetails>> getFileDetailsFromSearchStr(@RequestParam(defaultValue = "") String searchStr,
+    public ResponseEntity<List<String>> getFileDetailsFromSearchStr(@RequestParam(defaultValue = "") String searchStr,
                                                                            @RequestParam(defaultValue = "", name = "type") String type) {
         try {
-            List<RAFileDetails> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr);
-            RosterFilterType rosterFilterType = RosterFilterType.getRosterFilterTypeFromStr(type);
             List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
-            raFileDetailsList = raFileDetailsList.stream().filter(p -> {
-                if (p.getStatusCode() == null) {
-                    return false;
-                }
-                Integer statusCode = p.getStatusCode();
-                return statusCodes.stream().anyMatch(sC -> sC.equals(statusCode));
-            }).collect(Collectors.toList());
+            List<String> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr, statusCodes);
             return new ResponseEntity<>(raFileDetailsList, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvListFromProviderSearchStr searchStr {} - ex {}", searchStr, ex.getMessage());

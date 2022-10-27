@@ -35,21 +35,21 @@ public class RASheetDetailsService {
         return raSheetDetailsRepository.findById(raSheetDetailsId);
     }
 
-    public List<RASheetDetails> findRASheetDetailsListForFileIdsList(List<Long> raFileDetailsIds, boolean onlyAutomatedAndTerms) {
-        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsIds);
-        if (onlyAutomatedAndTerms) {
-            return filterAutomatedAndTermRASheetDetailsList(raSheetDetailsList);
-        }
-        return raSheetDetailsList;
-    }
+//    public List<RASheetDetails> findRASheetDetailsListForFileIdsList(List<Long> raFileDetailsIds, boolean onlyAutomatedAndTerms) {
+//        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsIds);
+//        if (onlyAutomatedAndTerms) {
+//            return filterAutomatedAndTermRASheetDetailsList(raSheetDetailsList);
+//        }
+//        return raSheetDetailsList;
+//    }
 
-    public List<RASheetDetails> getRASheetDetailsList(Long raFileDetailsId) {
+    public List<RASheetDetails> getRASheetDetailsList(Long raFileDetailsId, List<String> types) {
         log.debug("Fetch sheet data for raFileDetailsId : {}", raFileDetailsId);
-        return raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
+        return raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId, types);
     }
 
-    public List<SheetDetails> getAllSheetDetailsWithColumnMappingList(Long raFileDetailsId) {
-        List<RASheetDetails> raSheetDetailsList = getRASheetDetailsList(raFileDetailsId);
+    public List<SheetDetails> getAllSheetDetailsWithColumnMappingList(Long raFileDetailsId, List<String> types) {
+        List<RASheetDetails> raSheetDetailsList = getRASheetDetailsList(raFileDetailsId, types);
         List<SheetDetails> sheetDetailsList = new ArrayList<>();
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
             //TODO demo check if mapping is available
@@ -60,21 +60,21 @@ public class RASheetDetailsService {
         return sheetDetailsList;
     }
 
-    private static List<RASheetDetails> filterAutomatedAndTermRASheetDetailsList(List<RASheetDetails> raSheetDetailsList) {
-        List<RASheetDetails> filteredRaSheetDetailsList = new ArrayList<>();
-        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            if (raSheetDetails.getType() == null) {
-                continue;
-            }
-            //TODO demo
-            List<String> automatedAndTermRASheetTypes = Arrays.asList("NON_TERM", "TERM", "Automated", "Data");
-            String type = raSheetDetails.getType();
-            if (automatedAndTermRASheetTypes.stream().anyMatch(p -> p.equalsIgnoreCase(type))) {
-                filteredRaSheetDetailsList.add(raSheetDetails);
-            }
-        }
-        return filteredRaSheetDetailsList;
-    }
+//    private static List<RASheetDetails> filterAutomatedAndTermRASheetDetailsList(List<RASheetDetails> raSheetDetailsList) {
+//        List<RASheetDetails> filteredRaSheetDetailsList = new ArrayList<>();
+//        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
+//            if (raSheetDetails.getType() == null) {
+//                continue;
+//            }
+//            //TODO demo
+//            List<String> automatedAndTermRASheetTypes = Arrays.asList("NON_TERM", "TERM", "Automated", "Data");
+//            String type = raSheetDetails.getType();
+//            if (automatedAndTermRASheetTypes.stream().anyMatch(p -> p.equalsIgnoreCase(type))) {
+//                filteredRaSheetDetailsList.add(raSheetDetails);
+//            }
+//        }
+//        return filteredRaSheetDetailsList;
+//    }
 
 
     public RASheetReport getRASheetReport(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
