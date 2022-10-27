@@ -1,7 +1,7 @@
 package com.hilabs.rostertracker.service;
 
-import com.hilabs.roster.entity.DartRaErrorCodeDetails;
-import com.hilabs.roster.repository.DartRaErrorCodeDetailsRepository;
+import com.hilabs.roster.entity.RaErrorCodeDetails;
+import com.hilabs.roster.repository.RaErrorCodeDetailsRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,24 +11,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
-public class DartRaErrorCodeDetailsService {
+public class RaErrorCodeDetailsService {
     @Autowired
-    private DartRaErrorCodeDetailsRepository dartRaErrorCodeDetailsRepository;
+    private RaErrorCodeDetailsRepository raErrorCodeDetailsRepository;
 
 
-    public ConcurrentLruCache<String, List<DartRaErrorCodeDetails>> findByErrorCodeCache = new ConcurrentLruCache<>(10000, (errorCode) -> {
-        return dartRaErrorCodeDetailsRepository.findByErrorCode(errorCode);
+    public ConcurrentLruCache<String, List<RaErrorCodeDetails>> findByErrorCodeCache = new ConcurrentLruCache<>(10000, (errorCode) -> {
+        return raErrorCodeDetailsRepository.findByErrorCode(errorCode);
     });
-    public Optional<DartRaErrorCodeDetails> findByErrorCode(String errorCode) {
+    public Optional<RaErrorCodeDetails> findByErrorCode(String errorCode) {
         try {
-            List<DartRaErrorCodeDetails> errorCodeDetailsList = findByErrorCodeCache.get(errorCode);
+            List<RaErrorCodeDetails> errorCodeDetailsList = findByErrorCodeCache.get(errorCode);
             return errorCodeDetailsList.size() > 0 ? Optional.of(errorCodeDetailsList.get(0)) : Optional.empty();
         } catch (Exception ex) {
-            List<DartRaErrorCodeDetails> errorCodeDetailsList = dartRaErrorCodeDetailsRepository.findByErrorCode(errorCode);
+            List<RaErrorCodeDetails> errorCodeDetailsList = raErrorCodeDetailsRepository.findByErrorCode(errorCode);
             return errorCodeDetailsList.size() > 0 ? Optional.of(errorCodeDetailsList.get(0)) : Optional.empty();
         }
     }
@@ -52,11 +51,11 @@ public class DartRaErrorCodeDetailsService {
         List<String> errorList = new ArrayList<>();
         List<String> errorCodes = new ArrayList<>();
         for (String fileErrorCode : fileErrorCodes) {
-            Optional<DartRaErrorCodeDetails> optionalDartRaErrorCodeDetails = findByErrorCode(fileErrorCode);
+            Optional<RaErrorCodeDetails> optionalDartRaErrorCodeDetails = findByErrorCode(fileErrorCode);
             if (!optionalDartRaErrorCodeDetails.isPresent()) {
                 continue;
             }
-            DartRaErrorCodeDetails dartRaErrorCodeDetails = optionalDartRaErrorCodeDetails.get();
+            RaErrorCodeDetails dartRaErrorCodeDetails = optionalDartRaErrorCodeDetails.get();
             if (dartRaErrorCodeDetails.getErrorCodeCategory() == null) {
                 continue;
             }
@@ -67,11 +66,11 @@ public class DartRaErrorCodeDetailsService {
             errorList.add(dartRaErrorCodeDetails.getErrorCodeDescription());
         }
         for (String sheetErrorCode : sheetErrorCodes) {
-            Optional<DartRaErrorCodeDetails> optionalDartRaErrorCodeDetails = findByErrorCode(sheetErrorCode);
+            Optional<RaErrorCodeDetails> optionalDartRaErrorCodeDetails = findByErrorCode(sheetErrorCode);
             if (!optionalDartRaErrorCodeDetails.isPresent()) {
                continue;
             }
-            DartRaErrorCodeDetails dartRaErrorCodeDetails = optionalDartRaErrorCodeDetails.get();
+            RaErrorCodeDetails dartRaErrorCodeDetails = optionalDartRaErrorCodeDetails.get();
             if (dartRaErrorCodeDetails.getErrorCodeCategory() == null) {
                 continue;
             }

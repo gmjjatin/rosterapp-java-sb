@@ -45,7 +45,7 @@ public class ProgressTrackingController {
     RAFileErrorCodeDetailRepository raFileErrorCodeDetailRepository;
 
     @Autowired
-    DartRaErrorCodeDetailsService dartRaErrorCodeDetailsService;
+    RaErrorCodeDetailsService raErrorCodeDetailsService;
 
     @Autowired
     RASheetErrorCodeDetailRepository raSheetErrorCodeDetailRepository;
@@ -184,7 +184,7 @@ public class ProgressTrackingController {
                     rosterRecordCount += raSheetDetails.getRosterRecordCount();
                 }
                 sheetErrorCodes = sheetErrorCodes.stream().filter(Objects::nonNull).collect(Collectors.toList());
-                DartRaErrorCodeDetailsService.ErrorCodesAndDescription errorCodesAndDescription = dartRaErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes);
+                RaErrorCodeDetailsService.ErrorCodesAndDescription errorCodesAndDescription = raErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes);
                 String lob = raFileDetailsLobMap.containsKey(raFileDetailsId) ? raFileDetailsLobMap.get(raFileDetailsId).getLob() : "-";
                 List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileDetailsId) ? rartFileAltIdsListMap
                         .get(raFileDetailsId).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();

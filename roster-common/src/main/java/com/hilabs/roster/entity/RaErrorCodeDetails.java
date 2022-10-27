@@ -5,35 +5,35 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "DART_RA_ERROR_CODE_DETAILS")
+@Table(name = "RA_ERROR_CODE_DETAILS")
 @Data
-public class DartRaErrorCodeDetails extends BaseEntity {
+public class RaErrorCodeDetails extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ERROR_CODE")
+    @Column(name = "ERR_CD")
     private String errorCode;
 
-    @Column(name = "ERROR_CODE_DESCRIPTION")
+    @Column(name = "ERR_CD_DESC")
     private String errorCodeDescription;
 
-    @Column(name = "ERROR_CODE_CATEGORY")
+    @Column(name = "ERR_CD_CTGRY")
     private String errorCodeCategory;
 
-    @Column(name = "ERROR_CODE_CATEGORY_SECONDARY")
+    @Column(name = "ERR_CD_SCNDRY_CTGRY")
     private String errorCodeCategorySecondary;
 
-    @Column(name = "ERROR_CODE_STATUS")
+    @Column(name = "ERR_STATUS_CD")
     private String errorCodeStatus;
 
-    @Column(name = "ERROR_CODE_STAGE")
+    @Column(name = "ERR_STG")
     private String errorCodeStage;
 
-    @Column(name = "ERROR_CODE_DISPLAY_TEMPLATE")
+    @Column(name = "ERR_CD_DSPLY_TMPLT_TXT")
     private String errorCodeDisplayTemplate;
 
-    @Column(name = "ERROR_CODE_TEMPLATE_PARAMETERS")
+    @Column(name = "ERR_CD_DSPLY_TMPLT_PARM")
     private String errorCodeTemplateParameters;
 
     @Column(name = "IS_ACTIVE")
