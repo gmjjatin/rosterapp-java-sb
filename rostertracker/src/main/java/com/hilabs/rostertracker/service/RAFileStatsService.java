@@ -213,7 +213,7 @@ public class RAFileStatsService {
 
     public RASheetAndStats getRASheetAndStats(RASheetDetails raSheetDetails, String status) {
         RASheetAndStats raSheetAndStats = new RASheetAndStats(raSheetDetails.getId(),
-                raSheetDetails.getTabName(), status);
+                raSheetDetails.getTabName(), status, raSheetDetails.getType());
         raSheetAndStats.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
         raSheetAndStats.setSuccessfulRecordCount(raSheetDetails.getTargetSuccessfulRecordCount());
         raSheetAndStats.setFalloutRecordCount(computeFalloutRecordCount(raSheetDetails));
