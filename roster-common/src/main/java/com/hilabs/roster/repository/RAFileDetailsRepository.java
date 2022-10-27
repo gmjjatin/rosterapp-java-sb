@@ -1,17 +1,22 @@
 package com.hilabs.roster.repository;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RASheetDetails;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.LockModeType;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, Long> {
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+    Optional<RAFileDetails> findRAFileDetailsById(Long id);
 
     @Modifying
     @Transactional
@@ -130,6 +135,8 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "update RA_RT_FILE_DETAILS set MANUAL_ACTN_REQ = :manualActionRequired where id = :raFileDetailsId", nativeQuery = true)
     void updateManualActionRequiredInRAFileDetails(Long raFileDetailsId, Integer manualActionRequired);
 
+    @Query(value = "select * from RA_RT_FILE_DETAILS where id = :raFileDetailsId and version = :version", nativeQuery = true)
+    Optional<RAFileDetails> findByRAFileDetailsIdByVersion(@Param("raFileDetailsId") Long raFileDetailsId, Long version);
     @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) " +
             "and ROWNUM <= :limit for update", nativeQuery = true)
     List<RAFileDetails> findFileDetailsByStatusCodesForUpdate(List<Integer> statusCodes, int limit);

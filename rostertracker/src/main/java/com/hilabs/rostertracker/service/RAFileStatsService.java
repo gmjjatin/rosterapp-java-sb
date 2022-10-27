@@ -16,10 +16,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.hilabs.roster.util.RosterStageUtils.*;
@@ -80,6 +77,10 @@ public class RAFileStatsService {
         return raRTFileAltIdsListMap;
     }
 
+    public List<RARTFileAltIds> getRARTFileAltIdsList(Long raFileDetailsId) {
+        return rartFileAltIdsRepository.findByRAFileDetailsIdList(Arrays.asList(raFileDetailsId));
+    }
+
     public Map<Long, RAFileDetailsLob> getRAFileDetailsLobMap(List<Long> raFileDetailsIdList) {
         List<RAFileDetailsLob> raFileDetailsLobList = raFileDetailsLobRepository.findRAFileDetailsLobByFileId(raFileDetailsIdList);
         Map<Long, RAFileDetailsLob> raFileDetailsLobMap = new HashMap<>();
@@ -87,6 +88,15 @@ public class RAFileStatsService {
             raFileDetailsLobMap.put(raFileDetailsLob.getRaFileDetailsId(), raFileDetailsLob);
         }
         return raFileDetailsLobMap;
+    }
+
+    public Optional<RAFileDetailsLob> getRAFileDetailsLob(Long raFileDetailsId) {
+        List<RAFileDetailsLob> raFileDetailsLobList = raFileDetailsLobRepository.findRAFileDetailsLobByFileId(Arrays.asList(raFileDetailsId));
+        if (raFileDetailsLobList.size() > 0) {
+            return Optional.of(raFileDetailsLobList.get(0));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public RAFileAndErrorStats getRAFileAndErrorStats(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
