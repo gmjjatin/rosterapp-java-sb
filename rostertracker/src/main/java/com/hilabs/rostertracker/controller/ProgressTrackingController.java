@@ -56,7 +56,7 @@ public class ProgressTrackingController {
                                                                                             @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                             @RequestParam(defaultValue = "") String market,
                                                                                             @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                                            @RequestParam(defaultValue = "-1") Long raFileDetailsId,
+                                                                                            @RequestParam(defaultValue = "") String fileName,
                                                                                             @RequestParam(defaultValue = "-1") long startTime,
                                                                                             @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -67,15 +67,15 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
-                    .getRAFileDetailsWithSheetsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true);
+                    .getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
+                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true, 0);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse<RAFileAndStats> collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
             return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
-                    pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
+                    pageNo, pageSize, market, lineOfBusiness, fileName, startTime, endTime);
             throw ex;
         }
     }
@@ -85,7 +85,7 @@ public class ProgressTrackingController {
                                                                                    @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                                   @RequestParam(defaultValue = "-1") Long raFileDetailsId,
+                                                                                   @RequestParam(defaultValue = "") String fileName,
                                                                                    @RequestParam(name = "startTime", defaultValue = "-1") long startTime,
                                                                                    @RequestParam(name = "endTime", defaultValue = "-1") long endTime) {
         try {
@@ -96,8 +96,8 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
-                    .getRAFileDetailsWithSheetsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true);
+                    .getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
+                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true, 0);
             List<RASheetProgressInfo> raSheetProgressInfoList = new ArrayList<>();
             for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
                 RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
@@ -149,7 +149,7 @@ public class ProgressTrackingController {
                                                                                     @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                     @RequestParam(defaultValue = "") String market,
                                                                                     @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                                    @RequestParam(defaultValue = "-1") Long raFileDetailsId,
+                                                                                    @RequestParam(defaultValue = "") String fileName,
                                                                                     @RequestParam(defaultValue = "-1") long startTime,
                                                                                     @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -160,8 +160,8 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset, true);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
+                            startTime, endTime, statusCodes, limit, offset, true, 0);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
 
@@ -171,6 +171,7 @@ public class ProgressTrackingController {
                     getItems().stream().map(p -> p.getRaFileDetails().getId()).collect(Collectors.toList()));
             for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
                 RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
+                Long raFileDetailsId = raFileDetails.getId();
                 List<RAFileErrorCodeDetails> raFileErrorCodeDetailsList = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileDetailsWithSheets.getRaFileDetails().getId());
                 //TODO need to fix it
                 List<String> fileErrorCodes = raFileErrorCodeDetailsList.stream().map(p -> p.getErrorCode()).collect(Collectors.toList());
@@ -198,7 +199,7 @@ public class ProgressTrackingController {
             return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
-                    pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
+                    pageNo, pageSize, market, lineOfBusiness, fileName, startTime, endTime);
             throw ex;
         }
     }

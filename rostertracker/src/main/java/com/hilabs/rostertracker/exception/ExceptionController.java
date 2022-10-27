@@ -3,15 +3,14 @@ package com.hilabs.rostertracker.exception;
 import com.hilabs.rostertracker.dto.ErrorResponse;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -41,6 +40,14 @@ public class ExceptionController {
 
     @ExceptionHandler(value = ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<ErrorResponse> exception(ObjectOptimisticLockingFailureException exception) {
+        log.error("ObjectOptimisticLockingFailureException {}", exception.getMessage());
+        ErrorResponse errorResponse =  new ErrorResponse("CONCURRENT_USER_UPDATE",
+                "Record has already updated by another user");
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = OptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> exception(OptimisticLockingFailureException exception) {
         log.error("ObjectOptimisticLockingFailureException {}", exception.getMessage());
         ErrorResponse errorResponse =  new ErrorResponse("CONCURRENT_USER_UPDATE",
                 "Record has already updated by another user");

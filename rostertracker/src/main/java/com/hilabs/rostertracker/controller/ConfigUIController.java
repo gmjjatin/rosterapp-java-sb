@@ -53,7 +53,7 @@ public class ConfigUIController {
                                                                                          @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                          @RequestParam(defaultValue = "") String market,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                                         @RequestParam(defaultValue = "-1") Long raFileDetailsId,
+                                                                                         @RequestParam(defaultValue = "") String fileName,
                                                                                          @RequestParam(defaultValue = "-1") long startTime,
                                                                                          @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -65,8 +65,8 @@ public class ConfigUIController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             //TODO demo
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(raFileDetailsId, market,
-                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, market,
+                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 1);
             List<Long> raFileDetailsIdList = raFileDetailsWithSheetsListResponse.getItems().stream()
                     .map(p -> p.getRaFileDetails().getId()).collect(Collectors.toList());
             Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(raFileDetailsIdList);
@@ -90,8 +90,8 @@ public class ConfigUIController {
                     raFileDetailsWithSheetsListResponse.getTotalCount());
             return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
         } catch (Exception ex) {
-            log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
-                    pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
+            log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} fileName {} startTime {} endTime {}",
+                    pageNo, pageSize, market, lineOfBusiness, fileName, startTime, endTime);
             throw ex;
         }
     }
