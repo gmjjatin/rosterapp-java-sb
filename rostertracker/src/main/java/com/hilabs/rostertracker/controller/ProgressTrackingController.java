@@ -1,10 +1,8 @@
 package com.hilabs.rostertracker.controller;
 
+import com.hilabs.roster.dto.AltIdType;
 import com.hilabs.roster.dto.RAFalloutErrorInfo;
-import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RAFileErrorCodeDetails;
-import com.hilabs.roster.entity.RASheetDetails;
-import com.hilabs.roster.entity.RASheetErrorCodeDetails;
+import com.hilabs.roster.entity.*;
 import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
 import com.hilabs.rostertracker.dto.ErrorSummaryElement;
@@ -172,6 +170,8 @@ public class ProgressTrackingController {
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
             Map<Long, List<RASheetDetails>> raSheetDetailsListMap = raFileStatsService.getRASheetDetailsListMap(raFileDetailsList, raSheetDetailsList);
+            Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+            Map<Long, List<RARTFileAltIds>> rartFileAltIdsListMap = raFileStatsService.getRARTFileAltIdsListMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
             for (RAFileAndStats raFileAndStats : raFileAndStatsList) {
                 List<RAFileErrorCodeDetails> raFileErrorCodeDetailsList = raFileErrorCodeDetailRepository.findByRAFileDetailsId(raFileAndStats.getRaFileDetailsId());
                 //TODO need to fix it
@@ -185,9 +185,13 @@ public class ProgressTrackingController {
                 }
                 sheetErrorCodes = sheetErrorCodes.stream().filter(Objects::nonNull).collect(Collectors.toList());
                 DartRaErrorCodeDetailsService.ErrorCodesAndDescription errorCodesAndDescription = dartRaErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes);
+                String lob = raFileDetailsLobMap.containsKey(raFileAndStats.getRaFileDetailsId()) ? raFileDetailsLobMap.get(raFileAndStats.getRaFileDetailsId()).getLob() : "-";
+                List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileAndStats.getRaFileDetailsId()) ? rartFileAltIdsListMap
+                        .get(raFileAndStats.getRaFileDetailsId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
+                String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
                 InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileAndStats.getRaFileDetailsId(), raFileAndStats.getFileName(), raFileAndStats.getFileReceivedTime(),
                         raFileAndStats.getRosterRecordCount(), errorCodesAndDescription.errorDescription,
-                        String.join(", ", errorCodesAndDescription.errorCodes));
+                        String.join(", ", errorCodesAndDescription.errorCodes), lob, raFileAndStats.getMarket(), plmTicketId);
                 inCompatibleRosterDetails.add(details);
             }
             return new ResponseEntity<>(inCompatibleRosterDetails, HttpStatus.OK);

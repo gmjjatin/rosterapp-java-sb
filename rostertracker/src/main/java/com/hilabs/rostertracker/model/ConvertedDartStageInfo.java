@@ -4,16 +4,12 @@ import com.hilabs.roster.model.RosterSheetProcessStage;
 import lombok.Data;
 
 @Data
-public class ConvertedDartStageInfo extends RosterFileProcessIntermediateStageInfo {
+public class ConvertedDartStageInfo extends BaseRosterFileProcessStageInfo {
     public ConvertedDartStageInfo() {
         super(RosterSheetProcessStage.CONVERTED_DART);
     }
 
-    public ConvertedDartStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis) {
-        super(baseRosterFileProcessStageInfo, processingThresholdInMillis);
-    }
-
-    public ConvertedDartStageInfo(RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo) {
-        super(rosterFileProcessIntermediateStageInfo);
+    public ConvertedDartStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo) {
+        super(baseRosterFileProcessStageInfo);
     }
 }

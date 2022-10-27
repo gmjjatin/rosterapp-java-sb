@@ -10,11 +10,12 @@ import com.hilabs.roster.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.NEW;
-import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.PENDING;
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.*;
 
 @Service
 @Slf4j
@@ -62,11 +63,14 @@ public class RAFileMetaDataDetailsService {
         rartFileAltIds = rartFileAltIdsRepository.save(rartFileAltIds);
         return rartFileAltIds.getId();
     }
-    public List<RAFileMetaData> getNewAndReProcessFileMetaDataDetails(int count) {
-        List<RAPlmRoFileData> raPlmRoFileDataList = new ArrayList<>(raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name(), count));
-        raPlmRoFileDataList.addAll(raPlmRoFileDataRepository.getReprocessRAPlmRoFileDataListWithStatus(PENDING.name()));
-        List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
+
+    @Transactional
+    public List<RAFileMetaData> getNewFileMetaDataDetailsAndUpdateToInQueue(int count) {
+        List<RAPlmRoFileData> raPlmRoFileDataList = raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name(), count);
+        raPlmRoFileDataRepository.updateRAPlmRoFileDataListWithStatus(IN_QUEUE.name(),
+                raPlmRoFileDataList.stream().map(RAPlmRoFileData::getRaPlmRoFileDataId).collect(Collectors.toList()));
         Set<Long> set = new HashSet<>();
+        List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
         for (RAPlmRoFileData raPlmRoFileData : raPlmRoFileDataList) {
             if (set.contains(raPlmRoFileData.getRaPlmRoFileDataId())) {
                 continue;
@@ -81,6 +85,26 @@ public class RAFileMetaDataDetailsService {
         }
         return raFileMetaDataList;
     }
+
+//    public List<RAFileMetaData> getNewAndReProcessFileMetaDataDetails(int count) {
+//        List<RAPlmRoFileData> raPlmRoFileDataList = new ArrayList<>(raPlmRoFileDataRepository.getNewRAPlmRoFileDataListWithStatus(NEW.name(), count));
+//        raPlmRoFileDataList.addAll(raPlmRoFileDataRepository.getReprocessRAPlmRoFileDataListWithStatus(PENDING.name()));
+//        List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
+//        Set<Long> set = new HashSet<>();
+//        for (RAPlmRoFileData raPlmRoFileData : raPlmRoFileDataList) {
+//            if (set.contains(raPlmRoFileData.getRaPlmRoFileDataId())) {
+//                continue;
+//            }
+//            set.add(raPlmRoFileData.getRaPlmRoFileDataId());
+//            Optional<RAPlmRoProfData> optionalRAPlmRoProfData = raPlmRoProfDataRepository.findById(raPlmRoFileData.getRaPlmRoProfDataId());
+//            if (!optionalRAPlmRoProfData.isPresent()) {
+//                log.error("RAPlmRoProfData missing for raPlmRoFileData {}", gson.toJson(raPlmRoFileData));
+//                continue;
+//            }
+//            raFileMetaDataList.add(new RAFileMetaData(optionalRAPlmRoProfData.get(), raPlmRoFileData));
+//        }
+//        return raFileMetaDataList;
+//    }
 
     public Optional<RAPlmRoFileData> findById(Long raPlmRoFileDataId) {
         return raPlmRoFileDataRepository.findById(raPlmRoFileDataId);

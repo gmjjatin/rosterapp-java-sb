@@ -32,28 +32,27 @@ public class IngestionTaskService {
     @Autowired
     private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
 
-    public boolean shouldRun(RAFileMetaData raFileMetaData) {
-        //TODO confirm
-        Long plmRoFileDataId = raFileMetaData.getRaPlmRoFileDataId();
-        if (ingestionTaskRunningMap.containsKey(plmRoFileDataId)) {
-            log.warn("Ingestion task in progress for raFileMetaData {}", gson.toJson(raFileMetaData));
-            return false;
-        }
-        return isShouldReprocess(raFileMetaData);
-    }
+//    public boolean shouldRun(RAFileMetaData raFileMetaData) {
+//        //TODO confirm
+//        Long plmRoFileDataId = raFileMetaData.getRaPlmRoFileDataId();
+//        if (ingestionTaskRunningMap.containsKey(plmRoFileDataId)) {
+//            log.warn("Ingestion task in progress for raFileMetaData {}", gson.toJson(raFileMetaData));
+//        }
+//        return isShouldReprocess(raFileMetaData);
+//    }
 
-    public boolean isShouldReprocess(RAFileMetaData raFileMetaData) {
-        Optional<RAPlmRoFileData> raPlmRoFileDataOptional = raFileMetaDataDetailsService
-                .findById(raFileMetaData.getRaPlmRoFileDataId());
-        if (raPlmRoFileDataOptional.isPresent()) {
-            RAPlmRoFileData raPlmRoFileData = raPlmRoFileDataOptional.get();
-            if (raPlmRoFileData.getRaFileProcessingStatus() != null && raPlmRoFileData.getRaFileProcessingStatus().equalsIgnoreCase(NEW.name())) {
-                return true;
-            }
-            return raPlmRoFileData.getReProcess() != null && raPlmRoFileData.getReProcess().toUpperCase().startsWith("Y");
-        }
-        return false;
-    }
+//    public boolean isShouldReprocess(RAFileMetaData raFileMetaData) {
+//        Optional<RAPlmRoFileData> raPlmRoFileDataOptional = raFileMetaDataDetailsService
+//                .findById(raFileMetaData.getRaPlmRoFileDataId());
+//        if (raPlmRoFileDataOptional.isPresent()) {
+//            RAPlmRoFileData raPlmRoFileData = raPlmRoFileDataOptional.get();
+//            if (raPlmRoFileData.getRaFileProcessingStatus() != null && raPlmRoFileData.getRaFileProcessingStatus().equalsIgnoreCase(NEW.name())) {
+//                return true;
+//            }
+//            return raPlmRoFileData.getReProcess() != null && raPlmRoFileData.getReProcess().toUpperCase().startsWith("Y");
+//        }
+//        return false;
+//    }
 
     //TODO later - need to add more checks
     public ErrorDetails validateMetaDataAndGetErrorList(RAFileMetaData raFileMetaData) {
