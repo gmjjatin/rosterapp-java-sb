@@ -6,6 +6,7 @@ import com.hilabs.rapipeline.ingestion.IngestionFetcher;
 import com.hilabs.rapipeline.dart.DartFetcher;
 import com.hilabs.rapipeline.isf.IsfFetcher;
 import com.hilabs.rapipeline.preprocessing.PreProcessingFetcher;
+import com.hilabs.rapipeline.test.TestFetcher;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ import javax.annotation.PostConstruct;
 @Component
 @Slf4j
 public class AppConfig {
+
+    @Autowired
+    private TestFetcher testFetcher;
 
     @Autowired
     private IngestionFetcher ingestionFetcher;
@@ -45,6 +49,10 @@ public class AppConfig {
     @PostConstruct
     public void initialize() throws SchedulerException, ApplicationException {
         log.info("Initiate the scheduler");
+
+//        new BatchConfig(preProcessingConfigPath)
+//                .registerJobRetrievers(testFetcher)
+//                .build();
 
         new BatchConfig(ingestionConfigPath)
                 .registerJobRetrievers(ingestionFetcher)

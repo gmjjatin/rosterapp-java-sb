@@ -39,12 +39,10 @@ public class DartTask extends Task {
             return;
         }
         try {
-            if (!dartTaskService.shouldRun(raSheetDetails, false)) {
-                return;
-            }
             dartTaskRunningMap.put(raSheetDetails.getId(), true);
             //TODO change it
             dartTaskService.invokePythonProcessForDartTask(raSheetDetails);
+            dartTaskService.consolidateDart(raSheetDetails.getRaFileDetailsId());
             log.debug("DartTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
             log.error("Error in DartTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),

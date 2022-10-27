@@ -4,7 +4,7 @@
     {
       "id": "dart",
       "name": "Dart",
-      "noTaskSleepTime": 1,
+      "noTaskSleepTime": 10,
       "interTaskSleepTime": 0,
       "period": [
         {

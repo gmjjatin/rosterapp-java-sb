@@ -36,10 +36,10 @@ public class PreProcessingTask extends Task {
         log.info("PreProcessingTask started for {}", gson.toJson(getTaskData()));
         Long raFileDetailsId = getRAFileDetailsIdFromTaskData();
         try {
-            //TODO demo
-            if (!preProcessingTaskService.shouldRun(raFileDetailsId)) {
-                return;
-            }
+//            //TODO demo
+//            if (!preProcessingTaskService.shouldRun(raFileDetailsId)) {
+//                return;
+//            }
             preProcessingRunningMap.put(raFileDetailsId, true);
             //TODO change it
             preProcessingTaskService.invokePythonProcessForPreProcessingTask(raFileDetailsId);

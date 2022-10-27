@@ -4,7 +4,7 @@
     {
       "id": "ingestion",
       "name": "Ingestion",
-      "noTaskSleepTime": 1,
+      "noTaskSleepTime": 10,
       "interTaskSleepTime": 0,
       "period": [
         {
@@ -22,9 +22,9 @@
           "unit": "H"
         }
       ],
-      "minPoolSize": 2,
-      "maxPoolSize": 10,
-      "parallelTasks": 4
+      "minPoolSize": 1,
+      "maxPoolSize": 1,
+      "parallelTasks": 1
     }
   ]
 }

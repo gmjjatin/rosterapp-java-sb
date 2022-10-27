@@ -19,4 +19,18 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
     @Transactional
     @Query(value = "update RA_RT_SHEET_DETAILS set status_cd = :statusCode where id = :raSheetDetailsId", nativeQuery = true)
     void updateRASheetDetailsStatus(Long raSheetDetailsId, Integer statusCode);
+
+    @Query(value = "select ra_rt_sheet_details.* from ra_rt_sheet_details, ra_rt_file_details where ra_rt_sheet_details.ra_file_details_id = ra_rt_file_details.id " +
+            "and ra_rt_sheet_details.is_active = 1 and  ra_rt_file_details.status_cd in (:fileStatusCodes) and ra_rt_sheet_details.status_cd in (:sheetStatusCodes)" +
+            " and MANUAL_ACTN_REQ in (:manualActionRequiredList)" +
+            " and ROWNUM <= :limit for update", nativeQuery = true)
+    List<RASheetDetails> getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(List<Integer> fileStatusCodes, List<Integer> sheetStatusCodes, List<Integer> manualActionRequiredList,
+                                                                                Integer limit);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update RA_RT_SHEET_DETAILS set status_cd = :statusCode where id in (:raSheetDetailsIdList)", nativeQuery = true)
+    void updateRASheetDetailsStatusByIds(List<Long> raSheetDetailsIdList, Integer statusCode);
+
+
 }

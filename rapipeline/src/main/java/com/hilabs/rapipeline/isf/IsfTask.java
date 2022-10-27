@@ -3,7 +3,6 @@ package com.hilabs.rapipeline.isf;
 
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
-import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.service.IsfTaskService;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.service.DartRASystemErrorsService;
@@ -40,12 +39,10 @@ public class IsfTask extends Task {
             return;
         }
         try {
-            if (!isfTaskService.shouldRun(raSheetDetails, false)) {
-                return;
-            }
             isfTaskRunningMap.put(raSheetDetails.getId(), true);
             //TODO change it
             isfTaskService.invokePythonProcessForIsfTask(raSheetDetails);
+            isfTaskService.consolidateISF(raSheetDetails.getRaFileDetailsId());
             log.debug("IsfTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
             log.error("Error in IsfTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),

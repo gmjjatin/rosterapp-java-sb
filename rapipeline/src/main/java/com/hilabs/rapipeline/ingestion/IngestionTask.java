@@ -84,9 +84,9 @@ public class IngestionTask extends Task {
             return;
         }
         try {
-            if (!ingestionTaskService.shouldRun(raFileMetaData)) {
-                return;
-            }
+//            if (!ingestionTaskService.shouldRun(raFileMetaData)) {
+//                return;
+//            }
             ingestionTaskRunningMap.put(raFileMetaData.getRaPlmRoFileDataId(), fileName);
 
             //Already checked in validateMetaDataAndGetErrorList

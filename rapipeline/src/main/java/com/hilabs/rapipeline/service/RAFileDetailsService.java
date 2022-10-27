@@ -1,6 +1,7 @@
 package com.hilabs.rapipeline.service;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +46,6 @@ public class RAFileDetailsService {
 
     public List<RAFileDetails> findFileDetailsByStatusCodesWithManualActionReqList(List<Integer> statusCodes, List<Integer> manualActionRequiredList ,int limit, int offset) {
         return raFileDetailsRepository.findFileDetailsByStatusCodesWithManualActionReqList(statusCodes, manualActionRequiredList, limit, offset);
-    }
-
-    public List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes ,int limit, int offset) {
-        return raFileDetailsRepository.findFileDetailsByStatusCodes(statusCodes, limit, offset);
     }
 
     public void updateRAFileDetailsStatus(Long raFileDetailsId, Integer status) {
