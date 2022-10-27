@@ -7,9 +7,11 @@ import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.service.IngestionTaskService;
 import com.hilabs.rapipeline.service.RAFileDetailsService;
 import com.hilabs.rapipeline.service.RAFileMetaDataDetailsService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class IngestionFetcher implements JobRetriever {
     private static final Gson gson = new Gson();
     private static final int MAX_RETRY_NO = 1;
@@ -36,26 +39,23 @@ public class IngestionFetcher implements JobRetriever {
     //TODO validate metadata
     @Override
     public List<Task> refillQueue(Integer tasks) {
-        List<Task> executors = new ArrayList<>();
-        List<RAFileMetaData> raFileMetaDataList = raFileMetaDataDetailsService
-                .getNewAndReProcessFileMetaDataDetails(2 * tasks);
-        int count = 0;
-        for (RAFileMetaData raFileMetaData : raFileMetaDataList) {
-            if (!ingestionTaskService.shouldRun(raFileMetaData)) {
-                continue;
+        try {
+            log.info("IngestionFetcher started - tasks {}", tasks);
+            List<Task> executors = new ArrayList<>();
+            List<RAFileMetaData> raFileMetaDataList = raFileMetaDataDetailsService.getNewFileMetaDataDetailsAndUpdateToInQueue(tasks);
+            for (RAFileMetaData raFileMetaData : raFileMetaDataList) {
+                Map<String, Object> taskData = new HashMap<>();
+                taskData.put("data", raFileMetaData);
+                IngestionTask ingestionTask = new IngestionTask(taskData);
+                ingestionTask.setApplicationContext(applicationContext);
+                executors.add(ingestionTask);
             }
-            count++;
-            Map<String, Object> taskData = new HashMap<>();
-//            taskData.put("id", raFileMetaData.getFileName());
-            taskData.put("data", raFileMetaData);
-            IngestionTask ingestionTask = new IngestionTask(taskData);
-            ingestionTask.setApplicationContext(applicationContext);
-            executors.add(ingestionTask);
-            if (count >= tasks) {
-                break;
-            }
+            log.info("IngestionFetcher ended - tasks {} executors size {}", tasks, executors.size());
+            return executors;
+        } catch (Exception ex) {
+            log.error("Error IsfFetcher {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
         }
-        return executors;
     }
 }
 

@@ -103,4 +103,12 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
 
     @Query(value = "select * from RA_RT_FILE_DETAILS where id = :raFileDetailsId and version = :version", nativeQuery = true)
     Optional<RAFileDetails> findByRAFileDetailsIdByVersion(@Param("raFileDetailsId") Long raFileDetailsId, Long version);
+    @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) " +
+            "and ROWNUM <= :limit for update", nativeQuery = true)
+    List<RAFileDetails> findFileDetailsByStatusCodesForUpdate(List<Integer> statusCodes, int limit);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode where id in (:raFileDetailsIdList)", nativeQuery = true)
+    void updateRAFileDetailsStatusByIds(List<Long> raFileDetailsIdList, Integer statusCode);
 }
