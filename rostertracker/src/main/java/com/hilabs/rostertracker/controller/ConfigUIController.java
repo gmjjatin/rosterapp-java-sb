@@ -49,7 +49,7 @@ public class ConfigUIController {
     private RAStatusService raStatusService;
 
     @GetMapping("/valid-file-list")
-    public ResponseEntity<CollectionResponse<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<List<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "1") Integer pageNo,
                                                                                          @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                          @RequestParam(defaultValue = "") String market,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -88,7 +88,7 @@ public class ConfigUIController {
             }
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, configUiFileDataList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
-            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
+            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, raFileDetailsId, startTime, endTime);
@@ -98,10 +98,11 @@ public class ConfigUIController {
 
     //TODO demo remove api
     @GetMapping("/sheet-details")
-    public ResponseEntity<CollectionResponse<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
+    public ResponseEntity<List<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
         List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId, allTypeList);
         //TODO demo
-        return ResponseEntity.ok(new CollectionResponse(1, 100, sheetDetailsList, new Long(sheetDetailsList.size())));
+//        return ResponseEntity.ok(new CollectionResponse(1, 100, sheetDetailsList, new Long(sheetDetailsList.size())));
+        return ResponseEntity.ok(sheetDetailsList);
     }
 
     @GetMapping("/roster-sheet-details")

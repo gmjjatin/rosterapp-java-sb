@@ -117,8 +117,8 @@ public class RAFileDetailsService {
                                                                            List<RASheetDetails> raSheetDetailsList) {
         Map<Long, List<RASheetDetails>> raSheetDetailsListMap = new HashMap<>();
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            raSheetDetailsListMap.putIfAbsent(raSheetDetails.getId(), new ArrayList<>());
-            raSheetDetailsListMap.get(raSheetDetails.getId()).add(raSheetDetails);
+            raSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
+            raSheetDetailsListMap.get(raSheetDetails.getRaFileDetailsId()).add(raSheetDetails);
         }
         List<RAFileDetailsWithSheets> raFileDetailsWithSheetsList = new ArrayList<>();
         for (RAFileDetails raFileDetails : raFileDetailsList) {
