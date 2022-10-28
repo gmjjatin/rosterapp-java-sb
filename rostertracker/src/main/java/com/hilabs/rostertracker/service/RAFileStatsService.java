@@ -4,10 +4,7 @@ import com.hilabs.roster.dto.AltIdType;
 import com.hilabs.roster.entity.*;
 import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
-import com.hilabs.roster.repository.RAConvProcessingDurationStatsRepository;
-import com.hilabs.roster.repository.RAFileDetailsLobRepository;
-import com.hilabs.roster.repository.RARTFileAltIdsRepository;
-import com.hilabs.roster.repository.RAStatusCDMasterRepository;
+import com.hilabs.roster.repository.*;
 import com.hilabs.roster.util.ProcessDurationInfo;
 import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.*;
@@ -36,6 +33,9 @@ public class RAFileStatsService {
 
     @Autowired
     private RARTFileAltIdsRepository rartFileAltIdsRepository;
+
+    @Autowired
+    private RARCFalloutReportRepository rarcFalloutReportRepository;
 
     @Autowired
     private RAStatusService raStatusService;
@@ -121,45 +121,62 @@ public class RAFileStatsService {
                 raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : 0);
     }
 
+    //TODO
+    public List<FalloutReportElement> getFalloutReport(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage) {
+        return new ArrayList<>();
+    }
+
+    public RosterFileProcessIntermediateStageInfo getRosterFileProcessIntermediateStageInfo(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage, RosterStageState rosterStageState,
+                                                                                            int recordCount, List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList) {
+        BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(rosterSheetProcessStage,
+                rosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, rosterSheetProcessStage));
+        return new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo, recordCount, Utils.MILLIS_IN_HOUR,
+                getFalloutReport(raSheetDetails, rosterSheetProcessStage));
+    }
+
     public RASheetProgressInfo getRASheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         RASheetProgressInfo rosterFileProgressInfo = getBaseRosterSheetProgressInfo(raFileDetails, raSheetDetails);
         List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList = getRosConvProcessingDurationStatsList(raSheetDetails.getId());
+
+        RosterStageState rosterReceivedRosterStageState = getRosterStageState(RosterSheetProcessStage.ROSTER_RECEIVED, raSheetDetails.getStatusCode());
+        if (rosterReceivedRosterStageState != RosterStageState.NOT_STARTED) {
+            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails,
+                    RosterSheetProcessStage.ROSTER_RECEIVED, rosterReceivedRosterStageState, raSheetDetails.getRosterRecordCount(), raConvProcessingDurationStatsList);
+            rosterFileProgressInfo.setRosterReceived(new RosterReceivedStageInfo(rosterFileProcessIntermediateStageInfo));
+        }
+
         RosterStageState autoMappedRosterStageState = getRosterStageState(RosterSheetProcessStage.AUTO_MAPPED, raSheetDetails.getStatusCode());
         if (autoMappedRosterStageState != RosterStageState.NOT_STARTED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.AUTO_MAPPED,
-                    autoMappedRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterSheetProcessStage.AUTO_MAPPED));
-            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo,
-                    raSheetDetails.getRosterRecordCount(), Utils.MILLIS_IN_HOUR);
+            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails, RosterSheetProcessStage.AUTO_MAPPED,
+                    autoMappedRosterStageState, raSheetDetails.getRosterRecordCount(), raConvProcessingDurationStatsList);
             rosterFileProgressInfo.setAutoMapped(new AutoMappedStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
         RosterStageState isfRosterStageState = getRosterStageState(RosterSheetProcessStage.ISF_GENERATED, raSheetDetails.getStatusCode());
         if (isfRosterStageState != RosterStageState.NOT_STARTED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.ISF_GENERATED,
-                    isfRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterSheetProcessStage.ISF_GENERATED));
-            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo,
-                    raSheetDetails.getRosterRecordCount(), Utils.MILLIS_IN_HOUR);
+            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails,
+                    RosterSheetProcessStage.ISF_GENERATED,
+                    isfRosterStageState, raSheetDetails.getIsfRowCount(), raConvProcessingDurationStatsList);
             rosterFileProgressInfo.setIsf(new ISFStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
         RosterStageState dartRosterStageState = getRosterStageState(RosterSheetProcessStage.CONVERTED_DART, raSheetDetails.getStatusCode());
         if (dartRosterStageState != RosterStageState.NOT_STARTED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.CONVERTED_DART,
-                    dartRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterSheetProcessStage.CONVERTED_DART));
-            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo,
-                    raSheetDetails.getOutRowCount(), Utils.MILLIS_IN_HOUR);
+            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails,
+                    RosterSheetProcessStage.CONVERTED_DART,
+                    dartRosterStageState, raSheetDetails.getOutRowCount(), raConvProcessingDurationStatsList);
             rosterFileProgressInfo.setConvertedDart(new ConvertedDartStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
         RosterStageState spsLoadRosterStageState = getRosterStageState(RosterSheetProcessStage.SPS_LOAD, raSheetDetails.getStatusCode());
         if (spsLoadRosterStageState != RosterStageState.NOT_STARTED) {
-            BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(RosterSheetProcessStage.SPS_LOAD,
-                    spsLoadRosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, RosterSheetProcessStage.SPS_LOAD));
-            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo = new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo,
-                    raSheetDetails.getTargetLoadTransactionCount(), Utils.MILLIS_IN_HOUR);
-            rosterFileProgressInfo.setConvertedDart(new ConvertedDartStageInfo(rosterFileProcessIntermediateStageInfo));
+            RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails,
+                    RosterSheetProcessStage.SPS_LOAD,
+                    spsLoadRosterStageState, raSheetDetails.getTargetLoadTransactionCount(), raConvProcessingDurationStatsList);
+            rosterFileProgressInfo.setSpsLoad(new SpsLoadStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
+        rosterFileProgressInfo.setErrorSummary(rarcFalloutReportRepository.getRAFalloutErrorInfoList(raSheetDetails.getId()));
         return rosterFileProgressInfo;
     }
 

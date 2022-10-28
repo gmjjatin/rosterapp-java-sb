@@ -1,15 +1,20 @@
-//package com.hilabs.rostertracker.model;
-//
-//
-//import com.hilabs.roster.model.RosterSheetProcessStage;
-//import com.hilabs.roster.model.RosterStageState;
-//
-//public class RosterReceivedStageInfo extends BaseRosterFileProcessStageInfo {
-//    public RosterReceivedStageInfo() {
-//        super(RosterSheetProcessStage.ROSTER_RECEIVED);
-//    }
-//
-//    public RosterReceivedStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo) {
-//        super(baseRosterFileProcessStageInfo);
-//    }
-//}
+package com.hilabs.rostertracker.model;
+
+import com.hilabs.roster.model.RosterSheetProcessStage;
+import lombok.Data;
+
+@Data
+public class RosterReceivedStageInfo extends BaseRosterFileProcessStageInfo {
+
+    public RosterReceivedStageInfo() {
+        super(RosterSheetProcessStage.AUTO_MAPPED);
+    }
+
+    public RosterReceivedStageInfo(RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo) {
+        super(rosterFileProcessIntermediateStageInfo);
+    }
+
+    public RosterReceivedStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis) {
+        super(baseRosterFileProcessStageInfo, noOfRecords, processingThresholdInMillis);
+    }
+}
