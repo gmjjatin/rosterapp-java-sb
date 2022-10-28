@@ -18,7 +18,7 @@ public class RAFileMetaData  {
     String taxId;
     String orgName;
     String cntState;
-    String plmNetwork;
+    String lob;
     Date corporateReceiptDate;
     Long raPlmRoFileDataId;
     String fileName;
@@ -39,7 +39,7 @@ public class RAFileMetaData  {
         this.taxId = raPlmRoProfData.getTaxId();
         this.orgName = raPlmRoProfData.getOrgName();
         this.cntState = raPlmRoProfData.getCntState();
-        this.plmNetwork = raPlmRoProfData.getPlmNetwork();
+        this.lob = raPlmRoProfData.getLob();
         this.corporateReceiptDate = raPlmRoProfData.getCorporateReceiptDate();
         this.raPlmRoFileDataId = raPlmRoFileData.getRaPlmRoFileDataId();
         this.fileName = raPlmRoFileData.getFileName();

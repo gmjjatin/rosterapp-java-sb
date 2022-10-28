@@ -214,7 +214,7 @@ public class IngestionTask extends Task {
         String fileName = raFileMetaData.getFileName();
         //TODO insert ticket ids
         String market = raFileMetaData.getCntState();
-        String lob = raFileMetaData.getPlmNetwork();
+        String lob = raFileMetaData.getLob();
         Long raFileDetailsId = raFileDetailsService.insertRAFileDetails(raFileMetaData.getOrgName(), fileName,
                 standardizedFileName, market, statusCode);
         raFileMetaDataDetailsService.insertRAFileDetailsLob(raFileDetailsId, lob, 1);

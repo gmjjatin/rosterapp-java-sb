@@ -185,10 +185,10 @@ public class RARCRosterISFMapService {
             if (isFromApproved) {
                 raFileDetails.setManualActionRequired(0);
                 raFileDetails.setLastApprovedBy(username);
-                raFileDetails.setLastUpdatedDate(new Date());
+                raFileDetails.setLastApprovedDate(new Date());
             } else {
                 raFileDetails.setLastSavedBy(username);
-                raFileDetails.setLastUpdatedDate(new Date());
+                raFileDetails.setLastSavedDate(new Date());
             }
             raFileDetailsRepository.save(raFileDetails);
         } catch (ObjectOptimisticLockingFailureException ex) {

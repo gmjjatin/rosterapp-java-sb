@@ -51,8 +51,8 @@ public class RAPlmRoProfData extends BaseEntity {
     private String cntState;
 
     //Commercial / Medicaid/Medicaid
-    @Column(name = "plm_ntwk")
-    private String plmNetwork;
+    @Column(name = "lob")
+    private String lob;
 
     //Corporate Receipt Date
     @Column(name = "corp_recipt_dt")
