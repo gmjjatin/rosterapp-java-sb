@@ -3,7 +3,6 @@ package com.hilabs.rostertracker.model;
 import com.hilabs.roster.model.RosterSheetProcessStage;
 import lombok.Data;
 
-@Data
 public class RosterReceivedStageInfo extends BaseRosterFileProcessStageInfo {
 
     public RosterReceivedStageInfo() {
@@ -14,7 +13,7 @@ public class RosterReceivedStageInfo extends BaseRosterFileProcessStageInfo {
         super(rosterFileProcessIntermediateStageInfo);
     }
 
-    public RosterReceivedStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis) {
-        super(baseRosterFileProcessStageInfo, noOfRecords, processingThresholdInMillis);
+    public RosterReceivedStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo) {
+        super(baseRosterFileProcessStageInfo);
     }
 }

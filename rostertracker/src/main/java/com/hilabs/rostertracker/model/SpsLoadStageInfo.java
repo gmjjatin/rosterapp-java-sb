@@ -5,15 +5,14 @@ import lombok.Data;
 
 import java.util.List;
 
-@Data
 public class SpsLoadStageInfo extends RosterFileProcessIntermediateStageInfo {
     public SpsLoadStageInfo() {
         super(RosterSheetProcessStage.SPS_LOAD);
     }
 
-    public SpsLoadStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords,
+    public SpsLoadStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo,
                             long processingThresholdInMillis, List<FalloutReportElement> falloutReport) {
-        super(baseRosterFileProcessStageInfo, noOfRecords, processingThresholdInMillis, falloutReport);
+        super(baseRosterFileProcessStageInfo, processingThresholdInMillis, falloutReport);
     }
 
     public SpsLoadStageInfo(RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo) {

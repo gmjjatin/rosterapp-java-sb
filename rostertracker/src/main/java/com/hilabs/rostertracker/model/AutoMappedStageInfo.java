@@ -5,7 +5,6 @@ import lombok.Data;
 
 import java.util.List;
 
-@Data
 public class AutoMappedStageInfo extends RosterFileProcessIntermediateStageInfo {
 
     public AutoMappedStageInfo() {
@@ -16,7 +15,7 @@ public class AutoMappedStageInfo extends RosterFileProcessIntermediateStageInfo 
         super(rosterFileProcessIntermediateStageInfo);
     }
 
-    public AutoMappedStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis, List<FalloutReportElement> falloutReport) {
-        super(baseRosterFileProcessStageInfo, noOfRecords, processingThresholdInMillis, falloutReport);
+    public AutoMappedStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis, List<FalloutReportElement> falloutReport) {
+        super(baseRosterFileProcessStageInfo, processingThresholdInMillis, falloutReport);
     }
 }

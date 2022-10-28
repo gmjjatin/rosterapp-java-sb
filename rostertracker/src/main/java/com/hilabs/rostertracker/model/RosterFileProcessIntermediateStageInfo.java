@@ -20,7 +20,7 @@ public class RosterFileProcessIntermediateStageInfo extends BaseRosterFileProces
         this.falloutReport = new ArrayList<>();
     }
 
-    public RosterFileProcessIntermediateStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, int noOfRecords, long processingThresholdInMillis, List<FalloutReportElement> falloutReport) {
+    public RosterFileProcessIntermediateStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis, List<FalloutReportElement> falloutReport) {
         super(baseRosterFileProcessStageInfo);
         this.processThresholdInMillis = processingThresholdInMillis;
         this.falloutReport = falloutReport;
@@ -28,7 +28,6 @@ public class RosterFileProcessIntermediateStageInfo extends BaseRosterFileProces
 
     public RosterFileProcessIntermediateStageInfo(RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo) {
         super(rosterFileProcessIntermediateStageInfo);
-        this.noOfRecords = rosterFileProcessIntermediateStageInfo.noOfRecords;
         this.processThresholdInMillis = rosterFileProcessIntermediateStageInfo.processThresholdInMillis;
         this.falloutReport = rosterFileProcessIntermediateStageInfo.falloutReport;
     }

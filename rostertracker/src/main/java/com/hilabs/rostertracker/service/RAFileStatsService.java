@@ -123,14 +123,43 @@ public class RAFileStatsService {
 
     //TODO
     public List<FalloutReportElement> getFalloutReport(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage) {
+        if (rosterSheetProcessStage == RosterSheetProcessStage.ROSTER_RECEIVED) {
+            return Arrays.asList(new FalloutReportElement("Records", String.valueOf(raSheetDetails.getRosterRecordCount())));
+        } else if (rosterSheetProcessStage == RosterSheetProcessStage.AUTO_MAPPED) {
+            return Arrays.asList();
+        } else if (rosterSheetProcessStage == RosterSheetProcessStage.ISF_GENERATED) {
+            //TODO
+            Integer falloutCount = rarcFalloutReportRepository.countRAFalloutErrorInfo(raSheetDetails.getId(), "ISF");
+            return Arrays.asList(
+                    new FalloutReportElement("Records", raSheetDetails.getIsfRowCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRowCount())),
+                    new FalloutReportElement("ISF validation fallouts", falloutCount == null ? "-" : String.valueOf(falloutCount))
+            );
+        } else if (rosterSheetProcessStage == RosterSheetProcessStage.CONVERTED_DART) {
+            Integer falloutCount = rarcFalloutReportRepository.countRAFalloutErrorInfo(raSheetDetails.getId(), "DART");
+            //TODO
+            return Arrays.asList(
+                    new FalloutReportElement("Records", raSheetDetails.getOutRowCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRowCount())),
+                    new FalloutReportElement("Dart validation fallouts", falloutCount == null ? "-" : String.valueOf(falloutCount))
+            );
+        } else if (rosterSheetProcessStage == RosterSheetProcessStage.SPS_LOAD) {
+            return Arrays.asList(
+                    new FalloutReportElement("DART rows submitted by DART UI", "-"),
+                    new FalloutReportElement("DART UI fallouts", "-"),
+                    new FalloutReportElement("SPS transactions", "-"),
+                    new FalloutReportElement("Successful transactions", "-"),
+                    new FalloutReportElement("Warning", "-"),
+                    new FalloutReportElement("Failure", "-"),
+                    new FalloutReportElement("Success %", "-")
+            );
+        }
         return new ArrayList<>();
     }
 
     public RosterFileProcessIntermediateStageInfo getRosterFileProcessIntermediateStageInfo(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage, RosterStageState rosterStageState,
                                                                                             int recordCount, List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList) {
         BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(rosterSheetProcessStage,
-                rosterStageState, computeTimeTakenInMillis(raConvProcessingDurationStatsList, rosterSheetProcessStage));
-        return new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo, recordCount, Utils.MILLIS_IN_HOUR,
+                rosterStageState, recordCount, computeTimeTakenInMillis(raConvProcessingDurationStatsList, rosterSheetProcessStage));
+        return new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo, Utils.MILLIS_IN_HOUR,
                 getFalloutReport(raSheetDetails, rosterSheetProcessStage));
     }
 
