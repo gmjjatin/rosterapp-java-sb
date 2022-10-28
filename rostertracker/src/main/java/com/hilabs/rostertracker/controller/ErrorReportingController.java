@@ -62,6 +62,7 @@ public class ErrorReportingController {
                                                                                          @RequestParam(defaultValue = "") String market,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                          @RequestParam(defaultValue = "") String fileName,
+                                                                                         @RequestParam(defaultValue = "") String plmTicketId,
                                                                                          @RequestParam(defaultValue = "-1") long startTime,
                                                                                          @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -73,7 +74,7 @@ public class ErrorReportingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
-                    .getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
+                    .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
                             startTime, endTime, statusCodes, limit, offset, true, 0, false);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raFileAndErrorStatsList,
@@ -94,6 +95,7 @@ public class ErrorReportingController {
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                    @RequestParam(defaultValue = "") String fileName,
+                                                                                   @RequestParam(defaultValue = "") String plmTicketId,
                                                                                    @RequestParam(defaultValue = "-1") long startTime,
                                                                                    @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -104,7 +106,7 @@ public class ErrorReportingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
                             startTime, endTime, statusCodes, limit, offset, true, 0, false);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();

@@ -54,6 +54,7 @@ public class ConfigUIController {
                                                                                          @RequestParam(defaultValue = "") String market,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                          @RequestParam(defaultValue = "") String fileName,
+                                                                                         @RequestParam(defaultValue = "") String plmTicketId,
                                                                                          @RequestParam(defaultValue = "-1") long startTime,
                                                                                          @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -65,8 +66,8 @@ public class ConfigUIController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             //TODO demo
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, market,
-                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 1, true);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName,
+                    plmTicketId, market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 1, true);
             List<Long> raFileDetailsIdList = raFileDetailsWithSheetsListResponse.getItems().stream()
                     .map(p -> p.getRaFileDetails().getId()).collect(Collectors.toList());
             Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(raFileDetailsIdList);
@@ -80,10 +81,10 @@ public class ConfigUIController {
                 String lob = raFileDetailsLobMap.containsKey(raFileDetails.getId()) ? raFileDetailsLobMap.get(raFileDetails.getId()).getLob() : "-";
                 List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileDetails.getId()) ? rartFileAltIdsListMap
                         .get(raFileDetails.getId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
-                String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
+                String filePlmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
                 configUiFileDataList.add(new ConfigUiFileData(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
                         raFileDetails.getCreatedDate().getTime(), status, optionalRAStatusEntity.map(RAStatusEntity::getStage).orElse(null),
-                        lob, raFileDetails.getMarket(), plmTicketId,
+                        lob, raFileDetails.getMarket(), filePlmTicketId,
                         isManualActionReq));
             }
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, configUiFileDataList,

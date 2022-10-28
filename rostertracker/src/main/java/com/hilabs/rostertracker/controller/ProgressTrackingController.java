@@ -59,6 +59,7 @@ public class ProgressTrackingController {
                                                                                             @RequestParam(defaultValue = "") String market,
                                                                                             @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                             @RequestParam(defaultValue = "") String fileName,
+                                                                                            @RequestParam(defaultValue = "") String plmTicketId,
                                                                                             @RequestParam(defaultValue = "-1") long startTime,
                                                                                             @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -69,7 +70,7 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
-                    .getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
+                    .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
                             startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true,
                             0, false);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
@@ -143,6 +144,7 @@ public class ProgressTrackingController {
                                                                                     @RequestParam(defaultValue = "") String market,
                                                                                     @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                     @RequestParam(defaultValue = "") String fileName,
+                                                                                    @RequestParam(defaultValue = "") String plmTicketId,
                                                                                     @RequestParam(defaultValue = "-1") long startTime,
                                                                                     @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -153,8 +155,8 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset, true, 0, false);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId,
+                    market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 0, false);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
 
@@ -181,11 +183,11 @@ public class ProgressTrackingController {
                 String lob = raFileDetailsLobMap.containsKey(raFileDetailsId) ? raFileDetailsLobMap.get(raFileDetailsId).getLob() : "-";
                 List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileDetailsId) ? rartFileAltIdsListMap
                         .get(raFileDetailsId).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
-                String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
+                String filePlmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
                 long rosterReceivedTime = getRosterReceivedTime(raFileDetails);
                 InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileDetailsId, raFileDetails.getOriginalFileName(), rosterReceivedTime,
                         rosterRecordCount, errorCodesAndDescription.errorDescription,
-                        String.join(", ", errorCodesAndDescription.errorCodes), lob, raFileDetails.getMarket(), plmTicketId);
+                        String.join(", ", errorCodesAndDescription.errorCodes), lob, raFileDetails.getMarket(), filePlmTicketId);
                 inCompatibleRosterDetails.add(details);
             }
             CollectionResponse<InCompatibleRosterDetails> collectionResponse = new CollectionResponse<InCompatibleRosterDetails>(pageNo, pageSize, inCompatibleRosterDetails, 1000L);
