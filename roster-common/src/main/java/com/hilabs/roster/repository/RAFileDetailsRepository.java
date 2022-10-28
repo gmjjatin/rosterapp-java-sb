@@ -18,22 +18,22 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     Optional<RAFileDetails> findRAFileDetailsById(Long id);
 
-    @Modifying
-    @Transactional
-    @Query(value = "update RA_RT_FILE_DETAILS set ra_provider_details_id = :raProvDetailsId, market = :market, lob = :lob," +
-            " orgnl_file_nm = :originalFileName, stndrdzd_file_nm = :standardizedFileName, plm_ticket_id = :plmTicketId," +
-            " file_location = :fileLocation, file_system = :fileSystem, last_updt_user_id = :lastUpdateUserId," +
-            " last_updt_dt = sysdate " +
-            "where id = :raProvDetailsId", nativeQuery = true)
-    void updateRAFileDetails(@Param("raProvDetailsId") Long raProvDetailsId,
-                             @Param("market") String market,
-                             @Param("lob") String lob,
-                             @Param("originalFileName") String originalFileName,
-                             @Param("standardizedFileName") String standardizedFileName,
-                             @Param("plmTicketId") String plmTicketId,
-                             @Param("fileLocation") String fileLocation,
-                             @Param("fileSystem") String fileSystem,
-                             @Param("lastUpdateUserId") Long lastUpdateUserId);
+//    @Modifying
+//    @Transactional
+//    @Query(value = "update RA_RT_FILE_DETAILS set ra_provider_details_id = :raProvDetailsId, market = :market, lob = :lob," +
+//            " orgnl_file_nm = :originalFileName, stndrdzd_file_nm = :standardizedFileName, plm_ticket_id = :plmTicketId," +
+//            " file_location = :fileLocation, file_system = :fileSystem, last_updt_user_id = :lastUpdateUserId," +
+//            " last_updt_dt = sysdate " +
+//            "where id = :raProvDetailsId", nativeQuery = true)
+//    void updateRAFileDetails(@Param("raProvDetailsId") Long raProvDetailsId,
+//                             @Param("market") String market,
+//                             @Param("lob") String lob,
+//                             @Param("originalFileName") String originalFileName,
+//                             @Param("standardizedFileName") String standardizedFileName,
+//                             @Param("plmTicketId") String plmTicketId,
+//                             @Param("fileLocation") String fileLocation,
+//                             @Param("fileSystem") String fileSystem,
+//                             @Param("lastUpdateUserId") Long lastUpdateUserId);
 
     //TODO is fileName unique
     @Query(value = "select * from RA_RT_FILE_DETAILS where orgnl_file_nm = :fileName order by creat_dt desc fetch next 1 rows only",
@@ -46,6 +46,12 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select distinct(orgnl_file_nm) from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) " +
             "and UPPER(orgnl_file_nm) like UPPER(:searchStr) || '%'", nativeQuery = true)
     List<String> findByFileSearchStr(@Param("searchStr") String searchStr, List<Integer> statusCodes);
+
+    @Query(value = "select distinct(RA_RT_FILE_ALT_IDS.ALT_ID) from RA_RT_FILE_ALT_IDS, RA_RT_FILE_DETAILS where " +
+            "RA_RT_FILE_ALT_IDS.ra_file_details_id = RA_RT_FILE_DETAILS.id and ALT_ID_TYPE='RO_ID' and " +
+            " UPPER(ALT_ID) like UPPER(:plmSearchStr) || '%'" +
+            " and status_cd in (:statusCodes)", nativeQuery = true)
+    List<String> findByPlmSearchStr(@Param("plmSearchStr") String plmSearchStr, List<Integer> statusCodes);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS, RA_RT_FILE_DETAILS_LOB where " +
             " RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id " +

@@ -48,6 +48,20 @@ public class RAProviderController {
         }
     }
 
+    @GetMapping("/plmTicketId/search")
+    //TODO don;t use entites
+    public ResponseEntity<List<String>> getPlmTicketIdFromSearchStr(@RequestParam(defaultValue = "") String searchStr,
+                                                                    @RequestParam(defaultValue = "", name = "type") String type) {
+        try {
+            List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
+            List<String> plmTicketIds = raFileDetailsService.findByPlmSearchStr(searchStr, statusCodes);
+            return new ResponseEntity<>(plmTicketIds, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in getRAProvListFromProviderSearchStr searchStr {} - ex {}", searchStr, ex.getMessage());
+            throw ex;
+        }
+    }
+
     @GetMapping("/market/all")
     public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "", name = "type") String type) {
         try {

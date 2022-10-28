@@ -137,6 +137,10 @@ public class RAFileDetailsService {
         return raFileDetailsRepository.findByFileSearchStr(providerSearchStr, statusCodes);
     }
 
+    public List<String> findByPlmSearchStr(String plmSearchStr, List<Integer> statusCodes) {
+        return raFileDetailsRepository.findByPlmSearchStr(plmSearchStr, statusCodes);
+    }
+
     public List<RAFileDetails> findByMarketSearchStr(String searchStr) {
         try {
             if (marketSearchStrCache.contains(searchStr)) {
