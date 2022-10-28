@@ -1,8 +1,10 @@
 package com.hilabs.roster.entity;
 
 import lombok.Data;
+import org.springframework.data.annotation.CreatedBy;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "RA_RT_FILE_DETAILS")
@@ -35,6 +37,22 @@ public class RAFileDetails extends BaseEntity {
 
     @Column(name = "source_nm")
     private String sourceName;
+
+    @Column(name = "last_saved_dt")
+    private Date lastSavedDate;
+
+    @Column(name = "last_approved_dt")
+    private Date lastApprovedDate;
+
+    @Column(name = "last_saved_by")
+    private String lastSavedBy;
+
+    @Column(name = "last_approved_by")
+    private String lastApprovedBy;
+
+    @Version
+    @Column(name = "obj_vrsn_no")
+    private Long version;
 
     public RAFileDetails() {}
     @Override

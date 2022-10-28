@@ -1,18 +1,14 @@
 package com.hilabs.rostertracker.dto;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class RASheetAndStats extends RosterStats {
     private long raSheetDetailsId;
     private String sheetName;
-
     private String status;
-
-    public RASheetAndStats(long raSheetDetailsId, String sheetName, String status) {
-        this.raSheetDetailsId = raSheetDetailsId;
-        this.sheetName = sheetName;
-        this.status = status;
-    }
+    private String type;
 }

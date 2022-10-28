@@ -24,7 +24,7 @@
       ],
       "minPoolSize": 2,
       "maxPoolSize": 10,
-      "parallelTasks": 4
+      "parallelTasks": 10
     }
   ]
 }

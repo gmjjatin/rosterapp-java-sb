@@ -6,7 +6,7 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "DART_RA_FILE_ERROR_CODE_DETAILS")
+@Table(name = "RA_FILE_ERROR_CODE_DETAILS")
 @Data
 public class RAFileErrorCodeDetails extends BaseEntity {
     @Id
@@ -16,22 +16,22 @@ public class RAFileErrorCodeDetails extends BaseEntity {
     @Column(name = "ra_file_details_id")
     private Long raFileDetailsId;
 
-    @Column(name = "ERROR_CODE")
+    @Column(name = "ERR_CD")
     private String errorCode;
 
-    @Column(name = "ERROR_CODE_TEMPLATE_PARAMETERS")
+    @Column(name = "ERR_CD_DSPLY_TMPLT_PARM")
     private String errorCodeTemplateParameters;
 
-    @Column(name = "status")
-    private String status;
+    @Column(name = "STATUS_CD")
+    private Integer statusCode;
 
     public RAFileErrorCodeDetails() {}
 
-    public RAFileErrorCodeDetails(final Long raFileDetailsId, final String errorCode, final String errorCodeTemplateParameters, final String status) {
+    public RAFileErrorCodeDetails(final Long raFileDetailsId, final String errorCode, final String errorCodeTemplateParameters, final Integer status) {
         super();
         this.raFileDetailsId = raFileDetailsId;
         this.errorCode = errorCode;
         this.errorCodeTemplateParameters = errorCodeTemplateParameters;
-        this.status = status;
+        this.statusCode = status;
     }
 }

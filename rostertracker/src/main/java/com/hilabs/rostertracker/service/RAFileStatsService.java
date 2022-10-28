@@ -8,24 +8,18 @@ import com.hilabs.roster.repository.RAConvProcessingDurationStatsRepository;
 import com.hilabs.roster.repository.RAFileDetailsLobRepository;
 import com.hilabs.roster.repository.RARTFileAltIdsRepository;
 import com.hilabs.roster.repository.RAStatusCDMasterRepository;
-import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
-import com.hilabs.rostertracker.dto.RAFileAndStats;
-import com.hilabs.rostertracker.dto.RASheetAndErrorStats;
-import com.hilabs.rostertracker.dto.RASheetAndStats;
+import com.hilabs.roster.util.ProcessDurationInfo;
+import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hilabs.roster.util.RosterStageUtils.computeTimeTakenInMillis;
-import static com.hilabs.roster.util.RosterStageUtils.getRosterStageState;
+import static com.hilabs.roster.util.RosterStageUtils.*;
 import static com.hilabs.rostertracker.utils.RosterUtils.computeFalloutRecordCount;
 
 @Service
@@ -46,35 +40,29 @@ public class RAFileStatsService {
     @Autowired
     private RAStatusService raStatusService;
 
-    public List<RAFileAndErrorStats> getRAFileAndErrorStats(List<RAFileDetails> raFileDetailsList,  List<RASheetDetails> raSheetDetailsList) {
-        Map<Long, List<RASheetDetails>> rosterSheetDetailsListMap = new HashMap<>();
-        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            rosterSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
-            rosterSheetDetailsListMap.get(raSheetDetails.getRaFileDetailsId()).add(raSheetDetails);
-        }
+    public List<RAFileAndErrorStats> getRAFileAndErrorStats(List<RAFileDetailsWithSheets> raFileDetailsWithSheetsList) {
         List<RAFileAndErrorStats> raFileAndErrorStatsList = new ArrayList<>();
-        for (RAFileDetails raFileDetails : raFileDetailsList) {
-            raFileAndErrorStatsList.add(getRAFileAndErrorStats(raFileDetails, rosterSheetDetailsListMap.getOrDefault(raFileDetails.getId(), new ArrayList<>())));
+        for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsList) {
+            RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
+            raFileAndErrorStatsList.add(getRAFileAndErrorStats(raFileDetails, raFileDetailsWithSheets.getRaSheetDetailsList()));
         }
         return raFileAndErrorStatsList;
     }
 
-    public List<RAFileAndStats> getRAFileAndStats(List<RAFileDetails> raFileDetailsList,  List<RASheetDetails> raSheetDetailsList) {
-        Map<Long, List<RASheetDetails>> rosterSheetDetailsListMap = new HashMap<>();
-        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            rosterSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
-            rosterSheetDetailsListMap.get(raSheetDetails.getRaFileDetailsId()).add(raSheetDetails);
-        }
-
+    public List<RAFileAndStats> getRAFileAndStats(List<RAFileDetailsWithSheets> raFileDetailsWithSheetsList) {
         List<RAFileAndStats> raFileAndStatsList = new ArrayList<>();
-        Map<Long, RAFileDetailsLob> raFileDetailsLobMap = getRAFileDetailsLobMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
-        Map<Long, List<RARTFileAltIds>> rartFileAltIdsListMap = getRARTFileAltIdsListMap(raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList()));
-        for (RAFileDetails raFileDetails : raFileDetailsList) {
+        Map<Long, RAFileDetailsLob> raFileDetailsLobMap = getRAFileDetailsLobMap(raFileDetailsWithSheetsList.stream().map(p -> p.getRaFileDetails()
+                .getId()).collect(Collectors.toList()));
+        Map<Long, List<RARTFileAltIds>> rartFileAltIdsListMap = getRARTFileAltIdsListMap(raFileDetailsWithSheetsList.stream().map(p -> p.getRaFileDetails().getId())
+                .collect(Collectors.toList()));
+        for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsList) {
+            RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
+            List<RASheetDetails> raSheetDetailsList = raFileDetailsWithSheets.getRaSheetDetailsList();
             String lob = raFileDetailsLobMap.containsKey(raFileDetails.getId()) ? raFileDetailsLobMap.get(raFileDetails.getId()).getLob() : "-";
             List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileDetails.getId()) ? rartFileAltIdsListMap
                     .get(raFileDetails.getId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
             String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
-            raFileAndStatsList.add(getRAFileAndStats(raFileDetails, lob, plmTicketId, rosterSheetDetailsListMap.getOrDefault(raFileDetails.getId(), new ArrayList<>())));
+            raFileAndStatsList.add(getRAFileAndStats(raFileDetails, lob, plmTicketId, raSheetDetailsList));
         }
         return raFileAndStatsList;
     }
@@ -89,6 +77,10 @@ public class RAFileStatsService {
         return raRTFileAltIdsListMap;
     }
 
+    public List<RARTFileAltIds> getRARTFileAltIdsList(Long raFileDetailsId) {
+        return rartFileAltIdsRepository.findByRAFileDetailsIdList(Arrays.asList(raFileDetailsId));
+    }
+
     public Map<Long, RAFileDetailsLob> getRAFileDetailsLobMap(List<Long> raFileDetailsIdList) {
         List<RAFileDetailsLob> raFileDetailsLobList = raFileDetailsLobRepository.findRAFileDetailsLobByFileId(raFileDetailsIdList);
         Map<Long, RAFileDetailsLob> raFileDetailsLobMap = new HashMap<>();
@@ -96,6 +88,15 @@ public class RAFileStatsService {
             raFileDetailsLobMap.put(raFileDetailsLob.getRaFileDetailsId(), raFileDetailsLob);
         }
         return raFileDetailsLobMap;
+    }
+
+    public Optional<RAFileDetailsLob> getRAFileDetailsLob(Long raFileDetailsId) {
+        List<RAFileDetailsLob> raFileDetailsLobList = raFileDetailsLobRepository.findRAFileDetailsLobByFileId(Arrays.asList(raFileDetailsId));
+        if (raFileDetailsLobList.size() > 0) {
+            return Optional.of(raFileDetailsLobList.get(0));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public RAFileAndErrorStats getRAFileAndErrorStats(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
@@ -109,6 +110,10 @@ public class RAFileStatsService {
 
     public List<RARTConvProcessingDurationStats> getRosConvProcessingDurationStatsList(long raSheetDetailsId) {
         return raConvProcessingDurationStatsRepository.getRAConvProcessingDurationStatsList(raSheetDetailsId);
+    }
+
+    public static long getRosterReceivedTime(RAFileDetails raFileDetails) {
+        return raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : 0;
     }
     public static RASheetProgressInfo getBaseRosterSheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         //TODO received time when created is null
@@ -158,6 +163,7 @@ public class RAFileStatsService {
         return rosterFileProgressInfo;
     }
 
+
     public RAFileAndErrorStats getRAFileAndErrorStatsFromSheetDetailsList(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
         RAFileAndErrorStats raFileAndErrorStats = new RAFileAndErrorStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
                 raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1);
@@ -195,7 +201,7 @@ public class RAFileStatsService {
 
     public RASheetAndStats getRASheetAndStats(RASheetDetails raSheetDetails, String status) {
         RASheetAndStats raSheetAndStats = new RASheetAndStats(raSheetDetails.getId(),
-                raSheetDetails.getTabName(), status);
+                raSheetDetails.getTabName(), status, raSheetDetails.getType());
         raSheetAndStats.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
         raSheetAndStats.setSuccessfulRecordCount(raSheetDetails.getTargetSuccessfulRecordCount());
         raSheetAndStats.setFalloutRecordCount(computeFalloutRecordCount(raSheetDetails));
@@ -211,12 +217,12 @@ public class RAFileStatsService {
         return raFileDetailsMap;
     }
 
-    public Map<Long, List<RASheetDetails>> getRASheetDetailsListMap(List<RAFileDetails> raFileDetailsList, List<RASheetDetails> raSheetDetailsList) {
-        Map<Long, List<RASheetDetails>> raSheetDetailsListMap = new HashMap<>();
-        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-            raSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
-            raSheetDetailsListMap.get(raSheetDetails.getRaFileDetailsId()).add(raSheetDetails);
-        }
-        return raSheetDetailsListMap;
-    }
+//    public Map<Long, List<RASheetDetails>> getRASheetDetailsListMap(List<RAFileDetails> raFileDetailsList, List<RASheetDetails> raSheetDetailsList) {
+//        Map<Long, List<RASheetDetails>> raSheetDetailsListMap = new HashMap<>();
+//        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
+//            raSheetDetailsListMap.putIfAbsent(raSheetDetails.getRaFileDetailsId(), new ArrayList<>());
+//            raSheetDetailsListMap.get(raSheetDetails.getRaFileDetailsId()).add(raSheetDetails);
+//        }
+//        return raSheetDetailsListMap;
+//    }
 }

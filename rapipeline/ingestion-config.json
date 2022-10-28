@@ -1,0 +1,30 @@
+{
+  "name": "Ingestion",
+  "jobs": [
+    {
+      "id": "ingestion",
+      "name": "Ingestion",
+      "noTaskSleepTime": 10,
+      "interTaskSleepTime": 0,
+      "period": [
+        {
+          "dayOfWeek": [
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat",
+            "Sun"
+          ],
+          "startTime": "00:00",
+          "duration": 24,
+          "unit": "H"
+        }
+      ],
+      "minPoolSize": 1,
+      "maxPoolSize": 1,
+      "parallelTasks": 1
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import com.hilabs.roster.dto.RAFalloutErrorInfo;
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.rostertracker.config.RosterConfig;
+import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
 import com.hilabs.rostertracker.dto.RASheetAndColumnErrorStats;
 import com.hilabs.rostertracker.dto.RASheetAndErrorStats;
@@ -57,12 +58,13 @@ public class ErrorReportingController {
 
     @GetMapping("/file-error-stats-list")
     public ResponseEntity<List<RAFileAndErrorStats>> getFileErrorStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                                                           @RequestParam(defaultValue = "100") Integer pageSize,
-                                                                           @RequestParam(defaultValue = "") String market,
-                                                                           @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                           @RequestParam(defaultValue = "-1") Long raFileDetailsId,
-                                                                           @RequestParam(defaultValue = "-1") long startTime,
-                                                                           @RequestParam(defaultValue = "-1") long endTime) {
+                                                                                         @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                         @RequestParam(defaultValue = "") String market,
+                                                                                         @RequestParam(defaultValue = "") String lineOfBusiness,
+                                                                                         @RequestParam(defaultValue = "") String fileName,
+                                                                                         @RequestParam(defaultValue = "") String plmTicketId,
+                                                                                         @RequestParam(defaultValue = "-1") long startTime,
+                                                                                         @RequestParam(defaultValue = "-1") long endTime) {
         try {
             List<Integer> statusCodes = getStatusCodes(RosterFilterType.ERROR_REPORTING);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
@@ -71,12 +73,13 @@ public class ErrorReportingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            List<RAFileDetails> raFileDetailsList = raFileDetailsService
-                    .getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream().map(RAFileDetails::getId).collect(Collectors.toList()), true);
-            List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsList, raSheetDetailsList);
-            return new ResponseEntity<>(raFileAndErrorStatsList, HttpStatus.OK);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
+                    .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
+                            startTime, endTime, statusCodes, limit, offset, true, 0, false);
+            List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
+            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raFileAndErrorStatsList,
+                    raFileDetailsWithSheetsListResponse.getTotalCount());
+            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
         } catch (Exception ex) {
             //TODO fix log
             log.error("Error in getFileErrorStatsList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",
@@ -91,7 +94,8 @@ public class ErrorReportingController {
                                                                                    @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
-                                                                                   @RequestParam(defaultValue = "-1") Long raFileDetailsId,
+                                                                                   @RequestParam(defaultValue = "") String fileName,
+                                                                                   @RequestParam(defaultValue = "") String plmTicketId,
                                                                                    @RequestParam(defaultValue = "-1") long startTime,
                                                                                    @RequestParam(defaultValue = "-1") long endTime) {
         try {
@@ -102,18 +106,17 @@ public class ErrorReportingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            List<RAFileDetails> raFileDetailsList = raFileDetailsService.getRAFileDetailsList(raFileDetailsId, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset);
-            List<RASheetDetails> raSheetDetailsList = raSheetDetailsService.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
-                    .map(RAFileDetails::getId).collect(Collectors.toList()), true);
-            List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsList, raSheetDetailsList);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
+                            startTime, endTime, statusCodes, limit, offset, true, 0, false);
+            List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {
                 for (RASheetAndErrorStats raSheetAndErrorStats : raFileAndErrorStats.getSheetStatsList()) {
                     raSheetAndColumnErrorStatsList.add(new RASheetAndColumnErrorStats(raSheetAndErrorStats.getRaSheetDetailsId(), raSheetAndErrorStats.getSheetName()));
                 }
             }
-            return new ResponseEntity<>(raSheetAndColumnErrorStatsList, HttpStatus.OK);
+            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raSheetAndColumnErrorStatsList, 1000L);
+            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
         } catch (Exception ex) {
             //TODO fix log
             log.error("Error in getFileErrorStatsList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",

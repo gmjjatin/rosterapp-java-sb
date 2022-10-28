@@ -1,10 +1,10 @@
 {
-  "name": "Roster Pipeline",
+  "name": "ISF",
   "jobs": [
     {
-      "id": "roster_ingestion",
-      "name": "Roster Ingestion",
-      "noTaskSleepTime": 1,
+      "id": "isf",
+      "name": "ISF",
+      "noTaskSleepTime": 10,
       "interTaskSleepTime": 0,
       "period": [
         {

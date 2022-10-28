@@ -1,7 +1,6 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAAuthPrivilege;
-import com.hilabs.roster.entity.RAAuthRole;
 import com.hilabs.rostertracker.config.RosterConfig;
 import com.hilabs.rostertracker.dto.CollectionResponse;
 import com.hilabs.rostertracker.dto.JWTAuthentication;
@@ -16,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,11 +22,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 
@@ -82,7 +80,7 @@ public class JwtAuthenticationController {
     public ResponseEntity<CollectionResponse<RAAuthPrivilege>> getUserPrivileges(){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         List<RAAuthPrivilege> userPrivileges = jwtUserDetailsService.getUserPrivileges(username);
-        return new ResponseEntity<>(new CollectionResponse<RAAuthPrivilege>(1L,new Long(userPrivileges.size()),userPrivileges,new Long(userPrivileges.size())), HttpStatus.OK);
+        return new ResponseEntity<>(new CollectionResponse<RAAuthPrivilege>(1, new Integer(userPrivileges.size()),userPrivileges,new Long(userPrivileges.size())), HttpStatus.OK);
 
     }
 

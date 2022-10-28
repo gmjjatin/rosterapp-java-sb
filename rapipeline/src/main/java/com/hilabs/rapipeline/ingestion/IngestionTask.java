@@ -84,9 +84,9 @@ public class IngestionTask extends Task {
             return;
         }
         try {
-            if (!ingestionTaskService.shouldRun(raFileMetaData)) {
-                return;
-            }
+//            if (!ingestionTaskService.shouldRun(raFileMetaData)) {
+//                return;
+//            }
             ingestionTaskRunningMap.put(raFileMetaData.getRaPlmRoFileDataId(), fileName);
 
             //Already checked in validateMetaDataAndGetErrorList
@@ -161,6 +161,7 @@ public class IngestionTask extends Task {
                         stacktrace, 1);
             }
         } finally {
+            log.info("Finally in Ingestion task for {}", gson.toJson(getTaskData()));
             ingestionTaskRunningMap.remove(raFileMetaData.getRaPlmRoFileDataId());
         }
     }
@@ -213,7 +214,7 @@ public class IngestionTask extends Task {
         String fileName = raFileMetaData.getFileName();
         //TODO insert ticket ids
         String market = raFileMetaData.getCntState();
-        String lob = raFileMetaData.getPlmNetwork();
+        String lob = raFileMetaData.getLob();
         Long raFileDetailsId = raFileDetailsService.insertRAFileDetails(raFileMetaData.getOrgName(), fileName,
                 standardizedFileName, market, statusCode);
         raFileMetaDataDetailsService.insertRAFileDetailsLob(raFileDetailsId, lob, 1);
@@ -230,7 +231,7 @@ public class IngestionTask extends Task {
         if (errorDetails != null) {
             //TODO what should be errorCodeDetailsId
             raErrorLogsService.insertRASystemErrors(raFileDetailsId, errorDetails.getErrorCode(),
-                    errorDetails.getErrorDescription());
+                    errorDetails.getErrorDescription(), statusCode);
         }
         return raFileDetailsId;
     }
