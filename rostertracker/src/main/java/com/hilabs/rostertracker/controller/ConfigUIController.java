@@ -66,7 +66,7 @@ public class ConfigUIController {
             endTime = startAndEndTime.endTime;
             //TODO demo
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, market,
-                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 1);
+                    lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 1, true);
             List<Long> raFileDetailsIdList = raFileDetailsWithSheetsListResponse.getItems().stream()
                     .map(p -> p.getRaFileDetails().getId()).collect(Collectors.toList());
             Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(raFileDetailsIdList);

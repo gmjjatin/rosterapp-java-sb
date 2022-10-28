@@ -20,8 +20,7 @@ import java.util.stream.Collectors;
 
 import static com.hilabs.roster.util.FileUtils.getAdjustedString;
 import static com.hilabs.roster.util.RosterStageUtils.*;
-import static com.hilabs.rostertracker.utils.SheetTypeUtils.allTypeList;
-import static com.hilabs.rostertracker.utils.SheetTypeUtils.dataTypeList;
+import static com.hilabs.rostertracker.utils.SheetTypeUtils.*;
 
 @Service
 @Log4j2
@@ -68,16 +67,17 @@ public class RAFileDetailsService {
 //    }
 
     public ListResponse<RAFileDetailsWithSheets> getRAFileDetailsWithSheetsList(String fileName, String market, String lineOfBusiness, long startTime, long endTime,
-                                                            List<Integer> statusCodes, int limit, int offset, boolean onlyDataSheets, int minSheetCount) {
+                                                            List<Integer> statusCodes, int limit, int offset, boolean onlyDataSheets, int minSheetCount, boolean alsoConsiderEmptySheets) {
         List<String> types = onlyDataSheets ? dataTypeList : allTypeList;
         Date startDate = new Date(startTime);
         Date endDate = new Date(endTime);
         return getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness, startDate, endDate,
-                statusCodes, limit, offset, types, minSheetCount);
+                statusCodes, limit, offset, types, minSheetCount, alsoConsiderEmptySheets);
     }
 
     public ListResponse<RAFileDetailsWithSheets> getRAFileDetailsWithSheetsList(String fileName, String market, String lineOfBusiness, Date startDate, Date endDate,
-                                                    List<Integer> statusCodes, int limit, int offset, List<String> types, int minSheetCount) {
+                                                    List<Integer> statusCodes, int limit, int offset, List<String> types,
+                                                                                int minSheetCount, boolean alsoConsiderEmptySheets) {
         List<RAFileDetails> raFileDetailsList = new ArrayList<>();
         Integer count = 0;
         //TODO handle limit and offset
@@ -97,8 +97,19 @@ public class RAFileDetailsService {
                     limit, offset, types, minSheetCount);
             count = raFileDetailsRepository.countRAFileDetailsListBetweenDates(fileName,startDate, endDate, statusCodes, types, minSheetCount);
         }
-        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
+        List<RASheetDetails> raSheetDetailsListAll = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
                 .map(RAFileDetails::getId).collect(Collectors.toList()), types);
+        List<RASheetDetails> raSheetDetailsList = new ArrayList<>();
+        if (!alsoConsiderEmptySheets) {
+            for (RASheetDetails raSheetDetails : raSheetDetailsListAll) {
+                if (isDataSheet(raSheetDetails.getType()) && (raSheetDetails.getRosterRecordCount() == null || raSheetDetails.getRosterRecordCount() == 0)) {
+                    continue;
+                }
+                raSheetDetailsList.add(raSheetDetails);
+            }
+        } else {
+            raSheetDetailsList = raSheetDetailsListAll;
+        }
         return new ListResponse<RAFileDetailsWithSheets>(getRAFileDetailsWithSheets(raFileDetailsList, raSheetDetailsList),
                 new Long(count));
     }

@@ -74,7 +74,7 @@ public class ErrorReportingController {
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
                     .getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset, true, 0);
+                            startTime, endTime, statusCodes, limit, offset, true, 0, false);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raFileAndErrorStatsList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
@@ -105,7 +105,7 @@ public class ErrorReportingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset, true, 0);
+                            startTime, endTime, statusCodes, limit, offset, true, 0, false);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {

@@ -36,4 +36,8 @@ public class SheetTypeUtils {
         list.addAll(getAllPossibleCombos("INFORMATION"));
         return list;
     }
-}
+
+    public static boolean isDataSheet(String type) {
+        return type != null && type.equalsIgnoreCase("DATA");
+    }
+ }
