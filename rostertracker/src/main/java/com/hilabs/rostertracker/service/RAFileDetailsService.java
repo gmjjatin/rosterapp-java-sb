@@ -72,7 +72,8 @@ public class RAFileDetailsService {
         List<String> types = onlyDataSheets ? dataTypeList : allTypeList;
         Date startDate = new Date(startTime);
         Date endDate = new Date(endTime);
-        return getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness, startDate, endDate, statusCodes, limit, offset, types, minSheetCount);
+        return getRAFileDetailsWithSheetsList(fileName, market, lineOfBusiness, startDate, endDate,
+                statusCodes, limit, offset, types, minSheetCount);
     }
 
     public ListResponse<RAFileDetailsWithSheets> getRAFileDetailsWithSheetsList(String fileName, String market, String lineOfBusiness, Date startDate, Date endDate,

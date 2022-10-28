@@ -51,6 +51,7 @@ public class RAFileDetails extends BaseEntity {
     private String lastApprovedBy;
 
     @Version
+    @Column(name = "obj_vrsn_no")
     private Long version;
 
     public RAFileDetails() {}
