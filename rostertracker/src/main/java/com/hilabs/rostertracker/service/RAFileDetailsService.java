@@ -43,8 +43,6 @@ public class RAFileDetailsService {
 
     @Autowired
     RAFileDetailsLobRepository raFileDetailsLobRepository;
-    List<String> allMarkets = null;
-    private List<String> allLineOfBusiness = null;
 
 //    public RAFileDetailsListAndSheetList getRosterSourceListAndFilesList(Long raFileDetailsId, String market, String lineOfBusiness,
 //                                                                         long startTime, long endTime, int limit, int offset, List<Integer> statusCodes) {
@@ -202,17 +200,11 @@ public class RAFileDetailsService {
     }
 
     public List<String> findAllMarkets(List<Integer> statusCodes) {
-        if (allMarkets == null) {
-            allMarkets = raFileDetailsRepository.findAllMarkets(statusCodes);
-        }
-        return allMarkets;
+        return raFileDetailsRepository.findAllMarkets(statusCodes);
     }
 
     public List<String> findAllLineOfBusiness() {
-        if (allLineOfBusiness == null) {
-            allLineOfBusiness = raFileDetailsLobRepository.findAllLineOfBusinesses();
-        }
-        return allLineOfBusiness;
+        return raFileDetailsLobRepository.findAllLineOfBusinesses();
     }
 
     public List<RAFileDetails> getRAFileDetailsListFromSearchStr(String searchStr) {
