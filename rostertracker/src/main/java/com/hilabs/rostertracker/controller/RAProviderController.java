@@ -80,6 +80,9 @@ public class RAProviderController {
             List<String> allLineOfBusiness = raFileDetailsService.findAllLineOfBusiness();
             List<String> flattenedList = new ArrayList<>();
             for (String lineOfBusiness : allLineOfBusiness) {
+                if (lineOfBusiness == null) {
+                    continue;
+                }
                 String[] parts = lineOfBusiness.split(",");
                 for (String part : parts) {
                     if (part != null && !part.trim().isEmpty()) {
