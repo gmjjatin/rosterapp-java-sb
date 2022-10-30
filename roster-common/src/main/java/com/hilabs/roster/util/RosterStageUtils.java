@@ -3,6 +3,8 @@ package com.hilabs.roster.util;
 import com.hilabs.roster.entity.RARTConvProcessingDurationStats;
 import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +13,7 @@ import java.util.stream.Collectors;
 import static com.hilabs.roster.util.RAStatusEntity.fileStatusEntities;
 import static com.hilabs.roster.util.RAStatusEntity.sheetStatusEntities;
 
+@Slf4j
 public class RosterStageUtils {
     //TODO complete
     public static RosterStageState getRosterStageState(RosterSheetProcessStage rosterSheetProcessStage,
@@ -55,7 +58,7 @@ public class RosterStageUtils {
                 continue;
             }
             Integer statusCode = rartConvProcessingDurationStats.getStatusCode();
-            if (!raStatusEntities.stream().anyMatch(p -> p.getCode() == statusCode)) {
+            if (raStatusEntities.stream().noneMatch(p -> statusCode.equals(p.getCode()))) {
                 continue;
             }
             Date completedDate = rartConvProcessingDurationStats.getCompletionDate();
@@ -71,6 +74,8 @@ public class RosterStageUtils {
             }
             timeTakenInMillis += completedDate.getTime() - startDate.getTime();
         }
+        log.info("raConvProcessingDurationStatsList size {} raStatusEntities {} rosterSheetProcessStage {} startTime {} endTime {} timeTakenInMillis {}",
+                raConvProcessingDurationStatsList.size(), raStatusEntities.size(), rosterSheetProcessStage, startTime, endTime, timeTakenInMillis);
         return new ProcessDurationInfo(startTime, endTime, timeTakenInMillis);
     }
 

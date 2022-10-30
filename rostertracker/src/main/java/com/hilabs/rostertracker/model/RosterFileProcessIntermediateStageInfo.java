@@ -11,24 +11,23 @@ import java.util.List;
 public class RosterFileProcessIntermediateStageInfo extends BaseRosterFileProcessStageInfo {
 
     private long processThresholdInMillis;
-
-    private List<FalloutReportElement> falloutReport;
+    private boolean hasFallouts;
 
     public RosterFileProcessIntermediateStageInfo(RosterSheetProcessStage rosterFileProcessStage) {
-        super(rosterFileProcessStage, RosterStageState.NOT_STARTED, -1, 0);
+        super(rosterFileProcessStage, RosterStageState.NOT_STARTED, -1, 0, -1, new ArrayList<>());
         this.processThresholdInMillis = -1;
-        this.falloutReport = new ArrayList<>();
+        this.hasFallouts = false;
     }
 
-    public RosterFileProcessIntermediateStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis, List<FalloutReportElement> falloutReport) {
+    public RosterFileProcessIntermediateStageInfo(BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo, long processingThresholdInMillis, boolean hasFallouts) {
         super(baseRosterFileProcessStageInfo);
         this.processThresholdInMillis = processingThresholdInMillis;
-        this.falloutReport = falloutReport;
+        this.hasFallouts = hasFallouts;
     }
 
     public RosterFileProcessIntermediateStageInfo(RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo) {
         super(rosterFileProcessIntermediateStageInfo);
         this.processThresholdInMillis = rosterFileProcessIntermediateStageInfo.processThresholdInMillis;
-        this.falloutReport = rosterFileProcessIntermediateStageInfo.falloutReport;
+        this.hasFallouts = rosterFileProcessIntermediateStageInfo.hasFallouts;
     }
 }
