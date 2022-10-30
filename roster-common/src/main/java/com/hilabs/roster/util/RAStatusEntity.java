@@ -41,10 +41,12 @@ public class RAStatusEntity {
             new RAStatusEntity(143, AUTO_MAPPED, "Post Normalization Column Mapping Failed", true, true, false),
             new RAStatusEntity(145, AUTO_MAPPED, "Post Normalization Column Mapping Completed", true, false, false),
 
+            new RAStatusEntity(150, ISF_GENERATED, "ISF Conversion In Queue", false, false, false),
             new RAStatusEntity(151, ISF_GENERATED, "ISF Conversion In Progress", false, false, false),
             new RAStatusEntity(153, ISF_GENERATED, "ISF Conversion Failed", true, true, false),
             new RAStatusEntity(155, ISF_GENERATED, "ISF Conversion Completed", true, false, false),
 
+            new RAStatusEntity(160, CONVERTED_DART, "ISF to DART Conversion In Queue", false, false, false),
             new RAStatusEntity(161, CONVERTED_DART, "ISF to DART Conversion In Progress", false, false, false),
             new RAStatusEntity(163, CONVERTED_DART, "ISF to DART Conversion Failed", true, true, false),
             new RAStatusEntity(165, CONVERTED_DART, "ISF to DART Conversion Completed", true, false, false)
