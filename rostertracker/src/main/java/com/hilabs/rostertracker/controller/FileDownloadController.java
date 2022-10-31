@@ -89,6 +89,33 @@ public class FileDownloadController {
         }
     }
 
+    @RequestMapping(path = "/download-dart-report", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> downloadDartReport(@RequestParam() Long raSheetDetailsId) throws IOException {
+        try {
+            Optional<RASheetDetails> optionalRASheetDetails = raSheetDetailsService.findRASheetDetailsById(raSheetDetailsId);
+            if (!optionalRASheetDetails.isPresent()) {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+            RASheetDetails raSheetDetails = optionalRASheetDetails.get();
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raSheetDetails.getRaFileDetailsId());
+            if (!optionalRAFileDetails.isPresent()) {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+            RAFileDetails raFileDetails = optionalRAFileDetails.get();
+
+            String standardizedFileName = raFileDetails.getStandardizedFileName();
+            if (standardizedFileName != null && standardizedFileName.endsWith(".xlsx")) {
+                standardizedFileName = removeFileExtensionFromExcelFile(raFileDetails.getStandardizedFileName());
+            }
+            String trackerFileName = String.format("%s_%s_Tracker.xlsx", standardizedFileName, raSheetDetails.getId());
+            File file = new File(rosterConfig.getRaTargetFolder(), trackerFileName);
+            return getDownloadFileResponseEntity(file);
+        } catch (Exception ex) {
+            log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
+        }
+    }
+
     //
     public ResponseEntity<InputStreamResource> getDownloadFileResponseEntity(File file) throws IOException {
         HttpHeaders headers = new HttpHeaders();

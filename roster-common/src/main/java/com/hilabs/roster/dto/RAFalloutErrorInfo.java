@@ -2,6 +2,6 @@ package com.hilabs.roster.dto;
 
 public interface RAFalloutErrorInfo  {
     String getCategory();
-    String getErrorType();
+    String getDescription();
     int getCount();
 }

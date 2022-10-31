@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class RosterStats {
-    private Long rosterRecordCount;
-    private Long successfulRecordCount;
-    private Long falloutRecordCount;
-    private Long manualReviewRecordCount;
+    private long rosterRecordCount;
+    private long successfulRecordCount;
+    private long falloutRecordCount;
+    private long manualReviewRecordCount;
 
     public RosterStats() {}
 
