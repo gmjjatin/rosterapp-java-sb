@@ -2,18 +2,10 @@ package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.dto.RAFalloutErrorInfo;
 import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.rostertracker.config.RosterConfig;
 import com.hilabs.rostertracker.dto.*;
-import com.hilabs.rostertracker.dto.RAFileAndErrorStats;
-import com.hilabs.rostertracker.dto.RASheetAndColumnErrorStats;
-import com.hilabs.rostertracker.dto.RASheetAndErrorStats;
-import com.hilabs.rostertracker.dto.RASheetFalloutReport;
 import com.hilabs.rostertracker.model.RosterFilterType;
-import com.hilabs.rostertracker.service.RAFalloutReportService;
-import com.hilabs.rostertracker.service.RAFileDetailsService;
-import com.hilabs.rostertracker.service.RAFileStatsService;
-import com.hilabs.rostertracker.service.RASheetDetailsService;
+import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
@@ -31,9 +23,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/error-reporting")
@@ -54,10 +43,13 @@ public class ErrorReportingController {
     RASheetDetailsService raSheetDetailsService;
 
     @Autowired
+    RosterStageService rosterStageService;
+
+    @Autowired
     private RosterConfig rosterConfig;
 
     @GetMapping("/file-error-stats-list")
-    public ResponseEntity<List<RAFileAndErrorStats>> getFileErrorStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<List<RAFileAndErrorStats>> getFileErrorStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                          @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                          @RequestParam(defaultValue = "") String market,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -66,7 +58,7 @@ public class ErrorReportingController {
                                                                                          @RequestParam(defaultValue = "-1") long startTime,
                                                                                          @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes(RosterFilterType.ERROR_REPORTING);
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.ERROR_REPORTING);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
@@ -90,7 +82,7 @@ public class ErrorReportingController {
 
     //TODO manikanta fix the API
     @GetMapping("/sheet-error-stats-list")
-    public ResponseEntity<List<RASheetAndColumnErrorStats>> getSheetErrorStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<List<RASheetAndColumnErrorStats>> getSheetErrorStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                    @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -99,7 +91,7 @@ public class ErrorReportingController {
                                                                                    @RequestParam(defaultValue = "-1") long startTime,
                                                                                    @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes(RosterFilterType.ERROR_REPORTING);
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.ERROR_REPORTING);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();

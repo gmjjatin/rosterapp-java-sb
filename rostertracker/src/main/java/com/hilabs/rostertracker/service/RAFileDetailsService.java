@@ -19,7 +19,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.hilabs.roster.util.FileUtils.getAdjustedString;
-import static com.hilabs.roster.util.RosterStageUtils.*;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.*;
 
 @Service
@@ -31,6 +30,9 @@ public class RAFileDetailsService {
 
     @Autowired
     RASheetDetailsRepository raSheetDetailsRepository;
+
+    @Autowired
+    RosterStageService rosterStageService;
 
     @Autowired
     private RARCRosterISFMapService rarcRosterISFMapService;
@@ -222,20 +224,20 @@ public class RAFileDetailsService {
         return RosterUtils.removeDuplicateRAProvList(allRAProvDetailsList);
     }
 
-    public static List<Integer> getStatusCodes(RosterFilterType rosterFilterType) {
+    public List<Integer> getStatusCodes(RosterFilterType rosterFilterType) {
         if (rosterFilterType == null) {
-            return getNonFailedWithoutNonCompatibleFileStatusCodes();
+            return rosterStageService.getNonFailedFileStatusCodes();
         } else if (rosterFilterType == RosterFilterType.ROSTER_TRACKER) {
-            return getNonFailedWithoutNonCompatibleFileStatusCodes();
+            return rosterStageService.getNonFailedFileStatusCodes();
         } else if (rosterFilterType == RosterFilterType.ERROR_REPORTING) {
-            return getNonFailedWithoutNonCompatibleFileStatusCodes();
+            return rosterStageService.getNonFailedFileStatusCodes();
         } else if (rosterFilterType == RosterFilterType.CONFIGURATOR) {
-            List<Integer> statusCodes = getNonFailedFileStatusCodes();
+            List<Integer> statusCodes = rosterStageService.getNonFailedFileStatusCodes();
             return statusCodes.stream().filter(p -> p >= 27).collect(Collectors.toList());
         } else if (rosterFilterType == RosterFilterType.NON_COMPATIBLE) {
-            return getFailedAndNonCompatibleStatusCodes();
+            return rosterStageService.getFailedFileStatusCodes();
         }
-        return getNonFailedWithoutNonCompatibleFileStatusCodes();
+        return rosterStageService.getNonFailedFileStatusCodes();
     }
 
     public void updateManualActionRequiredInRAFileDetails(Long raFileDetailsId, Integer manualActionRequired) {

@@ -9,8 +9,6 @@ import com.hilabs.roster.util.ProcessDurationInfo;
 import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.utils.Utils;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hilabs.roster.util.RosterStageUtils.*;
 import static com.hilabs.rostertracker.utils.RosterUtils.computeFalloutRecordCount;
 
 @Service
@@ -41,6 +38,9 @@ public class RAFileStatsService {
 
     @Autowired
     private RAStatusService raStatusService;
+
+    @Autowired
+    private RosterStageService rosterStageService;
 
     public List<RAFileAndErrorStats> getRAFileAndErrorStats(List<RAFileDetailsWithSheets> raFileDetailsWithSheetsList) {
         List<RAFileAndErrorStats> raFileAndErrorStatsList = new ArrayList<>();
@@ -165,7 +165,7 @@ public class RAFileStatsService {
         if (rosterSheetProcessStage == RosterSheetProcessStage.ROSTER_RECEIVED) {
             processDurationInfo = new ProcessDurationInfo(fileReceivedTime, fileReceivedTime, 0);
         } else {
-            processDurationInfo = computeProcessDurationInfo(raConvProcessingDurationStatsList, rosterSheetProcessStage);
+            processDurationInfo = rosterStageService.computeProcessDurationInfo(raConvProcessingDurationStatsList, rosterSheetProcessStage);
         }
 
         long endTime = rosterStageState == RosterStageState.COMPLETED ? processDurationInfo.getEndTime() : -1;
@@ -180,21 +180,21 @@ public class RAFileStatsService {
         RASheetProgressInfo rosterFileProgressInfo = getBaseRosterSheetProgressInfo(raFileDetails, raSheetDetails);
         List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList = getRosConvProcessingDurationStatsList(raSheetDetails.getId());
         long rosterReceivedTime = getRosterReceivedTime(raFileDetails);
-        RosterStageState rosterReceivedRosterStageState = getRosterStageState(RosterSheetProcessStage.ROSTER_RECEIVED, raSheetDetails.getStatusCode());
+        RosterStageState rosterReceivedRosterStageState = rosterStageService.getRosterStageState(RosterSheetProcessStage.ROSTER_RECEIVED, raSheetDetails.getStatusCode());
         if (rosterReceivedRosterStageState != RosterStageState.NOT_STARTED) {
             RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails,
                     RosterSheetProcessStage.ROSTER_RECEIVED, rosterReceivedRosterStageState, raSheetDetails.getRosterRecordCount(), raConvProcessingDurationStatsList, rosterReceivedTime);
             rosterFileProgressInfo.setRosterReceived(new RosterReceivedStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
-        RosterStageState autoMappedRosterStageState = getRosterStageState(RosterSheetProcessStage.AUTO_MAPPED, raSheetDetails.getStatusCode());
+        RosterStageState autoMappedRosterStageState = rosterStageService.getRosterStageState(RosterSheetProcessStage.AUTO_MAPPED, raSheetDetails.getStatusCode());
         if (autoMappedRosterStageState != RosterStageState.NOT_STARTED) {
             RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails, RosterSheetProcessStage.AUTO_MAPPED,
                     autoMappedRosterStageState, raSheetDetails.getRosterRecordCount(), raConvProcessingDurationStatsList, rosterReceivedTime);
             rosterFileProgressInfo.setAutoMapped(new AutoMappedStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
-        RosterStageState isfRosterStageState = getRosterStageState(RosterSheetProcessStage.ISF_GENERATED, raSheetDetails.getStatusCode());
+        RosterStageState isfRosterStageState = rosterStageService.getRosterStageState(RosterSheetProcessStage.ISF_GENERATED, raSheetDetails.getStatusCode());
         if (isfRosterStageState != RosterStageState.NOT_STARTED) {
             RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails,
                     RosterSheetProcessStage.ISF_GENERATED,
@@ -202,7 +202,7 @@ public class RAFileStatsService {
             rosterFileProgressInfo.setIsf(new ISFStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
-        RosterStageState dartRosterStageState = getRosterStageState(RosterSheetProcessStage.CONVERTED_DART, raSheetDetails.getStatusCode());
+        RosterStageState dartRosterStageState = rosterStageService.getRosterStageState(RosterSheetProcessStage.CONVERTED_DART, raSheetDetails.getStatusCode());
         if (dartRosterStageState != RosterStageState.NOT_STARTED) {
             RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails,
                     RosterSheetProcessStage.CONVERTED_DART,
@@ -210,7 +210,7 @@ public class RAFileStatsService {
             rosterFileProgressInfo.setConvertedDart(new ConvertedDartStageInfo(rosterFileProcessIntermediateStageInfo));
         }
 
-        RosterStageState spsLoadRosterStageState = getRosterStageState(RosterSheetProcessStage.SPS_LOAD, raSheetDetails.getStatusCode());
+        RosterStageState spsLoadRosterStageState = rosterStageService.getRosterStageState(RosterSheetProcessStage.SPS_LOAD, raSheetDetails.getStatusCode());
         if (spsLoadRosterStageState != RosterStageState.NOT_STARTED) {
             RosterFileProcessIntermediateStageInfo rosterFileProcessIntermediateStageInfo  = getRosterFileProcessIntermediateStageInfo(raSheetDetails,
                     RosterSheetProcessStage.SPS_LOAD,

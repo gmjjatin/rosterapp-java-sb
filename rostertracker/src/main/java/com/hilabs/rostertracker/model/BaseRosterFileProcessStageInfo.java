@@ -21,6 +21,8 @@ public class BaseRosterFileProcessStageInfo {
 
     private List<FalloutReportElement> falloutReport;
 
+    public BaseRosterFileProcessStageInfo() {}
+
     public BaseRosterFileProcessStageInfo(RosterSheetProcessStage rosterSheetProcessStage) {
         this.fileProcessStage = rosterSheetProcessStage;
         this.state = RosterStageState.NOT_STARTED;

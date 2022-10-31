@@ -2,10 +2,10 @@ package com.hilabs.rostertracker.model;
 
 import com.hilabs.roster.model.RosterSheetProcessStage;
 import com.hilabs.roster.model.RosterStageState;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Data
 public class RosterFileProcessIntermediateStageInfo extends BaseRosterFileProcessStageInfo {
