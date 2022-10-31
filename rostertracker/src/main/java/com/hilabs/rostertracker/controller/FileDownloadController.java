@@ -97,18 +97,7 @@ public class FileDownloadController {
                 return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
             }
             RASheetDetails raSheetDetails = optionalRASheetDetails.get();
-            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raSheetDetails.getRaFileDetailsId());
-            if (!optionalRAFileDetails.isPresent()) {
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-            }
-            RAFileDetails raFileDetails = optionalRAFileDetails.get();
-
-            String standardizedFileName = raFileDetails.getStandardizedFileName();
-            if (standardizedFileName != null && standardizedFileName.endsWith(".xlsx")) {
-                standardizedFileName = removeFileExtensionFromExcelFile(raFileDetails.getStandardizedFileName());
-            }
-            String trackerFileName = String.format("%s_%s_Tracker.xlsx", standardizedFileName, raSheetDetails.getId());
-            File file = new File(rosterConfig.getRaTargetFolder(), trackerFileName);
+            File file = new File(raSheetDetails.getOutFileName());
             return getDownloadFileResponseEntity(file);
         } catch (Exception ex) {
             log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
