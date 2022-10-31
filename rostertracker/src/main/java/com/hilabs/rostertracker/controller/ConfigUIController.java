@@ -1,13 +1,14 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.dto.AltIdType;
-import com.hilabs.roster.entity.*;
+import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RAFileDetailsLob;
+import com.hilabs.roster.entity.RARTFileAltIds;
 import com.hilabs.roster.util.RAStatusEntity;
 import com.hilabs.rostertracker.dto.*;
-import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
-import com.hilabs.rostertracker.dto.RosterSheetDetails;
-import com.hilabs.rostertracker.dto.SheetDetails;
-import com.hilabs.rostertracker.model.*;
+import com.hilabs.rostertracker.model.ConfigUiFileData;
+import com.hilabs.rostertracker.model.RosterFilterType;
+import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
@@ -23,7 +24,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.allTypeList;
 
 @RestController
@@ -48,8 +48,11 @@ public class ConfigUIController {
     @Autowired
     private RAStatusService raStatusService;
 
+    @Autowired
+    private RosterStageService rosterStageService;
+
     @GetMapping("/valid-file-list")
-    public ResponseEntity<CollectionResponse<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<CollectionResponse<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                          @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                          @RequestParam(defaultValue = "") String market,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -58,7 +61,7 @@ public class ConfigUIController {
                                                                                          @RequestParam(defaultValue = "-1") long startTime,
                                                                                          @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes(RosterFilterType.CONFIGURATOR);
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.CONFIGURATOR);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
@@ -76,7 +79,7 @@ public class ConfigUIController {
             for (RAFileDetailsWithSheets raFileDetailsWithSheets : raFileDetailsWithSheetsListResponse.getItems()) {
                 RAFileDetails raFileDetails = raFileDetailsWithSheets.getRaFileDetails();
                 String status = raStatusService.getDisplayStatus(raFileDetails.getStatusCode());
-                Optional<RAStatusEntity> optionalRAStatusEntity = RAStatusEntity.getRAFileStatusEntity(raFileDetails.getStatusCode());
+                Optional<RAStatusEntity> optionalRAStatusEntity = rosterStageService.getRAFileStatusEntity(raFileDetails.getStatusCode());
                 boolean isManualActionReq = (raFileDetails.getManualActionRequired() != null && raFileDetails.getManualActionRequired() == 1);
                 String lob = raFileDetailsLobMap.containsKey(raFileDetails.getId()) ? raFileDetailsLobMap.get(raFileDetails.getId()).getLob() : "-";
                 List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileDetails.getId()) ? rartFileAltIdsListMap

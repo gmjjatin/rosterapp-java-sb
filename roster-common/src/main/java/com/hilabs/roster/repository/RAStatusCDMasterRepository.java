@@ -14,4 +14,10 @@ public interface RAStatusCDMasterRepository extends JpaRepository<RAStatusCDMast
 
     @Query(value = "select * from RA_RT_STATUS_CD_MSTR where status_cd = :statusCode order by creat_dt desc fetch next 1 rows only", nativeQuery = true)
     Optional<RAStatusCDMaster> getRAStatusCDMasterListForCode(@Param("statusCode") Integer statusCode);
+
+    @Query(value = "select * from RA_RT_STATUS_CD_MSTR where status_cd < 100 order by ", nativeQuery = true)
+    List<RAStatusCDMaster> getAllFileRAStatusCDMasterList();
+
+    @Query(value = "select * from RA_RT_STATUS_CD_MSTR where status_cd >= 100 order by ", nativeQuery = true)
+    List<RAStatusCDMaster> getAllSheetRAStatusCDMasterList();
 }
