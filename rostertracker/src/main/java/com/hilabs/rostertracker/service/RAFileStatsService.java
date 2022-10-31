@@ -9,6 +9,8 @@ import com.hilabs.roster.util.ProcessDurationInfo;
 import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.utils.Utils;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -121,28 +123,29 @@ public class RAFileStatsService {
                 raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : 0);
     }
 
+
     //TODO
-    public List<FalloutReportElement> getFalloutReport(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage) {
+    public FalloutReportInfo getFalloutReport(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage) {
         if (rosterSheetProcessStage == RosterSheetProcessStage.ROSTER_RECEIVED) {
-            return Arrays.asList(new FalloutReportElement("Records", String.valueOf(raSheetDetails.getRosterRecordCount())));
+            return new FalloutReportInfo(Arrays.asList(new FalloutReportElement("Records", String.valueOf(raSheetDetails.getRosterRecordCount()))), false);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.AUTO_MAPPED) {
-            return Arrays.asList();
+            return new FalloutReportInfo(Arrays.asList(), false);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.ISF_GENERATED) {
             //TODO
             Integer falloutCount = rartFalloutReportRepository.countRAFalloutErrorInfo(raSheetDetails.getId(), "ISF");
-            return Arrays.asList(
+            return new FalloutReportInfo(Arrays.asList(
                     new FalloutReportElement("Records", raSheetDetails.getIsfRowCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRowCount())),
                     new FalloutReportElement("ISF validation fallouts", falloutCount == null ? "-" : String.valueOf(falloutCount))
-            );
+            ), falloutCount != null && falloutCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.CONVERTED_DART) {
             Integer falloutCount = rartFalloutReportRepository.countRAFalloutErrorInfo(raSheetDetails.getId(), "DART");
             //TODO
-            return Arrays.asList(
+            return new FalloutReportInfo(Arrays.asList(
                     new FalloutReportElement("Records", raSheetDetails.getOutRowCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRowCount())),
                     new FalloutReportElement("Dart validation fallouts", falloutCount == null ? "-" : String.valueOf(falloutCount))
-            );
+            ), falloutCount != null && falloutCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.SPS_LOAD) {
-            return Arrays.asList(
+            return new FalloutReportInfo(Arrays.asList(
                     new FalloutReportElement("DART rows submitted by DART UI", "-"),
                     new FalloutReportElement("DART UI fallouts", "-"),
                     new FalloutReportElement("SPS transactions", "-"),
@@ -150,9 +153,10 @@ public class RAFileStatsService {
                     new FalloutReportElement("Warning", "-"),
                     new FalloutReportElement("Failure", "-"),
                     new FalloutReportElement("Success %", "-")
-            );
+                    //TODO demo fix
+            ), false);
         }
-        return new ArrayList<>();
+        return new FalloutReportInfo(Arrays.asList(), false);
     }
 
     public RosterFileProcessIntermediateStageInfo getRosterFileProcessIntermediateStageInfo(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage, RosterStageState rosterStageState,
@@ -165,11 +169,11 @@ public class RAFileStatsService {
         }
 
         long endTime = rosterStageState == RosterStageState.COMPLETED ? processDurationInfo.getEndTime() : -1;
+        FalloutReportInfo falloutReportInfo = getFalloutReport(raSheetDetails, rosterSheetProcessStage);
         BaseRosterFileProcessStageInfo baseRosterFileProcessStageInfo = new BaseRosterFileProcessStageInfo(rosterSheetProcessStage,
-                rosterStageState, recordCount, processDurationInfo.getTimeTakenInMillis(), endTime,
-                getFalloutReport(raSheetDetails, rosterSheetProcessStage));
+                rosterStageState, recordCount, processDurationInfo.getTimeTakenInMillis(), endTime, falloutReportInfo.getFalloutReportElements());
 
-        return new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo, Utils.MILLIS_IN_HOUR, true);
+        return new RosterFileProcessIntermediateStageInfo(baseRosterFileProcessStageInfo, Utils.MILLIS_IN_HOUR, falloutReportInfo.isHasFallouts());
     }
 
     public RASheetProgressInfo getRASheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
