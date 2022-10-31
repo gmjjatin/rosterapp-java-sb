@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class RosterStats {
-    private int rosterRecordCount;
-    private int successfulRecordCount;
-    private int falloutRecordCount;
-    private int manualReviewRecordCount;
+    private Long rosterRecordCount;
+    private Long successfulRecordCount;
+    private Long falloutRecordCount;
+    private Long manualReviewRecordCount;
 
     public RosterStats() {}
 
@@ -29,5 +29,4 @@ public class RosterStats {
         this.falloutRecordCount += rosterErrorStats.falloutRecordCount;
         this.manualReviewRecordCount += rosterErrorStats.manualReviewRecordCount;
     }
-
 }

@@ -39,9 +39,9 @@ public enum RosterSheetProcessStage {
             return AUTO_MAPPED;
         } else if (type.toLowerCase().startsWith("isf")) {
             return ISF_GENERATED;
-        } else if (type.toLowerCase().startsWith("dart") && type.toLowerCase().startsWith("generation")) {
+        } else if (type.toLowerCase().startsWith("dart") && type.toLowerCase().endsWith("generation")) {
             return CONVERTED_DART;
-        } else if (type.toLowerCase().startsWith("dart") && type.toLowerCase().startsWith("ui")) {
+        } else if (type.toLowerCase().startsWith("dart") && type.toLowerCase().endsWith("ui")) {
             return SPS_LOAD;
         }
         return ROSTER_RECEIVED;

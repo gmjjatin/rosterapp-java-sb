@@ -10,8 +10,8 @@ import java.util.List;
 public class RAFileAndStats extends RosterStats {
     private long raFileDetailsId;
     private String fileName;
-    private int noOfSheets;
-    private long fileReceivedTime;
+    private Long noOfSheets;
+    private Long fileReceivedTime;
 
     private String lob;
     private String market;
