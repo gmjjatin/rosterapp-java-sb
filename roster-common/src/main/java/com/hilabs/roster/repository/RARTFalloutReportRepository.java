@@ -22,4 +22,8 @@ public interface RARTFalloutReportRepository extends JpaRepository<RARTFalloutRe
             "and rule_ctgry_stg = :stage",
             nativeQuery = true)
     Integer countRecordsRAFalloutErrorInfo(long raSheetDetailsId, String stage);
+
+    @Query(value = "select count(distinct(RA_ROW_ID)) from RA_RT_FALLOUT_REPORT where ra_sheet_details_id = :raSheetDetailsId",
+            nativeQuery = true)
+    Integer countRecordsRAFalloutErrorInfoForSheet(long raSheetDetailsId);
 }

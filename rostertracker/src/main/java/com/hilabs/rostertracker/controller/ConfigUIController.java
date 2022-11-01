@@ -104,8 +104,6 @@ public class ConfigUIController {
     @GetMapping("/sheet-details")
     public ResponseEntity<List<SheetDetails>> getSheetDetails(@RequestParam(defaultValue = "raFileDetailsId") Long raFileDetailsId) {
         List<SheetDetails> sheetDetailsList = raSheetDetailsService.getAllSheetDetailsWithColumnMappingList(raFileDetailsId, allTypeList);
-        //TODO demo
-//        return ResponseEntity.ok(new CollectionResponse(1, 100, sheetDetailsList, new Long(sheetDetailsList.size())));
         return ResponseEntity.ok(sheetDetailsList);
     }
 

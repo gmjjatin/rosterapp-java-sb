@@ -291,4 +291,9 @@ public class RAFileStatsService {
 //        }
 //        return raSheetDetailsListMap;
 //    }
+
+
+    public Integer computeFalloutRecordCount(RASheetDetails raSheetDetails) {
+        return rartFalloutReportRepository.countRecordsRAFalloutErrorInfoForSheet(raSheetDetails.getId());
+    }
 }

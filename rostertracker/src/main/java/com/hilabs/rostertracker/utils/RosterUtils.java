@@ -21,12 +21,4 @@ public class RosterUtils {
         }
         return uniqueRAProvDetailsList;
     }
-
-    //TODO confirm??
-    public static int computeFalloutRecordCount(RASheetDetails raSheetDetails) {
-        //TODO demo
-        return 0;
-//        return raSheetDetails.getRosterRecordCount() - raSheetDetails.getTargetSuccessfulRecordCount()
-//                - raSheetDetails.getManualReviewRecordCount();
-    }
 }
