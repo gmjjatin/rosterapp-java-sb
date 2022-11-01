@@ -32,7 +32,7 @@ public class RAFileAndStats extends RosterStats {
     }
 
     public void addSheetDetails(RASheetAndStats raSheetAndStats) {
-        noOfSheets += 1;
+        noOfSheets = (noOfSheets == null ? 0 : noOfSheets) + 1;
         sheetStatsList.add(raSheetAndStats);
         increment(raSheetAndStats);
     }

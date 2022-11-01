@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class RosterStats {
-    private long rosterRecordCount;
-    private long successfulRecordCount;
-    private long falloutRecordCount;
-    private long manualReviewRecordCount;
+    private Integer rosterRecordCount;
+    private Integer successfulRecordCount;
+    private Integer falloutRecordCount;
+    private Integer manualReviewRecordCount;
 
     public RosterStats() {}
 
@@ -24,9 +24,24 @@ public class RosterStats {
     }
 
     public void increment(RosterStats rosterErrorStats) {
-        this.rosterRecordCount += rosterErrorStats.rosterRecordCount;
-        this.successfulRecordCount += rosterErrorStats.successfulRecordCount;
-        this.falloutRecordCount += rosterErrorStats.falloutRecordCount;
-        this.manualReviewRecordCount += rosterErrorStats.manualReviewRecordCount;
+        if (rosterErrorStats.rosterRecordCount != null) {
+            this.rosterRecordCount = this.rosterRecordCount == null ? 0 : this.rosterRecordCount;
+            this.rosterRecordCount += rosterErrorStats.rosterRecordCount;
+        }
+
+        if (rosterErrorStats.successfulRecordCount != null) {
+            this.successfulRecordCount = this.successfulRecordCount == null ? 0 : this.successfulRecordCount;
+            this.successfulRecordCount += rosterErrorStats.successfulRecordCount;
+        }
+
+        if (rosterErrorStats.falloutRecordCount != null) {
+            this.falloutRecordCount = this.falloutRecordCount == null ? 0 : this.falloutRecordCount;
+            this.falloutRecordCount += rosterErrorStats.falloutRecordCount;
+        }
+
+        if (rosterErrorStats.manualReviewRecordCount != null) {
+            this.manualReviewRecordCount = this.manualReviewRecordCount == null ? 0 : this.manualReviewRecordCount;
+            this.manualReviewRecordCount += rosterErrorStats.manualReviewRecordCount;
+        }
     }
 }

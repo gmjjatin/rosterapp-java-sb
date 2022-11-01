@@ -170,12 +170,14 @@ public class ProgressTrackingController {
                 //TODO need to fix it
                 List<String> fileErrorCodes = raFileErrorCodeDetailsList.stream().map(p -> p.getErrorCode()).distinct().collect(Collectors.toList());
                 List<String> sheetErrorCodes = new ArrayList<>();
-                Integer rosterRecordCount = 0;
+                Integer rosterRecordCount = null;
                 for (RASheetDetails raSheetDetails : raFileDetailsWithSheets.getRaSheetDetailsList()) {
                     List<RASheetErrorCodeDetails> raSheetErrorCodeDetailsList = raSheetErrorCodeDetailRepository
                             .findByRASheetDetailsId(raSheetDetails.getId());
                     sheetErrorCodes.addAll(raSheetErrorCodeDetailsList.stream().map(RASheetErrorCodeDetails::getErrorCode).collect(Collectors.toList()));
-                    rosterRecordCount += raSheetDetails.getRosterRecordCount();
+                    if (raSheetDetails.getRosterRecordCount() != null) {
+                        rosterRecordCount = (rosterRecordCount == null ? 0 : rosterRecordCount) + raSheetDetails.getRosterRecordCount();
+                    }
                 }
                 sheetErrorCodes = sheetErrorCodes.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
                 RaErrorCodeDetailsService.ErrorCodesAndDescription errorCodesAndDescription = raErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes);

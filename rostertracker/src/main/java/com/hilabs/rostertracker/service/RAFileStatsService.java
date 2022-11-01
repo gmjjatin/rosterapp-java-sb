@@ -138,8 +138,8 @@ public class RAFileStatsService {
             return new FalloutReportInfo(Arrays.asList(
                     new FalloutReportElement("ISF Records", raSheetDetails.getIsfRowCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRowCount())),
                     new FalloutReportElement("Roster Records", raSheetDetails.getIsfRecordCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRecordCount())),
-                    new FalloutReportElement("ISF Validation fallouts", falloutRowCount == null ? "-" : String.valueOf(falloutRowCount)),
-                    new FalloutReportElement("Roster Validation Fallouts", falloutRecordCount == null ? "-" : String.valueOf(falloutRecordCount))
+                    new FalloutReportElement("ISF Validation Failed", falloutRowCount == null ? "-" : String.valueOf(falloutRowCount)),
+                    new FalloutReportElement("Roster Records Failed", falloutRecordCount == null ? "-" : String.valueOf(falloutRecordCount))
             ), falloutRowCount != null && falloutRowCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.CONVERTED_DART) {
             Integer falloutRecordCount = rartFalloutReportRepository.countRecordsRAFalloutErrorInfo(raSheetDetails.getId(), "DART");
@@ -148,8 +148,8 @@ public class RAFileStatsService {
             return new FalloutReportInfo(Arrays.asList(
                     new FalloutReportElement("DART Records", raSheetDetails.getOutRowCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRowCount())),
                     new FalloutReportElement("Roster Records", raSheetDetails.getOutRecordCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRecordCount())),
-                    new FalloutReportElement("DART Validation fallouts", falloutRowCount == null ? "-" : String.valueOf(falloutRowCount)),
-                    new FalloutReportElement("Roster validation fallouts", falloutRecordCount == null ? "-" : String.valueOf(falloutRecordCount))
+                    new FalloutReportElement("DART Validation Failed", falloutRowCount == null ? "-" : String.valueOf(falloutRowCount)),
+                    new FalloutReportElement("Roster Records Failed", falloutRecordCount == null ? "-" : String.valueOf(falloutRecordCount))
             ), falloutRowCount != null && falloutRowCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.SPS_LOAD) {
             return new FalloutReportInfo(Arrays.asList(

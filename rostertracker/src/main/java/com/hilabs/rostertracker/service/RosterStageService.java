@@ -137,7 +137,8 @@ public class RosterStageService {
 
     public List<Integer> getFailedFileStatusCodes() {
         List<RAStatusEntity> fileRAStatusEntityList = getFileRaStatusCDMasterList();
-        return fileRAStatusEntityList.stream().filter(RAStatusEntity::isFailure).map(RAStatusEntity::getCode).collect(Collectors.toList());
+        return fileRAStatusEntityList.stream().filter(RAStatusEntity::isFailure)
+                .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 
 //    public static List<Integer> getCompletedFileStatusCodes() {
