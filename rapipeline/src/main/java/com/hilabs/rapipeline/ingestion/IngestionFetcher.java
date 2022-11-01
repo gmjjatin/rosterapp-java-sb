@@ -54,7 +54,7 @@ public class IngestionFetcher implements JobRetriever {
             return executors;
         } catch (Exception ex) {
             log.error("Error IsfFetcher {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
-            throw ex;
+            return new ArrayList<>();
         }
     }
 }
