@@ -1,8 +1,6 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RASheetDetails;
-import com.hilabs.rostertracker.model.ConfigUiFileData;
 import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.utils.Utils;
@@ -15,10 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 
 @RestController
 @RequestMapping("/api/v1/ra-provider")
@@ -39,7 +33,7 @@ public class RAProviderController {
     public ResponseEntity<List<String>> getFileDetailsFromSearchStr(@RequestParam(defaultValue = "") String searchStr,
                                                                            @RequestParam(defaultValue = "", name = "type") String type) {
         try {
-            List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             List<String> raFileDetailsList = raFileDetailsService.findByFileSearchStr(searchStr, statusCodes);
             return new ResponseEntity<>(raFileDetailsList, HttpStatus.OK);
         } catch (Exception ex) {
@@ -53,7 +47,7 @@ public class RAProviderController {
     public ResponseEntity<List<String>> getPlmTicketIdFromSearchStr(@RequestParam(defaultValue = "") String searchStr,
                                                                     @RequestParam(defaultValue = "", name = "type") String type) {
         try {
-            List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             List<String> plmTicketIds = raFileDetailsService.findByPlmSearchStr(searchStr, statusCodes);
             return new ResponseEntity<>(plmTicketIds, HttpStatus.OK);
         } catch (Exception ex) {
@@ -65,7 +59,7 @@ public class RAProviderController {
     @GetMapping("/market/all")
     public ResponseEntity<List<String>> getAllMarkets(@RequestParam(defaultValue = "", name = "type") String type) {
         try {
-            List<Integer> statusCodes = getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             List<String> markets = raFileDetailsService.findAllMarkets(statusCodes);
             return new ResponseEntity<>(markets, HttpStatus.OK);
         } catch (Exception ex) {

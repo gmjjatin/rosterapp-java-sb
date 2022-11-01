@@ -38,6 +38,6 @@ public class SheetTypeUtils {
     }
 
     public static boolean isDataSheet(String type) {
-        return type != null && type.equalsIgnoreCase("DATA");
+        return type != null && (type.equalsIgnoreCase("DATA") || type.equalsIgnoreCase("NON_TERM"));
     }
  }

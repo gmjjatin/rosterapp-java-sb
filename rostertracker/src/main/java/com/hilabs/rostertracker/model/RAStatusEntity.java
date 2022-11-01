@@ -1,4 +1,4 @@
-package com.hilabs.roster.util;
+package com.hilabs.rostertracker.model;
 
 import com.hilabs.roster.model.RosterSheetProcessStage;
 import lombok.AllArgsConstructor;

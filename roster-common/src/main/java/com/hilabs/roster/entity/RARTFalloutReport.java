@@ -5,9 +5,9 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "RA_RC_FALLOUT_REPORT")
+@Table(name = "RA_RT_FALLOUT_REPORT")
 @Data
-public class RARCFalloutReport extends BaseEntity {
+public class RARTFalloutReport extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,21 +18,24 @@ public class RARCFalloutReport extends BaseEntity {
     @Column(name = "ra_row_id")
     private Integer raRowId;
 
-    @Column(name = "rule_ctgry_stage")
+    @Column(name = "rule_ctgry_stg")
     private Integer ruleCategoryStage;
 
-    @Column(name = "err_type")
+    @Column(name = "ERR_TYPE")
     private String errorType;
 
-    @Column(name = "err_dscrptn")
+    @Column(name = "ERR_DESC")
     private String errorDescription;
 
-    @Column(name = "trnsctn_type")
+    @Column(name = "TRNSCTN_TYPE")
     private String transactionType;
 
-    @Column(name = "recommendation_action")
+    @Column(name = "RCMNDN_ACTN_TXT")
     private String recommendationAction;
 
-    public RARCFalloutReport() {
+    @Column(name = "IS_ACTIVE")
+    private String isActive;
+
+    public RARTFalloutReport() {
     }
 }

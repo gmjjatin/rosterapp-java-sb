@@ -21,7 +21,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 import static com.hilabs.rostertracker.service.RAFileStatsService.getRosterReceivedTime;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.dataTypeList;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.isDataSheet;
@@ -54,7 +53,7 @@ public class ProgressTrackingController {
 
 
     @GetMapping("/file-stats-list")
-    public ResponseEntity<List<RAFileAndStats>> getRosterTrackerFileStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<List<RAFileAndStats>> getRosterTrackerFileStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                             @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                             @RequestParam(defaultValue = "") String market,
                                                                                             @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -71,7 +70,7 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
                     .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true,
+                            startTime, endTime, raFileDetailsService.getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true,
                             0, false);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse<RAFileAndStats> collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList,
@@ -139,7 +138,7 @@ public class ProgressTrackingController {
     }
 
     @GetMapping("/non-compatible-file-list")
-    public ResponseEntity<List<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<List<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                     @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                     @RequestParam(defaultValue = "") String market,
                                                                                     @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -148,7 +147,7 @@ public class ProgressTrackingController {
                                                                                     @RequestParam(defaultValue = "-1") long startTime,
                                                                                     @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes(RosterFilterType.NON_COMPATIBLE);
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.NON_COMPATIBLE);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
