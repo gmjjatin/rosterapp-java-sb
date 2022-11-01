@@ -50,7 +50,7 @@ public class PreProcessingFetcher implements JobRetriever {
             return executors;
         } catch (Exception ex) {
             log.error("Error PreProcessingFetcher {}", ex.getMessage());
-            throw ex;
+            return new ArrayList<>();
         }
     }
 }
