@@ -49,7 +49,7 @@ public class ErrorReportingController {
     private RosterConfig rosterConfig;
 
     @GetMapping("/file-error-stats-list")
-    public ResponseEntity<List<RAFileAndErrorStats>> getFileErrorStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
+    public ResponseEntity<CollectionResponse<RAFileAndErrorStats>> getFileErrorStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                          @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                          @RequestParam(defaultValue = "") String market,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -71,7 +71,7 @@ public class ErrorReportingController {
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raFileAndErrorStatsList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
-            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             //TODO fix log
             log.error("Error in getFileErrorStatsList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",
@@ -82,7 +82,7 @@ public class ErrorReportingController {
 
     //TODO manikanta fix the API
     @GetMapping("/sheet-error-stats-list")
-    public ResponseEntity<List<RASheetAndColumnErrorStats>> getSheetErrorStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
+    public ResponseEntity<CollectionResponse<RASheetAndColumnErrorStats>> getSheetErrorStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                    @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -108,7 +108,7 @@ public class ErrorReportingController {
                 }
             }
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raSheetAndColumnErrorStatsList, 1000L);
-            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             //TODO fix log
             log.error("Error in getFileErrorStatsList pageNo {} pageSize {} market {} lineOfBusiness {} startTime {} endTime {}",

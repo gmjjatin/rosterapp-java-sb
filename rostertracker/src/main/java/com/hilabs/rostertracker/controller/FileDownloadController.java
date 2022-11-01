@@ -89,6 +89,22 @@ public class FileDownloadController {
         }
     }
 
+    @RequestMapping(path = "/download-dart-report", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> downloadDartReport(@RequestParam() Long raSheetDetailsId) throws IOException {
+        try {
+            Optional<RASheetDetails> optionalRASheetDetails = raSheetDetailsService.findRASheetDetailsById(raSheetDetailsId);
+            if (!optionalRASheetDetails.isPresent()) {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+            RASheetDetails raSheetDetails = optionalRASheetDetails.get();
+            File file = new File(raSheetDetails.getOutFileName());
+            return getDownloadFileResponseEntity(file);
+        } catch (Exception ex) {
+            log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
+        }
+    }
+
     //
     public ResponseEntity<InputStreamResource> getDownloadFileResponseEntity(File file) throws IOException {
         HttpHeaders headers = new HttpHeaders();

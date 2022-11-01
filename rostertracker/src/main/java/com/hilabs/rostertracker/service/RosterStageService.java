@@ -24,30 +24,41 @@ public class RosterStageService {
     @Autowired
     private RAStatusCDMasterRepository raStatusCDMasterRepository;
 
+    private List<RAStatusEntity> sheetRAStatusEntities = null;
     public List<RAStatusEntity> getSheetRaStatusCDMasterList() {
-        List<RAStatusEntity> raStatusEntities = new ArrayList<>();
+        if (sheetRAStatusEntities != null) {
+            return sheetRAStatusEntities;
+        }
+        List<RAStatusEntity> localSheetRAStatusEntities = new ArrayList<>();
         List<RAStatusCDMaster> raStatusCDMasters = raStatusCDMasterRepository.getAllSheetRAStatusCDMasterList();
         for (RAStatusCDMaster raStatusCDMaster : raStatusCDMasters) {
-            raStatusEntities.add(new RAStatusEntity(raStatusCDMaster.getStatusCode(),
+            localSheetRAStatusEntities.add(new RAStatusEntity(raStatusCDMaster.getStatusCode(),
             RosterSheetProcessStage.getRosterSheetProcessStageFromStr(raStatusCDMaster.getStageName()),
                     raStatusCDMaster.getStatusDescription(),
-                    raStatusCDMaster.getIsCompleteStatus() == null && raStatusCDMaster.getIsCompleteStatus() == 1,
-                    raStatusCDMaster.getIsFailStatus() == null && raStatusCDMaster.getIsFailStatus() == 1));
+                    raStatusCDMaster.getIsCompleteStatus() != null && raStatusCDMaster.getIsCompleteStatus() == 1,
+                    raStatusCDMaster.getIsFailStatus() != null && raStatusCDMaster.getIsFailStatus() == 1));
         }
-        return raStatusEntities;
+        sheetRAStatusEntities = localSheetRAStatusEntities;
+        return sheetRAStatusEntities;
     }
 
+    private List<RAStatusEntity> fileRAStatusEntities = null;
+
     public List<RAStatusEntity> getFileRaStatusCDMasterList() {
-        List<RAStatusEntity> raStatusEntities = new ArrayList<>();
+        if (fileRAStatusEntities != null) {
+            return fileRAStatusEntities;
+        }
+        List<RAStatusEntity> localFileRAStatusEntities = new ArrayList<>();
         List<RAStatusCDMaster> raStatusCDMasters = raStatusCDMasterRepository.getAllFileRAStatusCDMasterList();
         for (RAStatusCDMaster raStatusCDMaster : raStatusCDMasters) {
-            raStatusEntities.add(new RAStatusEntity(raStatusCDMaster.getStatusCode(),
+            localFileRAStatusEntities.add(new RAStatusEntity(raStatusCDMaster.getStatusCode(),
                     RosterSheetProcessStage.getRosterSheetProcessStageFromStr(raStatusCDMaster.getStageName()),
                     raStatusCDMaster.getStatusDescription(),
-                    raStatusCDMaster.getIsCompleteStatus() == null && raStatusCDMaster.getIsCompleteStatus() == 1,
-                    raStatusCDMaster.getIsFailStatus() == null && raStatusCDMaster.getIsFailStatus() == 1));
+                    raStatusCDMaster.getIsCompleteStatus() != null && raStatusCDMaster.getIsCompleteStatus() == 1,
+                    raStatusCDMaster.getIsFailStatus() != null && raStatusCDMaster.getIsFailStatus() == 1));
         }
-        return raStatusEntities;
+        fileRAStatusEntities = localFileRAStatusEntities;
+        return fileRAStatusEntities;
     }
     public RosterStageState getRosterStageState(RosterSheetProcessStage rosterSheetProcessStage,
                                                        Integer statusCode) {
@@ -126,7 +137,8 @@ public class RosterStageService {
 
     public List<Integer> getFailedFileStatusCodes() {
         List<RAStatusEntity> fileRAStatusEntityList = getFileRaStatusCDMasterList();
-        return fileRAStatusEntityList.stream().filter(RAStatusEntity::isFailure).map(RAStatusEntity::getCode).collect(Collectors.toList());
+        return fileRAStatusEntityList.stream().filter(RAStatusEntity::isFailure)
+                .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 
 //    public static List<Integer> getCompletedFileStatusCodes() {
@@ -162,13 +174,42 @@ public class RosterStageService {
         return timeTakenInMillis;
     }
 
+    //TODO check logic
     public Optional<RosterSheetProcessStage> getRosterSheetProcessStage(Integer statusCode) {
         if (statusCode == null) {
             return Optional.empty();
         }
         List<RAStatusEntity> sheetRAStatusEntityList = getSheetRaStatusCDMasterList();
-        return sheetRAStatusEntityList.stream().filter(p -> p.getCode() == statusCode).map(RAStatusEntity::getStage).findFirst();
+        Optional<RosterSheetProcessStage> optionalRosterSheetProcessStage = sheetRAStatusEntityList.stream().filter(p -> p.getCode() == statusCode).map(RAStatusEntity::getStage).findFirst();
+        if (optionalRosterSheetProcessStage.isPresent()) {
+            return optionalRosterSheetProcessStage;
+        }
+        RosterSheetProcessStage res = null;
+        for (RosterSheetProcessStage rosterSheetProcessStage : RosterSheetProcessStage.values()) {
+            List<RAStatusEntity> raStatusEntities = getRASheetStatusEntityList(rosterSheetProcessStage);
+            if (raStatusEntities.size() > 0 && raStatusEntities.get(0).getCode() <= statusCode) {
+                res = rosterSheetProcessStage;
+            }
+        }
+        return res != null ? Optional.of(res) : Optional.empty();
     }
+
+
+    public List<RAStatusEntity> getRASheetStatusEntityList(RosterSheetProcessStage stage) {
+        if (stage == null) {
+            return null;
+        }
+        List<RAStatusEntity> sheetRAStatusEntityList = getSheetRaStatusCDMasterList();
+        return sheetRAStatusEntityList.stream()
+                .filter(p -> p.getStage() == stage)
+                .sorted((l, r) -> {
+                    if (l.getCode() == r.getCode()) {
+                        return 0;
+                    }
+                    return l.getCode() < r.getCode() ? -1 : 1;
+                }).collect(Collectors.toList());
+    }
+
 
     public Optional<RAStatusEntity> getRASheetStatusEntity(Integer statusCode) {
         if (statusCode == null) {

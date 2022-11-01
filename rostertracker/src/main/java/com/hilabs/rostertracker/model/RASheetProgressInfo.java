@@ -13,6 +13,7 @@ public class RASheetProgressInfo {
     private String standardizedFileName;
     private long receivedTime;
 
+    private String dartFileName;
 
     private RosterReceivedStageInfo rosterReceived;
 
@@ -26,11 +27,13 @@ public class RASheetProgressInfo {
 
 
 
-    public RASheetProgressInfo(long raSheetDetailsId, String sheetName, String standardizedFileName, long receivedTime) {
+    public RASheetProgressInfo(long raSheetDetailsId, String sheetName, String standardizedFileName,
+                               long receivedTime, String dartFileName) {
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
         this.standardizedFileName = standardizedFileName;
         this.receivedTime = receivedTime;
+        this.dartFileName = dartFileName;
         this.rosterReceived = new RosterReceivedStageInfo();
         this.autoMapped = new AutoMappedStageInfo();
         this.isf = new ISFStageInfo();
@@ -42,6 +45,7 @@ public class RASheetProgressInfo {
     public RASheetProgressInfo(long raSheetDetailsId, String sheetName,
                                String standardizedFileName,
                                long receivedTime,
+                               String dartFileName,
                                RosterReceivedStageInfo rosterReceivedStageInfo,
                                AutoMappedStageInfo autoMapped,
                                ISFStageInfo isf,
@@ -51,6 +55,7 @@ public class RASheetProgressInfo {
         this.sheetName = sheetName;
         this.standardizedFileName = standardizedFileName;
         this.receivedTime = receivedTime;
+        this.dartFileName = dartFileName;
         this.rosterReceived = rosterReceivedStageInfo;
         this.autoMapped = autoMapped;
         this.isf = isf;

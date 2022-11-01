@@ -82,7 +82,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where market = :market and RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
@@ -93,7 +93,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where market = :market and RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
@@ -104,7 +104,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
@@ -115,7 +115,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +

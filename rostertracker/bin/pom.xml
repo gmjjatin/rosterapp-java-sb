@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.hilabs</groupId>
 	<artifactId>rostertracker</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>rostertracker</name>
 	<description>Rest api server for roster tracker</description>
 	<properties>

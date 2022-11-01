@@ -119,8 +119,9 @@ public class RAFileStatsService {
     }
     public static RASheetProgressInfo getBaseRosterSheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         //TODO received time when created is null
-        return new RASheetProgressInfo(raSheetDetails.getId(), raSheetDetails.getTabName(), raFileDetails.getStandardizedFileName(),
-                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : 0);
+        long rosterReceivedTime = getRosterReceivedTime(raFileDetails);
+        return new RASheetProgressInfo(raSheetDetails.getId(), raSheetDetails.getTabName(),
+                raFileDetails.getStandardizedFileName(), rosterReceivedTime, raSheetDetails.getOutFileName());
     }
 
 
@@ -132,18 +133,24 @@ public class RAFileStatsService {
             return new FalloutReportInfo(Arrays.asList(), false);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.ISF_GENERATED) {
             //TODO
-            Integer falloutCount = rartFalloutReportRepository.countRAFalloutErrorInfo(raSheetDetails.getId(), "ISF");
+            Integer falloutRecordCount = rartFalloutReportRepository.countRecordsRAFalloutErrorInfo(raSheetDetails.getId(), "ISF");
+            Integer falloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(), "ISF");
             return new FalloutReportInfo(Arrays.asList(
-                    new FalloutReportElement("Records", raSheetDetails.getIsfRowCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRowCount())),
-                    new FalloutReportElement("ISF validation fallouts", falloutCount == null ? "-" : String.valueOf(falloutCount))
-            ), falloutCount != null && falloutCount > 0);
+                    new FalloutReportElement("ISF Records", raSheetDetails.getIsfRowCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRowCount())),
+                    new FalloutReportElement("Roster Records", raSheetDetails.getIsfRecordCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRecordCount())),
+                    new FalloutReportElement("ISF Validation Failed", falloutRowCount == null ? "-" : String.valueOf(falloutRowCount)),
+                    new FalloutReportElement("Roster Records Failed", falloutRecordCount == null ? "-" : String.valueOf(falloutRecordCount))
+            ), falloutRowCount != null && falloutRowCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.CONVERTED_DART) {
-            Integer falloutCount = rartFalloutReportRepository.countRAFalloutErrorInfo(raSheetDetails.getId(), "DART");
+            Integer falloutRecordCount = rartFalloutReportRepository.countRecordsRAFalloutErrorInfo(raSheetDetails.getId(), "DART");
+            Integer falloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(), "DART");
             //TODO
             return new FalloutReportInfo(Arrays.asList(
-                    new FalloutReportElement("Records", raSheetDetails.getOutRowCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRowCount())),
-                    new FalloutReportElement("Dart validation fallouts", falloutCount == null ? "-" : String.valueOf(falloutCount))
-            ), falloutCount != null && falloutCount > 0);
+                    new FalloutReportElement("DART Records", raSheetDetails.getOutRowCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRowCount())),
+                    new FalloutReportElement("Roster Records", raSheetDetails.getOutRecordCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRecordCount())),
+                    new FalloutReportElement("DART Validation Failed", falloutRowCount == null ? "-" : String.valueOf(falloutRowCount)),
+                    new FalloutReportElement("Roster Records Failed", falloutRecordCount == null ? "-" : String.valueOf(falloutRecordCount))
+            ), falloutRowCount != null && falloutRowCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.SPS_LOAD) {
             return new FalloutReportInfo(Arrays.asList(
                     new FalloutReportElement("DART rows submitted by DART UI", "-"),

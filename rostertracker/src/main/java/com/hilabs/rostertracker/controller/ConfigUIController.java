@@ -52,7 +52,7 @@ public class ConfigUIController {
     private RosterStageService rosterStageService;
 
     @GetMapping("/valid-file-list")
-    public ResponseEntity<List<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "0") Integer pageNo,
+    public ResponseEntity<CollectionResponse<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                          @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                          @RequestParam(defaultValue = "") String market,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -92,7 +92,7 @@ public class ConfigUIController {
             }
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, configUiFileDataList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
-            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} fileName {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, fileName, startTime, endTime);
