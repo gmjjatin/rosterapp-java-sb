@@ -239,8 +239,4 @@ public class RAFileDetailsService {
         }
         return rosterStageService.getNonFailedFileStatusCodes();
     }
-
-    public void updateManualActionRequiredInRAFileDetails(Long raFileDetailsId, Integer manualActionRequired) {
-        raFileDetailsRepository.updateManualActionRequiredInRAFileDetails(raFileDetailsId, manualActionRequired);
-    }
 }

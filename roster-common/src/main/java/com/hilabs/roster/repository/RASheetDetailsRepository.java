@@ -21,11 +21,6 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
     @Query(value = "select * from RA_RT_SHEET_DETAILS where RA_FILE_DETAILS_ID = :raFileDetailsId  and is_active = 1", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsForAFileId(Long raFileDetailsId);
 
-    @Modifying
-    @Transactional
-    @Query(value = "update RA_RT_SHEET_DETAILS set status_cd = :statusCode where id = :raSheetDetailsId", nativeQuery = true)
-    void updateRASheetDetailsStatus(Long raSheetDetailsId, Integer statusCode);
-
     @Query(value = "select ra_rt_sheet_details.* from ra_rt_sheet_details, ra_rt_file_details where ra_rt_sheet_details.ra_file_details_id = ra_rt_file_details.id " +
             "and ra_rt_sheet_details.is_active = 1 and  ra_rt_file_details.status_cd in (:fileStatusCodes) and ra_rt_sheet_details.status_cd in (:sheetStatusCodes)" +
             " and MANUAL_ACTN_REQ in (:manualActionRequiredList)" +
@@ -35,8 +30,9 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
 
     @Modifying
     @Transactional
-    @Query(value = "update RA_RT_SHEET_DETAILS set status_cd = :statusCode where id in (:raSheetDetailsIdList)", nativeQuery = true)
-    void updateRASheetDetailsStatusByIds(List<Long> raSheetDetailsIdList, Integer statusCode);
+    @Query(value = "update RA_RT_SHEET_DETAILS set status_cd = :statusCode, last_updt_user_id = :username" +
+            " where id in (:raSheetDetailsIdList)", nativeQuery = true)
+    void updateRASheetDetailsStatusByIds(List<Long> raSheetDetailsIdList, Integer statusCode, String username);
 
 
 }
