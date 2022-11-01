@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hilabs.rostertracker.utils.RosterUtils.computeFalloutRecordCount;
-
 @Service
 @Log4j2
 public class RAFileStatsService {
@@ -120,8 +118,13 @@ public class RAFileStatsService {
     public static RASheetProgressInfo getBaseRosterSheetProgressInfo(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         //TODO received time when created is null
         long rosterReceivedTime = getRosterReceivedTime(raFileDetails);
+        String outFileName = raSheetDetails.getOutFileName();
+        if (outFileName != null) {
+            String[] parts = outFileName.split("/");
+            outFileName = parts[parts.length - 1];
+        }
         return new RASheetProgressInfo(raSheetDetails.getId(), raSheetDetails.getTabName(),
-                raFileDetails.getStandardizedFileName(), rosterReceivedTime, raSheetDetails.getOutFileName());
+                raFileDetails.getStandardizedFileName(), rosterReceivedTime, outFileName);
     }
 
 
