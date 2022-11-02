@@ -45,12 +45,17 @@ public class IsfTask extends Task {
             isfTaskService.consolidateISF(raSheetDetails.getRaFileDetailsId());
             log.debug("IsfTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
-            log.error("Error in IsfTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
-                    ex.getMessage(), ExceptionUtils.getStackTrace(ex));
-            String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
-            dartRASystemErrorsService.saveDartRASystemErrors(raSheetDetails.getRaFileDetailsId(), raSheetDetails.getId(),
-                    "ISF", null, "UNKNOWN", ex.getMessage(),
-                    stacktrace, 1);
+            try {
+                log.error("Error in IsfTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
+                        ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+                String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
+                dartRASystemErrorsService.saveDartRASystemErrors(raSheetDetails.getRaFileDetailsId(), raSheetDetails.getId(),
+                        "ISF", null, "UNKNOWN", ex.getMessage(),
+                        stacktrace, 1);
+            } catch (Exception ignore) {
+                log.error("Error in IsfTask catch - message {} stacktrace {}", ignore.getMessage(),
+                        ExceptionUtils.getStackTrace(ignore));
+            }
         } finally {
             log.info("Finally in Isf task for {}", gson.toJson(getTaskData()));
             isfTaskRunningMap.remove(raSheetDetails.getId());

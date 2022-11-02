@@ -45,12 +45,17 @@ public class DartTask extends Task {
             dartTaskService.consolidateDart(raSheetDetails.getRaFileDetailsId());
             log.debug("DartTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
-            log.error("Error in DartTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
-                    ex.getMessage(), ExceptionUtils.getStackTrace(ex));
-            String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
-            dartRASystemErrorsService.saveDartRASystemErrors(raSheetDetails.getRaFileDetailsId(), raSheetDetails.getId(),
-                    "DART", null, "UNKNOWN", ex.getMessage(),
-                    stacktrace, 1);
+            try {
+                log.error("Error in DartTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
+                        ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+                String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
+                dartRASystemErrorsService.saveDartRASystemErrors(raSheetDetails.getRaFileDetailsId(), raSheetDetails.getId(),
+                        "DART", null, "UNKNOWN", ex.getMessage(),
+                        stacktrace, 1);
+            } catch (Exception ignore) {
+                log.error("Error in DartTask catch - message {} stacktrace {}", ignore.getMessage(),
+                        ExceptionUtils.getStackTrace(ignore));
+            }
         } finally {
             log.info("Finally in Dart task for {}", gson.toJson(getTaskData()));
             dartTaskRunningMap.remove(raSheetDetails.getId());

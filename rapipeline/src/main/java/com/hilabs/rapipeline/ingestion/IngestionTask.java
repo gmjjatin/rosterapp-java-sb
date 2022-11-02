@@ -146,19 +146,24 @@ public class IngestionTask extends Task {
             }
             log.debug("IngestionTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception ex) {
-            log.error("Error in IngestionTask raFileMetaData {} ex {} stacktrace {} ", gson.toJson(raFileMetaData),
-                    ex.getMessage(), ExceptionUtils.getStackTrace(ex));
-            //TODO fix it
-            String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
-            String message = trimToNChars(ex.getMessage(), 1000);
-            Long raFileDetailsId = upsertIngestionStatus(raFileMetaData, FileMetaDataTableStatus.valueOf(raFileMetaData.getRAFileProcessingStatus()),
-                    ROSTER_INGESTION_FAILED, null, new ErrorDetails("RI_ERR_MD_UNKWN", message),
-                    raFileMetaData.getReprocess() != null && raFileMetaData.getReprocess().toUpperCase().startsWith("Y"));
+            try {
+                log.error("Error in IngestionTask raFileMetaData {} ex {} stacktrace {} ", gson.toJson(raFileMetaData),
+                        ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+                //TODO fix it
+                String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
+                String message = trimToNChars(ex.getMessage(), 1000);
+                Long raFileDetailsId = upsertIngestionStatus(raFileMetaData, FileMetaDataTableStatus.valueOf(raFileMetaData.getRAFileProcessingStatus()),
+                        ROSTER_INGESTION_FAILED, null, new ErrorDetails("RI_ERR_MD_UNKWN", message),
+                        raFileMetaData.getReprocess() != null && raFileMetaData.getReprocess().toUpperCase().startsWith("Y"));
 
-            if (raFileDetailsId != null) {
-                dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
-                        "INGESTION", null, "UNKNOWN", ex.getMessage(),
-                        stacktrace, 1);
+                if (raFileDetailsId != null) {
+                    dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
+                            "INGESTION", null, "UNKNOWN", ex.getMessage(),
+                            stacktrace, 1);
+                }
+            } catch (Exception ignore) {
+                log.error("Error in IngestionTask catch - message {} stacktrace {}", ignore.getMessage(),
+                        ExceptionUtils.getStackTrace(ignore));
             }
         } finally {
             log.info("Finally in Ingestion task for {}", gson.toJson(getTaskData()));
