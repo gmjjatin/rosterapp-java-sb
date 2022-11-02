@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Repository;
 @ComponentScan({"com.hilabs.*"})
 @EntityScan({"com.hilabs.*"})
 @EnableJpaRepositories("com.hilabs.*")
+@EnableJpaAuditing
 public class RostertrackerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RostertrackerApplication.class, args);

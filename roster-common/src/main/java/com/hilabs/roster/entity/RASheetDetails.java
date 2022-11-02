@@ -1,6 +1,8 @@
 package com.hilabs.roster.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 
@@ -66,5 +68,25 @@ public class RASheetDetails extends BaseEntity {
     @Override
     public String toString() {
         return "RASheetDetails [id=" + id + "]";
+    }
+
+    public RASheetDetails(final Long raFileDetailsId, final Integer statusCode, final String tabName, final String type, final Integer rosterRecordCount, final Integer autoMappedRecordCount, final Integer isfRecordCount, final Integer isfRowCount, final Integer outRowCount, final Integer outRecordCount, final Integer targetSuccessfulRecordCount, final Integer manualReviewRecordCount, final Integer targetLoadTransactionCount, final Integer targetLoadSuccessTransactionCount, final String isfFileName, final String outFileName) {
+        super();
+        this.raFileDetailsId = raFileDetailsId;
+        this.statusCode = statusCode;
+        this.tabName = tabName;
+        this.type = type;
+        this.rosterRecordCount = rosterRecordCount;
+        this.autoMappedRecordCount = autoMappedRecordCount;
+        this.isfRecordCount = isfRecordCount;
+        this.isfRowCount = isfRowCount;
+        this.outRowCount = outRowCount;
+        this.outRecordCount = outRecordCount;
+        this.targetSuccessfulRecordCount = targetSuccessfulRecordCount;
+        this.manualReviewRecordCount = manualReviewRecordCount;
+        this.targetLoadTransactionCount = targetLoadTransactionCount;
+        this.targetLoadSuccessTransactionCount = targetLoadSuccessTransactionCount;
+        this.isfFileName = isfFileName;
+        this.outFileName = outFileName;
     }
 }

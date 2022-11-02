@@ -122,7 +122,7 @@ public class RARCRosterISFMapService {
     }
 
     //TODO improve or refactor
-    public void updateSheetMapping(List<RARCRosterISFMap> raRCRosterISFMapList, Map<String, String> data, Long raSheetDetailsId) {
+    public void updateSheetMapping(List<RARCRosterISFMap> raRCRosterISFMapList, Map<String, String> data, Long raSheetDetailsId, String username) {
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String columnName = entry.getKey();
             String selIsfColumnName = entry.getValue();
@@ -139,13 +139,13 @@ public class RARCRosterISFMapService {
                         .distinct()
                         .collect(Collectors.toList());
                 if (otherFirstRankRARCRosterISFMapIds.size() > 0) {
-                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0);
+                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0, username);
                 }
             } else {
                 List<Long> otherFirstRankRARCRosterISFMapIds = firstRankRARCRosterISFMapList.stream()
                         .map(p -> p.getId()).distinct().collect(Collectors.toList());
                 if (otherFirstRankRARCRosterISFMapIds.size() > 0) {
-                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0);
+                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0, username);
                 }
                 RARCRosterISFMap rarcRosterISFMap = new RARCRosterISFMap(raSheetDetailsId, columnName, selIsfColumnName,
                         //TODO for default display order
@@ -180,7 +180,7 @@ public class RARCRosterISFMapService {
                 return;
             }
             for (UpdateColumnMappingSheetData sheetData : sheetDataList) {
-                saveColumnMappingForSheet(sheetData);
+                saveColumnMappingForSheet(sheetData, username);
             }
             if (isFromApproved) {
                 raFileDetails.setManualActionRequired(0);
@@ -201,11 +201,11 @@ public class RARCRosterISFMapService {
     }
 
 
-    public void saveColumnMappingForSheet(UpdateColumnMappingSheetData sheetData) {
+    public void saveColumnMappingForSheet(UpdateColumnMappingSheetData sheetData, String username) {
         Long raSheetDetailsId = sheetData.getRaSheetDetailsId();
         Map<String, String> data = sheetData.getData();
         //TODO get only whatever is needed
         List<RARCRosterISFMap> rarcRosterISFMapList = getActiveRARCRosterISFMapListForSheetId(raSheetDetailsId);
-        updateSheetMapping(rarcRosterISFMapList, data, raSheetDetailsId);
+        updateSheetMapping(rarcRosterISFMapList, data, raSheetDetailsId, username);
     }
 }
