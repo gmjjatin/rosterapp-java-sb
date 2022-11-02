@@ -4,7 +4,7 @@
     {
       "id": "Test",
       "name": "Test",
-      "noTaskSleepTime": 10,
+      "noTaskSleepTime": 60,
       "interTaskSleepTime": 0,
       "period": [
         {
@@ -23,8 +23,8 @@
         }
       ],
       "minPoolSize": 2,
-      "maxPoolSize": 10,
-      "parallelTasks": 4
+      "maxPoolSize": 6,
+      "parallelTasks": 6
     }
   ]
 }
