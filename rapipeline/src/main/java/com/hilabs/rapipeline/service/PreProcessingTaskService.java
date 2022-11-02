@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -64,7 +65,8 @@ public class PreProcessingTaskService {
     public List<RAFileDetails> getEligibleRAFileDetailsListAndUpdate(int count) {
         List<RAFileDetails> raFileDetailsList = raFileDetailsRepository.findFileDetailsByStatusCodesForUpdate(preProcessingStatusCodes, count);
         List<Long> raFileDetailsIds = raFileDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
-        raFileDetailsRepository.updateRAFileDetailsStatusByIds(raFileDetailsIds, preProcessingInQueueStatus, "SYSTEM");
+        raFileDetailsRepository.updateRAFileDetailsStatusByIds(raFileDetailsIds, preProcessingInQueueStatus,
+                "SYSTEM", new Date());
         return raFileDetailsList;
     }
 

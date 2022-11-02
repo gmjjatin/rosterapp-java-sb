@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.LockModeType;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,9 +31,9 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
 
     @Modifying
     @Transactional
-    @Query(value = "update RA_RT_SHEET_DETAILS set status_cd = :statusCode, last_updt_user_id = :username" +
+    @Query(value = "update RA_RT_SHEET_DETAILS set status_cd = :statusCode, last_updt_user_id = :username, last_updt_dt = :lastUpdatedDate " +
             " where id in (:raSheetDetailsIdList)", nativeQuery = true)
-    void updateRASheetDetailsStatusByIds(List<Long> raSheetDetailsIdList, Integer statusCode, String username);
+    void updateRASheetDetailsStatusByIds(List<Long> raSheetDetailsIdList, Integer statusCode, String username, Date lastUpdatedDate);
 
 
 }

@@ -191,7 +191,8 @@ public class ProgressTrackingController {
                         String.join(", ", errorCodesAndDescription.errorCodes), lob, raFileDetails.getMarket(), filePlmTicketId);
                 inCompatibleRosterDetails.add(details);
             }
-            CollectionResponse<InCompatibleRosterDetails> collectionResponse = new CollectionResponse<InCompatibleRosterDetails>(pageNo, pageSize, inCompatibleRosterDetails, 1000L);
+            CollectionResponse<InCompatibleRosterDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize, inCompatibleRosterDetails,
+                    raFileDetailsWithSheetsListResponse.getTotalCount());
             return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",

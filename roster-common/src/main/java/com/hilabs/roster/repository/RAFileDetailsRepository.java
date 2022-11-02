@@ -140,7 +140,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
 
     @Modifying
     @Transactional
-    @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode, last_updt_user_id = :username" +
+    @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode, last_updt_user_id = :username, last_updt_dt = :lastUpdatedDate " +
             " where id in (:raFileDetailsIdList)", nativeQuery = true)
-    void updateRAFileDetailsStatusByIds(List<Long> raFileDetailsIdList, Integer statusCode, String username);
+    void updateRAFileDetailsStatusByIds(List<Long> raFileDetailsIdList, Integer statusCode, String username, Date lastUpdatedDate);
 }

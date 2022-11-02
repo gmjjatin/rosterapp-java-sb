@@ -70,7 +70,7 @@ public class IsfTaskService {
         List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(isfFileStatusCodes,
                 Collections.singletonList(145), Collections.singletonList(0), count);
         List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
-        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, 150, "SYSTEM");
+        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, 150, "SYSTEM", new Date());
         return raSheetDetailsList;
     }
 

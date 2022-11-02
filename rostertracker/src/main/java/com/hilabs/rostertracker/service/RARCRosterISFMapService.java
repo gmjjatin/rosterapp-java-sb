@@ -12,6 +12,7 @@ import com.hilabs.rostertracker.dto.RosterColumnMappingData;
 import com.hilabs.rostertracker.dto.RosterSheetColumnMappingInfo;
 import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
 import com.hilabs.rostertracker.model.UpdateColumnMappingSheetData;
+import liquibase.pro.packaged.D;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -139,13 +140,15 @@ public class RARCRosterISFMapService {
                         .distinct()
                         .collect(Collectors.toList());
                 if (otherFirstRankRARCRosterISFMapIds.size() > 0) {
-                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0, username);
+                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds,
+                            0, username, new Date());
                 }
             } else {
                 List<Long> otherFirstRankRARCRosterISFMapIds = firstRankRARCRosterISFMapList.stream()
                         .map(p -> p.getId()).distinct().collect(Collectors.toList());
                 if (otherFirstRankRARCRosterISFMapIds.size() > 0) {
-                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds, 0, username);
+                    rarcRosterISFMapRepository.updateIsActiveForRARCRosterISFMap(otherFirstRankRARCRosterISFMapIds,
+                            0, username, new Date());
                 }
                 RARCRosterISFMap rarcRosterISFMap = new RARCRosterISFMap(raSheetDetailsId, columnName, selIsfColumnName,
                         //TODO for default display order
