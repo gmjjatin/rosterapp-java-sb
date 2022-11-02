@@ -45,12 +45,17 @@ public class PreProcessingTask extends Task {
             preProcessingTaskService.invokePythonProcessForPreProcessingTask(raFileDetailsId);
             log.info("PreProcessingTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
-            log.error("Error in PreProcessingTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
-                    ex.getMessage(), ExceptionUtils.getStackTrace(ex));
-            String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
-            dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
-                    "PRE PROCESSING", null, "UNKNOWN", ex.getMessage(),
-                    stacktrace, 1);
+            try {
+                log.error("Error in PreProcessingTask done for {} - message {} stacktrace {}", gson.toJson(getTaskData()),
+                        ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+                String stacktrace = trimToNChars(ExceptionUtils.getStackTrace(ex), 2000);
+                dartRASystemErrorsService.saveDartRASystemErrors(raFileDetailsId, null,
+                        "PRE PROCESSING", null, "UNKNOWN", ex.getMessage(),
+                        stacktrace, 1);
+            } catch (Exception ignore) {
+                log.error("Error in PreProcessingTask catch - message {} stacktrace {}", ignore.getMessage(),
+                        ExceptionUtils.getStackTrace(ignore));
+            }
 
         } finally {
             log.info("Finally in PreProcessing task for {}", gson.toJson(getTaskData()));

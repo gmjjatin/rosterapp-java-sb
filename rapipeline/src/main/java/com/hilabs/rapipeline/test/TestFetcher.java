@@ -21,9 +21,11 @@ public class TestFetcher implements JobRetriever {
     @Autowired
     private ApplicationContext applicationContext;
 
+    private static int totalTasksSubmitted = 0;
+
     @Override
     public List<Task> refillQueue(Integer tasks) {
-        log.info("TestFetcher started tasks {}", tasks);
+        log.info("TestFetcher started tasks {} totalTasksSubmitted {}", tasks, totalTasksSubmitted);
         try {
             List<Task> executors = new ArrayList<>();
             for (int i = 0; i < tasks; i++) {
@@ -32,6 +34,7 @@ public class TestFetcher implements JobRetriever {
                 executors.add(new TestTask(taskData));
             }
             log.info("TestFetcher started tasks {} size {}", tasks, executors.size());
+            totalTasksSubmitted += executors.size();
             return executors;
         } catch (Exception ex) {
             log.error("Error PreProcessingFetcher {}", ex.getMessage());

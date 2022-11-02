@@ -7,18 +7,13 @@ import com.hilabs.rapipeline.service.PreProcessingTaskService;
 import com.hilabs.roster.service.DartRASystemErrorsService;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.hilabs.rapipeline.service.PreProcessingTaskService.preProcessingRunningMap;
-import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 
 @Slf4j
 public class TestTask extends Task {
@@ -61,8 +56,8 @@ public class TestTask extends Task {
             }
            log.info("TestTask ended for {} isLongTask {}", gson.toJson(getTaskData()), isLongTask);
         } catch (Exception | Error ex) {
-            log.error("Error in TestTask done for {} message {}", gson.toJson(getTaskData()),
-                    ex.getMessage());
+            log.error("Error in TestTask done for {} message {} stackTrace {}", gson.toJson(getTaskData()),
+                    ex.getMessage(), ExceptionUtils.getStackTrace(ex));
         }
     }
 }

@@ -1,9 +1,9 @@
 {
-  "name": "Pre Processing",
+  "name": "Test",
   "jobs": [
     {
-      "id": "pre_processing",
-      "name": "Pre Processing",
+      "id": "Test",
+      "name": "Test",
       "noTaskSleepTime": 10,
       "interTaskSleepTime": 0,
       "period": [
@@ -22,9 +22,9 @@
           "unit": "H"
         }
       ],
-      "minPoolSize": 1,
-      "maxPoolSize": 2,
-      "parallelTasks": 2
+      "minPoolSize": 2,
+      "maxPoolSize": 10,
+      "parallelTasks": 4
     }
   ]
 }
