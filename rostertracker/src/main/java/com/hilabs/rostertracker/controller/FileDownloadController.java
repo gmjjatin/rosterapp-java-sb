@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.Optional;
 
 import static com.hilabs.rostertracker.utils.Utils.removeFileExtensionFromExcelFile;
@@ -99,6 +100,9 @@ public class FileDownloadController {
             RASheetDetails raSheetDetails = optionalRASheetDetails.get();
             File file = new File(raSheetDetails.getOutFileName());
             return getDownloadFileResponseEntity(file);
+        }  catch (NoSuchFileException ex) {
+            log.error("NoSuchFileException Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
         } catch (Exception ex) {
             log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             throw ex;
