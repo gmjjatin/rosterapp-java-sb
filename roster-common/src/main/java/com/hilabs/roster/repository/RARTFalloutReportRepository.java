@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface RARTFalloutReportRepository extends JpaRepository<RARTFalloutReport, Long> {
-    @Query(value = "select rule_ctgry_stg as category, ERR_DESC as errorDescription, count(*) as count from RA_RT_FALLOUT_REPORT " +
+    @Query(value = "select rule_ctgry_stg as category, ERR_DESC as description, count(*) as count from RA_RT_FALLOUT_REPORT " +
             "where ra_sheet_details_id = :raSheetDetailsId group by rule_ctgry_stg, ERR_DESC",
             nativeQuery = true)
     List<RAFalloutErrorInfo> getRAFalloutErrorInfoList(long raSheetDetailsId);

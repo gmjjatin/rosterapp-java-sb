@@ -136,8 +136,8 @@ public class RAFileStatsService {
             return new FalloutReportInfo(Arrays.asList(), false);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.ISF_GENERATED) {
             //TODO
-            Integer falloutRecordCount = rartFalloutReportRepository.countRecordsRAFalloutErrorInfo(raSheetDetails.getId(), "ISF");
-            Integer falloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(), "ISF");
+            Integer falloutRecordCount = rartFalloutReportRepository.countRecordsRAFalloutErrorInfo(raSheetDetails.getId(), "ISF Validation");
+            Integer falloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(), "ISF Validation");
             return new FalloutReportInfo(Arrays.asList(
                     new FalloutReportElement("ISF Records", raSheetDetails.getIsfRowCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRowCount())),
                     new FalloutReportElement("Roster Records", raSheetDetails.getIsfRecordCount() == null ? "-" : String.valueOf(raSheetDetails.getIsfRecordCount())),
@@ -145,8 +145,8 @@ public class RAFileStatsService {
                     new FalloutReportElement("Roster Records Failed", falloutRecordCount == null ? "-" : String.valueOf(falloutRecordCount))
             ), falloutRowCount != null && falloutRowCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.CONVERTED_DART) {
-            Integer falloutRecordCount = rartFalloutReportRepository.countRecordsRAFalloutErrorInfo(raSheetDetails.getId(), "DART");
-            Integer falloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(), "DART");
+            Integer falloutRecordCount = rartFalloutReportRepository.countRecordsRAFalloutErrorInfo(raSheetDetails.getId(), "DART Validation");
+            Integer falloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(), "DART Validation");
             //TODO
             return new FalloutReportInfo(Arrays.asList(
                     new FalloutReportElement("DART Records", raSheetDetails.getOutRowCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRowCount())),
