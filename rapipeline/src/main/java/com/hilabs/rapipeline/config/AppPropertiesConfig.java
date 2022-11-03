@@ -28,6 +28,12 @@ public class AppPropertiesConfig {
     @Value("${dart_wrapper}")
     private String dartWrapper;
 
+    @Value("${dart_ui_wrapper}")
+    private String dartUIWrapper;
+
+    @Value("${sps_wrapper}")
+    private String spsWrapper;
+
     @Value("${envConfigs}")
     private String envConfigs;
 

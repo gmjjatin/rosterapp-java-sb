@@ -42,30 +42,6 @@ public class DartTaskService {
 
     public static ConcurrentHashMap<Long, Boolean> dartTaskRunningMap = new ConcurrentHashMap<>();
 
-//    public boolean shouldRun(RASheetDetails raSheetDetails, boolean isFetcher) {
-//        if (dartTaskRunningMap.containsKey(raSheetDetails.getId())) {
-//            log.warn("DartTask task in progress for raSheetDetails {}", raSheetDetails);
-//            return false;
-//        }
-//        return isSheetIdEligibleForIsfTask(raSheetDetails, isFetcher);
-//    }
-
-//    public boolean isSheetIdEligibleForIsfTask(RASheetDetails raSheetDetails, boolean isFetcher) {
-//        if (raSheetDetails.getStatusCode() == null) {
-//            return false;
-//        }
-//        if (isFetcher) {
-//            if (!Arrays.asList(155).stream().anyMatch(p -> raSheetDetails.getStatusCode().equals(p))) {
-//                return false;
-//            }
-//        } else {
-//            if (!Arrays.asList(155, 160).stream().anyMatch(p -> raSheetDetails.getStatusCode().equals(p))) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-
     public List<RASheetDetails> getEligibleRAFileDetailsList(int count) {
         List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(dartStatusCodes,
                 Collections.singletonList(155), Collections.singletonList(0), count);

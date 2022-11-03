@@ -13,4 +13,9 @@ public class PipelineStatusCodeUtil {
     public static List<Integer> isfFileStatusCodes = Arrays.asList(27);
     public static List<Integer> dartStatusCodes = Arrays.asList(35);
 
+    //TODO demo
+    public static List<Integer> dartUIFileStatusCodes = Arrays.asList(27);
+    //TODO demo
+    public static List<Integer> spsFileStatusCodes = Arrays.asList(27);
+
 }
