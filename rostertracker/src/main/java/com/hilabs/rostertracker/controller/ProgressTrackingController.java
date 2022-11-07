@@ -155,7 +155,7 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId,
-                    market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 0, false);
+                    market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 0, true);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
 
