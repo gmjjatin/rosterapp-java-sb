@@ -14,6 +14,11 @@ public class PipelineStatusCodeUtil {
     public static List<Integer> dartStatusCodes = Arrays.asList(35);
 
     //TODO demo
+    public static Integer dartUISheetStatusCode = 171;
+    public static Integer dartUISheetInQueueStatusCode = 1001;
+    public static Integer dartUISheetTaskStatusCode = 1002;
+
+    //TODO demo
     public static List<Integer> dartUIFileStatusCodes = Arrays.asList(27);
     //TODO demo
     public static List<Integer> spsFileStatusCodes = Arrays.asList(27);

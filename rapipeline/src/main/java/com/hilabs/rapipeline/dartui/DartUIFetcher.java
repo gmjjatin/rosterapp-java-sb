@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hilabs.rapipeline.service.FileSystemUtilService.downloadUsingNIO;
+
 @Component
 @Slf4j
 public class DartUIFetcher implements JobRetriever {
@@ -46,14 +48,15 @@ public class DartUIFetcher implements JobRetriever {
     public List<Task> refillQueue(Integer tasks) {
         log.info("DartUIFetcher started - tasks {}", tasks);
         try {
-            List<RASheetDetails> raSheetDetailsList = dartUITaskService.getEligibleRAFileDetailsListAndUpdate(tasks);
+            List<RASheetDetails> raSheetDetailsList = dartUITaskService.getEligibleRASheetDetailsListAndUpdate(tasks);
             log.info("raSheetDetailsList size {}", raSheetDetailsList.size());
             List<Task> executors = new ArrayList<>();
             List<Long> inCompatibleFileIdList = new ArrayList<>();
             List<Long> pickedFileIdList = new ArrayList<>();
             List<Long> newlyAddedSheetIdList = new ArrayList<>();
             for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-                raFileDetailsService.updateRAFileDetailsStatus(raSheetDetails.getRaFileDetailsId(), 31);
+                //TODO demo
+//                raFileDetailsService.updateRAFileDetailsStatus(raSheetDetails.getRaFileDetailsId(), 31);
                 Map<String, Object> taskData = new HashMap<>();
                 taskData.put("data", raSheetDetails);
                 DartUITask dartUITask = new DartUITask(taskData);

@@ -62,6 +62,12 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "out_file_nm")
     private String outFileName;
 
+    @Column(name = "file_id")
+    private Long fileId;
+
+    @Column(name = "dart_ui_file_nm")
+    private String dartUIFileName;
+
     public RASheetDetails() {
     }
 

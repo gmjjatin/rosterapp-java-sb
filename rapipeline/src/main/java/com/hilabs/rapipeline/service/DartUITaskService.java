@@ -2,21 +2,23 @@ package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.config.AppPropertiesConfig;
+import com.hilabs.rapipeline.model.DartStatusCheckResponse;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIFileStatusCodes;
+import static com.hilabs.rapipeline.service.FileSystemUtilService.downloadUsingNIO;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 
 @Service
 @Slf4j
@@ -40,13 +42,18 @@ public class DartUITaskService {
     @Autowired
     private AppPropertiesConfig appPropertiesConfig;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public static ConcurrentHashMap<Long, Boolean> dartUITaskRunningMap = new ConcurrentHashMap<>();
 
-    public List<RASheetDetails> getEligibleRAFileDetailsListAndUpdate(int count) {
-        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(dartUIFileStatusCodes,
-                Collections.singletonList(145), Collections.singletonList(0), count);
+    public List<RASheetDetails> getEligibleRASheetDetailsListAndUpdate(int count) {
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedOnSheetStatusCodesForUpdate(Collections.singletonList(dartUISheetStatusCode),
+                count);
         List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
-        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, 150, "SYSTEM", new Date());
+        //TODO demo
+        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, dartUISheetInQueueStatusCode,
+                "SYSTEM", new Date());
         return raSheetDetailsList;
     }
 
@@ -60,5 +67,18 @@ public class DartUITaskService {
             log.info("Error in invokePythonProcess - commands {}", gson.toJson(commands));
             throw ex;
         }
+    }
+
+    //TODO demo
+    public DartStatusCheckResponse checkDartUIStatusOfSheet(RASheetDetails raSheetDetails) {
+        ResponseEntity<Map> response = restTemplate.getForEntity("https://reqres.in/api/users/2",
+                Map.class);
+        Map<String, Object> map = (Map<String, Object>) response.getBody();
+        log.info(gson.toJson(map.get("data")));
+        return new DartStatusCheckResponse("completed");
+    }
+
+    public void downloadDartUIResponseFile(RASheetDetails raSheetDetails) throws IOException  {
+        downloadUsingNIO("https://file-examples.com/wp-content/uploads/2017/02/file_example_XLS_10.xls", "sample.xls");
     }
 }

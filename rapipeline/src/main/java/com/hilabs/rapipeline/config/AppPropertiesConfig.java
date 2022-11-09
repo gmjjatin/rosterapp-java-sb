@@ -1,11 +1,15 @@
 package com.hilabs.rapipeline.config;
 
 import lombok.Data;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Data
-@Component
+@Configuration
 public class AppPropertiesConfig {
     @Value("${raSourceFolder}")
     private String sourceFolder;
@@ -39,4 +43,9 @@ public class AppPropertiesConfig {
 
     @Value("${rootPath}")
     private String rootPath;
+
+    @Bean
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
 }
