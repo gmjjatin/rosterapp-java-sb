@@ -1,8 +1,6 @@
 package com.hilabs.roster.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 
@@ -62,8 +60,8 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "out_file_nm")
     private String outFileName;
 
-    @Column(name = "file_id")
-    private Long fileId;
+    @Column(name = "VLDTN_FILE_ID")
+    private Long validationFileId;
 
     @Column(name = "dart_ui_file_nm")
     private String dartUIFileName;

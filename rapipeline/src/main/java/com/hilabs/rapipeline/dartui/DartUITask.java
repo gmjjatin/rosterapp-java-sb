@@ -11,22 +11,15 @@ import com.hilabs.roster.service.DartRASystemErrorsService;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
 import static com.hilabs.rapipeline.service.DartUITaskService.dartUITaskRunningMap;
-import static com.hilabs.rapipeline.service.FileSystemUtilService.downloadUsingNIO;
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUISheetStatusCode;
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUISheetTaskStatusCode;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationReadySheetStatusCode;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationTaskStartedSheetStatusCode;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 
 @Slf4j
@@ -59,17 +52,19 @@ public class DartUITask extends Task {
         }
         try {
             dartUITaskRunningMap.put(raSheetDetails.getId(), true);
-            raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Arrays.asList(raSheetDetails.getId()), dartUISheetTaskStatusCode,
-                    "SYSTEM", new Date());
-
+//            raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Arrays.asList(raSheetDetails.getId()),
+//                    dartUIValidationTaskStartedSheetStatusCode,
+//                    "SYSTEM", new Date());
+            //TODO handle with and without bad file
             DartStatusCheckResponse dartStatusCheckResponse = dartUITaskService.checkDartUIStatusOfSheet(raSheetDetails);
             boolean isDone = dartStatusCheckResponse.getStatus() != null && dartStatusCheckResponse.getStatus().equals("completed");
             if (!isDone) {
-                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Arrays.asList(raSheetDetails.getId()), dartUISheetStatusCode,
+                //TODO add a log
+                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Arrays.asList(raSheetDetails.getId()), dartUIValidationReadySheetStatusCode,
                         "SYSTEM", new Date());
                 return;
             }
-            //TODO demo
+            //TODO handle bad file - only for bad file
             raSheetDetails.setDartUIFileName("dart_file_name");
             raSheetDetailsRepository.save(raSheetDetails);
             dartUITaskService.downloadDartUIResponseFile(raSheetDetails);
