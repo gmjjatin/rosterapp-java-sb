@@ -12,6 +12,8 @@ public class RASheetProgressInfo {
     private String sheetName;
     private String standardizedFileName;
     private long receivedTime;
+    private Integer sheetStatusCode;
+    private Integer fileStatusCode;
 
     private String dartFileName;
 
@@ -28,39 +30,19 @@ public class RASheetProgressInfo {
 
 
     public RASheetProgressInfo(long raSheetDetailsId, String sheetName, String standardizedFileName,
-                               long receivedTime, String dartFileName) {
+                               long receivedTime, String dartFileName, Integer sheetStatusCode, Integer fileStatusCode) {
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
         this.standardizedFileName = standardizedFileName;
         this.receivedTime = receivedTime;
+        this.sheetStatusCode = sheetStatusCode;
+        this.fileStatusCode = fileStatusCode;
         this.dartFileName = dartFileName;
         this.rosterReceived = new RosterReceivedStageInfo();
         this.autoMapped = new AutoMappedStageInfo();
         this.isf = new ISFStageInfo();
         this.convertedDart = new ConvertedDartStageInfo();
         this.spsLoad = new SpsLoadStageInfo();
-        this.errorSummary = new ArrayList<>();
-    }
-
-    public RASheetProgressInfo(long raSheetDetailsId, String sheetName,
-                               String standardizedFileName,
-                               long receivedTime,
-                               String dartFileName,
-                               RosterReceivedStageInfo rosterReceivedStageInfo,
-                               AutoMappedStageInfo autoMapped,
-                               ISFStageInfo isf,
-                               ConvertedDartStageInfo convertedDart,
-                               SpsLoadStageInfo spsLoad) {
-        this.raSheetDetailsId = raSheetDetailsId;
-        this.sheetName = sheetName;
-        this.standardizedFileName = standardizedFileName;
-        this.receivedTime = receivedTime;
-        this.dartFileName = dartFileName;
-        this.rosterReceived = rosterReceivedStageInfo;
-        this.autoMapped = autoMapped;
-        this.isf = isf;
-        this.convertedDart = convertedDart;
-        this.spsLoad = spsLoad;
         this.errorSummary = new ArrayList<>();
     }
 }
