@@ -52,11 +52,12 @@ public class DartUITaskService {
     public static ConcurrentHashMap<Long, Boolean> dartUITaskRunningMap = new ConcurrentHashMap<>();
 
     public List<RASheetDetails> getEligibleRASheetDetailsListAndUpdate(int count) {
-        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedOnSheetStatusCodesForUpdate(Collections.singletonList(dartUIValidationReadySheetStatusCode),
+        List<Integer> dartUIValidationInProgressSheetStatusCodeList = Collections.singletonList(dartUIValidationInProgressSheetStatusCode);
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedOnSheetStatusCodesForUpdate(dartUIValidationInProgressSheetStatusCodeList,
                 count);
         List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
         //TODO demo
-        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, dartUIValidationInQueueSheetStatusCode,
+        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, dartUIFeedbackInQueueSheetStatusCode,
                 "SYSTEM", new Date());
         return raSheetDetailsList;
     }

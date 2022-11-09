@@ -63,8 +63,8 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "VLDTN_FILE_ID")
     private Long validationFileId;
 
-    @Column(name = "dart_ui_file_nm")
-    private String dartUIFileName;
+    @Column(name = "VLDTN_FILE_NM")
+    private String validationFileName;
 
     public RASheetDetails() {
     }
@@ -74,7 +74,12 @@ public class RASheetDetails extends BaseEntity {
         return "RASheetDetails [id=" + id + "]";
     }
 
-    public RASheetDetails(final Long raFileDetailsId, final Integer statusCode, final String tabName, final String type, final Integer rosterRecordCount, final Integer autoMappedRecordCount, final Integer isfRecordCount, final Integer isfRowCount, final Integer outRowCount, final Integer outRecordCount, final Integer targetSuccessfulRecordCount, final Integer manualReviewRecordCount, final Integer targetLoadTransactionCount, final Integer targetLoadSuccessTransactionCount, final String isfFileName, final String outFileName) {
+    public RASheetDetails(final Long raFileDetailsId, final Integer statusCode, final String tabName, final String type,
+                          final Integer rosterRecordCount, final Integer autoMappedRecordCount, final Integer isfRecordCount,
+                          final Integer isfRowCount, final Integer outRowCount, final Integer outRecordCount,
+                          final Integer targetSuccessfulRecordCount, final Integer manualReviewRecordCount,
+                          final Integer targetLoadTransactionCount, final Integer targetLoadSuccessTransactionCount, final String isfFileName,
+                          final String outFileName, final String validationFileName) {
         super();
         this.raFileDetailsId = raFileDetailsId;
         this.statusCode = statusCode;
@@ -92,5 +97,6 @@ public class RASheetDetails extends BaseEntity {
         this.targetLoadSuccessTransactionCount = targetLoadSuccessTransactionCount;
         this.isfFileName = isfFileName;
         this.outFileName = outFileName;
+        this.validationFileName = validationFileName;
     }
 }

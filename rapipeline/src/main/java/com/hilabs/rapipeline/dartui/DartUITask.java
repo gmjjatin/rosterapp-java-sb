@@ -14,15 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
 import static com.hilabs.rapipeline.service.DartUITaskService.dartUITaskRunningMap;
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationReadySheetStatusCode;
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationTaskStartedSheetStatusCode;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIFeedbackReceived;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationInProgressSheetStatusCode;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 
 @Slf4j
@@ -62,7 +60,7 @@ public class DartUITask extends Task {
             if (validationFileId == null) {
                 log.error("validationFileId is null for raSheetDetails {} so skipping dart ui task", gson.toJson(raSheetDetails));
                 raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
-                        dartUIValidationReadySheetStatusCode, "SYSTEM", new Date());
+                        dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
             }
             //TODO handle with and without bad file
@@ -74,18 +72,19 @@ public class DartUITask extends Task {
             if (!isValidationCompleted) {
                 log.error("Status for raSheetDetails {} is {} - so skipping dart ui task", gson.toJson(raSheetDetails), status);
                 raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
-                        dartUIValidationReadySheetStatusCode, "SYSTEM", new Date());
+                        dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
             }
             //TODO
             if (status.equalsIgnoreCase("Ready for Review")) {
                 String dartUIFileName = "dart_file_name";
                 String fileType = "fileType";
-                raSheetDetails.setDartUIFileName(dartUIFileName);
-                raSheetDetailsRepository.save(raSheetDetails);
+                raSheetDetails.setValidationFileName(dartUIFileName);
                 dartUITaskService.downloadDartUIResponseFile(validationFileId,
                         fileSystemUtilService.getDartUIResponseFilePath(dartUIFileName), fileType);
             }
+            raSheetDetails.setStatusCode(dartUIFeedbackReceived);
+            raSheetDetailsRepository.save(raSheetDetails);
             dartUITaskService.invokePythonProcessForDartUITask(raSheetDetails);
             log.debug("DartUITask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
