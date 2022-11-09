@@ -82,7 +82,7 @@ public class FileDownloadController {
                 standardizedFileName = removeFileExtensionFromExcelFile(raFileDetails.getStandardizedFileName());
             }
             String trackerFileName = String.format("%s_%s_Tracker.xlsx", standardizedFileName, raSheetDetails.getId());
-            File file = new File(rosterConfig.getRaTargetFolder(), trackerFileName);
+            File file = new File(rosterConfig.getRaTrackerFileFolder(), trackerFileName);
             return getDownloadFileResponseEntity(file);
         } catch (Exception ex) {
             log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
@@ -98,7 +98,13 @@ public class FileDownloadController {
                 return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
             }
             RASheetDetails raSheetDetails = optionalRASheetDetails.get();
-            File file = new File(raSheetDetails.getOutFileName());
+            String outFileName = raSheetDetails.getOutFileName();
+            File file = null;
+            if (outFileName != null && outFileName.contains("/")) {
+                file = new File(raSheetDetails.getOutFileName());
+            } else {
+                file = new File(rosterConfig.getDartFileFolder(), raSheetDetails.getOutFileName());
+            }
             return getDownloadFileResponseEntity(file);
         }  catch (NoSuchFileException ex) {
             log.error("NoSuchFileException Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
