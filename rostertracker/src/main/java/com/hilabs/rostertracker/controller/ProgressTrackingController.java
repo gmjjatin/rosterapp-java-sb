@@ -7,7 +7,9 @@ import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
 import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.RASheetProgressInfo;
+import com.hilabs.rostertracker.model.ReleaseForDartUIRequest;
 import com.hilabs.rostertracker.model.RosterFilterType;
+import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
@@ -15,12 +17,15 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.hilabs.roster.util.Constants.DART_GENERATED_STATUS_CODE;
+import static com.hilabs.roster.util.Constants.RELEASED_FOR_DART_UI_STATUS_CODE;
 import static com.hilabs.rostertracker.service.RAFileStatsService.getRosterReceivedTime;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.dataTypeList;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.isDataSheet;
@@ -197,6 +202,31 @@ public class ProgressTrackingController {
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, fileName, startTime, endTime);
+            throw ex;
+        }
+    }
+
+    @PostMapping("/release-for-dart-ui")
+    public ResponseEntity<Map<String, String>> releaseForDartUI(@RequestBody ReleaseForDartUIRequest releaseForDartUIRequest) {
+        try {
+            if (releaseForDartUIRequest == null || releaseForDartUIRequest.getRaFileDetailsId() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "raFileDetailsId missing");
+            }
+            Long raFileDetailsId = releaseForDartUIRequest.getRaFileDetailsId();
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findByFileDetailsId(raFileDetailsId);
+            if (!optionalRAFileDetails.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("raFileDetailsId %s not found", raFileDetailsId));
+            }
+            RAFileDetails raFileDetails = optionalRAFileDetails.get();
+            if (!Objects.equals(raFileDetails.getStatusCode(), DART_GENERATED_STATUS_CODE)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("raFileDetailsId %s not eligible for dart ui release", raFileDetailsId));
+            }
+            raFileDetails.setStatusCode(RELEASED_FOR_DART_UI_STATUS_CODE);
+            raFileDetailsService.saveRAFileDetails(raFileDetails);
+            //TODO return better response
+            return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in releaseForDartUI releaseForDartUIRequest {}", releaseForDartUIRequest);
             throw ex;
         }
     }

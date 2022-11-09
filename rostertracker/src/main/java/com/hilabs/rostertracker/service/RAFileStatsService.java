@@ -124,7 +124,8 @@ public class RAFileStatsService {
             outFileName = parts[parts.length - 1];
         }
         return new RASheetProgressInfo(raSheetDetails.getId(), raSheetDetails.getTabName(),
-                raFileDetails.getStandardizedFileName(), rosterReceivedTime, outFileName);
+                raFileDetails.getStandardizedFileName(), rosterReceivedTime, outFileName,
+                raSheetDetails.getStatusCode(), raFileDetails.getStatusCode());
     }
 
 

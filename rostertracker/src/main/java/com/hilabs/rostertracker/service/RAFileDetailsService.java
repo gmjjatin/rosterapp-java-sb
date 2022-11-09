@@ -137,8 +137,16 @@ public class RAFileDetailsService {
         return raFileDetailsRepository.findByFileSearchStr(providerSearchStr, statusCodes);
     }
 
+    public Optional<RAFileDetails> findByFileDetailsId(Long raFileDetailsId) {
+        return raFileDetailsRepository.findById(raFileDetailsId);
+    }
+
     public List<String> findByPlmSearchStr(String plmSearchStr, List<Integer> statusCodes) {
         return raFileDetailsRepository.findByPlmSearchStr(plmSearchStr, statusCodes);
+    }
+
+    public void saveRAFileDetails(RAFileDetails raFileDetails) {
+        raFileDetailsRepository.save(raFileDetails);
     }
 
     public List<RAFileDetails> findByMarketSearchStr(String searchStr) {
