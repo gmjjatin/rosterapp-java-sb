@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
@@ -52,23 +53,32 @@ public class DartUITask extends Task {
         }
         try {
             dartUITaskRunningMap.put(raSheetDetails.getId(), true);
-//            raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Arrays.asList(raSheetDetails.getId()),
-//                    dartUIValidationTaskStartedSheetStatusCode,
-//                    "SYSTEM", new Date());
-            //TODO handle with and without bad file
-            DartStatusCheckResponse dartStatusCheckResponse = dartUITaskService.checkDartUIStatusOfSheet(raSheetDetails);
-            boolean isDone = dartStatusCheckResponse.getStatus() != null && dartStatusCheckResponse.getStatus().equals("completed");
-            if (!isDone) {
-                //TODO add a log
-                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Arrays.asList(raSheetDetails.getId()), dartUIValidationReadySheetStatusCode,
-                        "SYSTEM", new Date());
+            Long validationFileId = raSheetDetails.getValidationFileId();
+            //TODO confirm
+            if (validationFileId == null) {
+                log.error("validationFileId is null for raSheetDetails {} so skipping dart ui task", gson.toJson(raSheetDetails));
+                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
+                        dartUIValidationReadySheetStatusCode, "SYSTEM", new Date());
                 return;
             }
-            //TODO handle bad file - only for bad file
-            raSheetDetails.setDartUIFileName("dart_file_name");
-            raSheetDetailsRepository.save(raSheetDetails);
-            dartUITaskService.downloadDartUIResponseFile(raSheetDetails);
-            //TODO change it
+            //TODO handle with and without bad file
+            DartStatusCheckResponse dartStatusCheckResponse = dartUITaskService.checkDartUIStatusOfSheet(validationFileId);
+            String status = dartStatusCheckResponse.getStatus();
+            boolean isValidationCompleted = (status != null) && (status.equalsIgnoreCase("Ready to Submit")
+                    || status.equalsIgnoreCase("Ready for Review"));
+
+            if (!isValidationCompleted) {
+                log.error("Status for raSheetDetails {} is {} - so skipping dart ui task", gson.toJson(raSheetDetails), status);
+                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
+                        dartUIValidationReadySheetStatusCode, "SYSTEM", new Date());
+                return;
+            }
+            //TODO
+            if (status.equalsIgnoreCase("Ready for Review")) {
+                raSheetDetails.setDartUIFileName("dart_file_name");
+                raSheetDetailsRepository.save(raSheetDetails);
+                dartUITaskService.downloadDartUIResponseFile(raSheetDetails);
+            }
             dartUITaskService.invokePythonProcessForDartUITask(raSheetDetails);
             log.debug("DartUITask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {

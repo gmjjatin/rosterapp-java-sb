@@ -7,6 +7,7 @@ import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,6 +24,8 @@ import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 @Service
 @Slf4j
 public class DartUITaskService {
+    @Value("${dart_ui_host}")
+    private String dartUIHost;
     private static Gson gson = new Gson();
     @Autowired
     private RAFileDetailsService raFileDetailsService;
@@ -70,12 +73,14 @@ public class DartUITaskService {
     }
 
     //TODO demo
-    public DartStatusCheckResponse checkDartUIStatusOfSheet(RASheetDetails raSheetDetails) {
-        ResponseEntity<Map> response = restTemplate.getForEntity("https://reqres.in/api/users/2",
-                Map.class);
-        Map<String, Object> map = (Map<String, Object>) response.getBody();
-        log.info(gson.toJson(map.get("data")));
-        return new DartStatusCheckResponse("completed");
+    public DartStatusCheckResponse checkDartUIStatusOfSheet(Long validationFileId) {
+        String host = dartUIHost;
+        if (!host.endsWith("/")) {
+            host += "/";
+        }
+        String url = String.format("%sdart-core-service/file-validation/file-status/{%s}", host, validationFileId);
+        ResponseEntity<DartStatusCheckResponse> response = restTemplate.getForEntity(url, DartStatusCheckResponse.class);
+        return response.getBody();
     }
 
     public void downloadDartUIResponseFile(RASheetDetails raSheetDetails) throws IOException  {
