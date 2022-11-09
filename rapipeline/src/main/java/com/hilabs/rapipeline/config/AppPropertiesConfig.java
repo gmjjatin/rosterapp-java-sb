@@ -44,6 +44,9 @@ public class AppPropertiesConfig {
     @Value("${rootPath}")
     private String rootPath;
 
+    @Value("${dartUIResponseFolder}")
+    private String dartUIResponseFolder;
+
     @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();

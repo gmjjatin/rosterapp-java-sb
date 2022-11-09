@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
 import com.hilabs.rapipeline.model.DartStatusCheckResponse;
 import com.hilabs.rapipeline.service.DartUITaskService;
+import com.hilabs.rapipeline.service.FileSystemUtilService;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import com.hilabs.roster.service.DartRASystemErrorsService;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -27,6 +29,7 @@ import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 public class DartUITask extends Task {
     private DartRASystemErrorsService dartRASystemErrorsService;
     private DartUITaskService dartUITaskService;
+    private FileSystemUtilService fileSystemUtilService;
 
     private RestTemplate restTemplate;
 
@@ -39,6 +42,7 @@ public class DartUITask extends Task {
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) {
+        this.fileSystemUtilService = (FileSystemUtilService) applicationContext.getBean("fileSystemUtilService");
         this.dartRASystemErrorsService = (DartRASystemErrorsService) applicationContext.getBean("dartRASystemErrorsService");
         this.dartUITaskService = (DartUITaskService) applicationContext.getBean("dartUITaskService");
         this.raSheetDetailsRepository = (RASheetDetailsRepository) applicationContext.getBean("RASheetDetailsRepository");
@@ -75,9 +79,12 @@ public class DartUITask extends Task {
             }
             //TODO
             if (status.equalsIgnoreCase("Ready for Review")) {
-                raSheetDetails.setDartUIFileName("dart_file_name");
+                String dartUIFileName = "dart_file_name";
+                String fileType = "fileType";
+                raSheetDetails.setDartUIFileName(dartUIFileName);
                 raSheetDetailsRepository.save(raSheetDetails);
-                dartUITaskService.downloadDartUIResponseFile(raSheetDetails);
+                dartUITaskService.downloadDartUIResponseFile(validationFileId,
+                        fileSystemUtilService.getDartUIResponseFilePath(dartUIFileName), fileType);
             }
             dartUITaskService.invokePythonProcessForDartUITask(raSheetDetails);
             log.debug("DartUITask done for {}", gson.toJson(getTaskData()));

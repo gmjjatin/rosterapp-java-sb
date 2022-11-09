@@ -5,6 +5,7 @@ import com.hilabs.rapipeline.config.AppPropertiesConfig;
 import com.hilabs.rapipeline.model.DartStatusCheckResponse;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
+import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +25,7 @@ import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 @Service
 @Slf4j
 public class DartUITaskService {
-    @Value("${dart_ui_host}")
+    @Value("${dartUIHost}")
     private String dartUIHost;
     private static Gson gson = new Gson();
     @Autowired
@@ -72,18 +73,34 @@ public class DartUITaskService {
         }
     }
 
-    //TODO demo
-    public DartStatusCheckResponse checkDartUIStatusOfSheet(Long validationFileId) {
-        String host = dartUIHost;
-        if (!host.endsWith("/")) {
+    public static String getUrl(String host, String path) {
+        if (host.endsWith("/")) {
             host += "/";
         }
-        String url = String.format("%sdart-core-service/file-validation/file-status/{%s}", host, validationFileId);
-        ResponseEntity<DartStatusCheckResponse> response = restTemplate.getForEntity(url, DartStatusCheckResponse.class);
-        return response.getBody();
+        return String.format("%s%s", host, path);
     }
 
-    public void downloadDartUIResponseFile(RASheetDetails raSheetDetails) throws IOException  {
-        downloadUsingNIO("https://file-examples.com/wp-content/uploads/2017/02/file_example_XLS_10.xls", "sample.xls");
+    //TODO demo
+    public DartStatusCheckResponse checkDartUIStatusOfSheet(Long validationFileId) {
+        try {
+            String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/file-status/%s", validationFileId));
+            ResponseEntity<DartStatusCheckResponse> response = restTemplate.getForEntity(url, DartStatusCheckResponse.class);
+            return response.getBody();
+        } catch (Exception ex) {
+            log.error("Error in checkDartUIStatusOfSheet for validationFileId {} ex {} stackTrace {}",
+                    validationFileId, ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
+        }
+    }
+
+    public void downloadDartUIResponseFile(Long validationFileId, String filePath, String fileType) throws IOException  {
+        try {
+            String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/file-download/%s?type=%s", validationFileId, fileType));
+            downloadUsingNIO(url, filePath);
+        } catch (Exception ex) {
+            log.error("Error in downloadDartUIResponseFile for validationFileId {} filePath {} fileType {} ex {} stackTrace {}",
+                    validationFileId, filePath, filePath, ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
+        }
     }
 }
