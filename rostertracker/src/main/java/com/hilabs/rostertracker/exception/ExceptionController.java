@@ -10,6 +10,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.NoSuchFileException;
 import java.util.Collections;
@@ -60,5 +61,13 @@ public class ExceptionController {
         ErrorResponse errorResponse =  new ErrorResponse("CONCURRENT_USER_UPDATE",
                 "Record has already updated by another user");
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> exception(ResponseStatusException exception) {
+
+        log.error("exception {}", exception.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(exception.getStatus().name(), exception.getMessage());
+        return new ResponseEntity<>(errorResponse, exception.getStatus());
     }
 }
