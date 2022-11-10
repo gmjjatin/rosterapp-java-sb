@@ -55,6 +55,7 @@ public class ConfigUIController {
     public ResponseEntity<CollectionResponse<ConfigUiFileData>> getConfigUIValidFileList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                          @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                          @RequestParam(defaultValue = "") String market,
+                                                                                         @RequestParam(defaultValue = "", name = "status") String businessStatus,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                          @RequestParam(defaultValue = "") String fileName,
                                                                                          @RequestParam(defaultValue = "") String plmTicketId,
@@ -70,7 +71,7 @@ public class ConfigUIController {
             endTime = startAndEndTime.endTime;
             //TODO demo
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName,
-                    plmTicketId, market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 1, true);
+                    plmTicketId, market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 1, true, businessStatus);
             List<Long> raFileDetailsIdList = raFileDetailsWithSheetsListResponse.getItems().stream()
                     .map(p -> p.getRaFileDetails().getId()).collect(Collectors.toList());
             Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(raFileDetailsIdList);

@@ -61,6 +61,7 @@ public class ProgressTrackingController {
     public ResponseEntity<CollectionResponse<RAFileAndStats>> getRosterTrackerFileStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                             @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                             @RequestParam(defaultValue = "") String market,
+                                                                                            @RequestParam(defaultValue = "", name = "status") String businessStatus,
                                                                                             @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                             @RequestParam(defaultValue = "") String fileName,
                                                                                             @RequestParam(defaultValue = "") String plmTicketId,
@@ -76,7 +77,7 @@ public class ProgressTrackingController {
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
                     .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
                             startTime, endTime, raFileDetailsService.getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true,
-                            0, false);
+                            0, false, businessStatus);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse<RAFileAndStats> collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
@@ -146,6 +147,7 @@ public class ProgressTrackingController {
     public ResponseEntity<CollectionResponse<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                     @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                     @RequestParam(defaultValue = "") String market,
+                                                                                    @RequestParam(defaultValue = "", name = "status") String businessStatus,
                                                                                     @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                     @RequestParam(defaultValue = "") String fileName,
                                                                                     @RequestParam(defaultValue = "") String plmTicketId,
@@ -160,7 +162,7 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId,
-                    market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 0, true);
+                    market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 0, true, businessStatus);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
 
