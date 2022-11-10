@@ -50,79 +50,87 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select * from RA_RT_FILE_DETAILS where creat_dt >= :startDate and creat_dt < :endDate and status_cd in (:statusCodes) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             " order by creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
-    List<RAFileDetails> findRAFileDetailsListBetweenDates(String fileName, String plmTicketId, Date startDate, Date endDate, List<Integer> statusCodes, int limit, int offset, List<String> types, int minSheetCount);
+    List<RAFileDetails> findRAFileDetailsListBetweenDates(String fileName, String plmTicketId, Date startDate, Date endDate, List<Integer> statusCodes, int limit, int offset, List<String> types, int minSheetCount, String businessStatus);
 
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS where creat_dt >= :startDate and creat_dt < :endDate and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
             "",
             nativeQuery = true)
-    Integer countRAFileDetailsListBetweenDates(String fileName, String plmTicketId, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount);
+    Integer countRAFileDetailsListBetweenDates(String fileName, String plmTicketId, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount, String businessStatus);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where market = :market and RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
             "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
             "order by RA_RT_FILE_DETAILS.creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findByMarketAndLineOfBusiness(String fileName, String plmTicketId, String market, String lineOfBusiness, Date startDate, Date endDate,
-                                                      List<Integer> statusCodes, int limit, int offset, List<String> types, int minSheetCount);
+                                                      List<Integer> statusCodes, int limit, int offset, List<String> types, int minSheetCount, String businessStatus);
 
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where market = :market and RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
             "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
             "",
             nativeQuery = true)
-    Integer countByMarketAndLineOfBusiness(String fileName, String plmTicketId, String market, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount);
+    Integer countByMarketAndLineOfBusiness(String fileName, String plmTicketId, String market, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount, String businessStatus);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
             "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
             "order by RA_RT_FILE_DETAILS.creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findByLineOfBusiness(String fileName, String plmTicketId, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes,
-                                             int limit, int offset, List<String> types, int minSheetCount);
+                                             int limit, int offset, List<String> types, int minSheetCount, String businessStatus);
 
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
             "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
             "",
             nativeQuery = true)
-    Integer countByLineOfBusiness(String fileName, String plmTicketId, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount);
+    Integer countByLineOfBusiness(String fileName, String plmTicketId, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount, String businessStatus);
 
     //TODO demo handle limit and offset
     @Query(value = "select * from RA_RT_FILE_DETAILS where market= :market and creat_dt >= :startDate " +
             "and creat_dt < :endDate and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             " and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
             "order by creat_dt desc offset :offset " +
             "rows fetch next :limit rows only", nativeQuery = true)
-    List<RAFileDetails> findByMarket(String fileName, String plmTicketId, String market, Date startDate, Date endDate, List<Integer> statusCodes, int limit, int offset, List<String> types, int minSheetCount);
+    List<RAFileDetails> findByMarket(String fileName, String plmTicketId, String market, Date startDate, Date endDate, List<Integer> statusCodes, int limit, int offset, List<String> types, int minSheetCount, String businessStatus);
 
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS where market= :market and creat_dt >= :startDate " +
             "and creat_dt < :endDate and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             " and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
             "", nativeQuery = true)
-    Integer countByMarket(String fileName, String plmTicketId, String market, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount);
+    Integer countByMarket(String fileName, String plmTicketId, String market, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount, String businessStatus);
 
     @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) and MANUAL_ACTN_REQ in (:manualActionRequiredList) " +
             "offset :offset rows fetch next :limit rows only", nativeQuery = true)

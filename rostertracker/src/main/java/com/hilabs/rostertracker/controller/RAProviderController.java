@@ -3,6 +3,7 @@ package com.hilabs.rostertracker.controller;
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
+import com.hilabs.rostertracker.service.RosterStageService;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/ra-provider")
@@ -21,6 +23,9 @@ import java.util.List;
 public class RAProviderController {
     @Autowired
     RAFileDetailsService raFileDetailsService;
+
+    @Autowired
+    RosterStageService rosterStageService;
 
     public ConcurrentLruCache<String, List<RAFileDetails>> raProviderListFromSearchStrCache = new ConcurrentLruCache<>(10000, (p) -> {
         return raFileDetailsService.getRAFileDetailsListFromSearchStr(p);
@@ -62,6 +67,19 @@ public class RAProviderController {
             List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             List<String> markets = raFileDetailsService.findAllMarkets(statusCodes);
             return new ResponseEntity<>(markets, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in getAllMarkets ex {}", ex.getMessage());
+            throw ex;
+        }
+    }
+
+    @GetMapping("/status/all")
+    public ResponseEntity<List<String>> getStatusList(@RequestParam(defaultValue = "", name = "type") String type) {
+        try {
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
+            List<String> statusList = rosterStageService.getSheetRAStatusCDMasterList(statusCodes).stream()
+                    .map(p -> p.getBusinessStatus()).collect(Collectors.toList());
+            return new ResponseEntity<>(statusList, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getAllMarkets ex {}", ex.getMessage());
             throw ex;

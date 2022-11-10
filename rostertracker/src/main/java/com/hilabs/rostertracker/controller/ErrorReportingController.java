@@ -52,6 +52,7 @@ public class ErrorReportingController {
     public ResponseEntity<CollectionResponse<RAFileAndErrorStats>> getFileErrorStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                          @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                          @RequestParam(defaultValue = "") String market,
+                                                                                         @RequestParam(defaultValue = "", name = "status") String businessStatus,
                                                                                          @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                          @RequestParam(defaultValue = "") String fileName,
                                                                                          @RequestParam(defaultValue = "") String plmTicketId,
@@ -67,7 +68,7 @@ public class ErrorReportingController {
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
                     .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset, true, 0, false);
+                            startTime, endTime, statusCodes, limit, offset, true, 0, false, businessStatus);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raFileAndErrorStatsList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
@@ -85,6 +86,7 @@ public class ErrorReportingController {
     public ResponseEntity<CollectionResponse<RASheetAndColumnErrorStats>> getSheetErrorStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                    @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                    @RequestParam(defaultValue = "") String market,
+                                                                                                 @RequestParam(defaultValue = "", name = "status") String businessStatus,
                                                                                    @RequestParam(defaultValue = "") String lineOfBusiness,
                                                                                    @RequestParam(defaultValue = "") String fileName,
                                                                                    @RequestParam(defaultValue = "") String plmTicketId,
@@ -99,7 +101,7 @@ public class ErrorReportingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset, true, 0, false);
+                            startTime, endTime, statusCodes, limit, offset, true, 0, false, businessStatus);
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {
