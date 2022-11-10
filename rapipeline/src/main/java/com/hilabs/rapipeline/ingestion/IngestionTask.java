@@ -229,6 +229,9 @@ public class IngestionTask extends Task {
         if (raFileMetaData.getRoId() != null) {
             raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getRoId(), AltIdType.RO_ID.name(), 1);
         }
+        String plmRoFileDataId = raFileMetaData.getRaPlmRoFileDataId() == null ? null : String.valueOf(raFileMetaData.getRaPlmRoFileDataId());
+        raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, plmRoFileDataId, AltIdType.PLM_RO_FILE_DATA_ID.name(),
+                1);
         if (raFileMetaData.getPriorityProvYN() != null && raFileMetaData.getPriorityProvYN().equals("Y")) {
             raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, "WG",
                     AltIdType.PROVIDER_CATEGORY.name(), 1);
