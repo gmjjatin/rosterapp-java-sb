@@ -229,6 +229,10 @@ public class IngestionTask extends Task {
         if (raFileMetaData.getRoId() != null) {
             raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, raFileMetaData.getRoId(), AltIdType.RO_ID.name(), 1);
         }
+        if (raFileMetaData.getPriorityProvYN() != null && raFileMetaData.getPriorityProvYN().equals("Y")) {
+            raFileMetaDataDetailsService.insertRARTFileAltIds(raFileDetailsId, "WG",
+                    AltIdType.PROVIDER_CATEGORY.name(), 1);
+        }
         //TODO need to get contact from file
 //        raFileMetaDataDetailsService.insertRARTContactDetails(raFileDetailsId, null,
 //                contact, contactType, isActive)

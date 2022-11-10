@@ -28,6 +28,8 @@ public class RAFileMetaData  {
     String reprocess;
     Date depositDate;
     String fileDocumentNumber;
+
+    String priorityProvYN;
     public RAFileMetaData(RAPlmRoProfData raPlmRoProfData, RAPlmRoFileData raPlmRoFileData) {
         this.raPlmRoProfDataId = raPlmRoProfData.getRaPlmRoProfDataId();
         this.roId = raPlmRoProfData.getRoId();
@@ -49,5 +51,6 @@ public class RAFileMetaData  {
         this.reprocess = raPlmRoFileData.getReProcess();
         this.depositDate = raPlmRoFileData.getDepositDate();
         this.fileDocumentNumber = raPlmRoFileData.getFileDocumentNumber();
+        this.priorityProvYN = raPlmRoProfData.getPriorityProvYN();
     }
 }

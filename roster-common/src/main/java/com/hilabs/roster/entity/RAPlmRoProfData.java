@@ -61,6 +61,9 @@ public class RAPlmRoProfData extends BaseEntity {
     @Column(name = "IS_FILE_DLD_COMP")
     private String isFileDLDCOMP;
 
+    @Column(name = "PRIORITY_PROV_YN")
+    private String priorityProvYN;
+
     public RAPlmRoProfData() {}
 
     @Override
