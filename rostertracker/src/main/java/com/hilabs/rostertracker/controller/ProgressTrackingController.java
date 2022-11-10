@@ -6,10 +6,7 @@ import com.hilabs.roster.entity.*;
 import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
 import com.hilabs.rostertracker.dto.*;
-import com.hilabs.rostertracker.model.RASheetProgressInfo;
-import com.hilabs.rostertracker.model.ReleaseForDartUIRequest;
-import com.hilabs.rostertracker.model.RosterFilterType;
-import com.hilabs.rostertracker.model.UpdateColumnMappingRequest;
+import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
@@ -89,7 +86,7 @@ public class ProgressTrackingController {
     }
 
     @GetMapping("/progress-info-list")
-    public ResponseEntity<List<RASheetProgressInfo>> getRosterFileProgressInfoList(@RequestParam(defaultValue = "1") Long raFileDetailsId) {
+    public ResponseEntity<RosterFileProgressInfoListResponse> getRosterFileProgressInfoList(@RequestParam(defaultValue = "1") Long raFileDetailsId) {
         try {
             Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsService.findRAFileDetailsById(raFileDetailsId);
             if (!optionalRAFileDetails.isPresent()) {
@@ -105,7 +102,16 @@ public class ProgressTrackingController {
                 }
                 raSheetProgressInfoList.add(raFileStatsService.getRASheetProgressInfo(raFileDetails, raSheetDetails));
             }
-            return new ResponseEntity<>(raSheetProgressInfoList, HttpStatus.OK);
+            Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(Collections.singletonList(raFileDetailsId));
+            Map<Long, List<RARTFileAltIds>> rartFileAltIdsListMap = raFileStatsService.getRARTFileAltIdsListMap(Collections.singletonList(raFileDetailsId));
+            String lob = raFileDetailsLobMap.containsKey(raFileDetails.getId()) ? raFileDetailsLobMap.get(raFileDetails.getId()).getLob() : "-";
+            List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsListMap.containsKey(raFileDetails.getId()) ? rartFileAltIdsListMap
+                    .get(raFileDetails.getId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
+            String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
+            Long fileReceivedTime = getRosterReceivedTime(raFileDetails);
+            RosterFileProgressInfoListResponse rosterFileProgressInfoListResponse = new RosterFileProgressInfoListResponse(raFileDetails.getOriginalFileName(),
+                    fileReceivedTime, lob, raFileDetails.getMarket(), plmTicketId, raFileDetails.getStatusCode(), raSheetProgressInfoList);
+            return new ResponseEntity<>(rosterFileProgressInfoListResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRosterFileProgressInfoList raFileDetailsId {}", raFileDetailsId);
             throw ex;
