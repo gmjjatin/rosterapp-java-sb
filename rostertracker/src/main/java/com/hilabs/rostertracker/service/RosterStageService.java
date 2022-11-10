@@ -152,6 +152,10 @@ public class RosterStageService {
                 .map(RAStatusEntity::getCode).collect(Collectors.toList());
     }
 
+    public List<RAStatusCDMaster> getSheetRAStatusCDMasterList(List<Integer> statusCodes) {
+        return raStatusCDMasterRepository.getSheetRAStatusCDMasterList(statusCodes);
+    }
+
     public long computeTimeTakenInMillis(List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, RosterSheetProcessStage rosterSheetProcessStage) {
         List<RAStatusEntity> sheetRAStatusEntityList = getSheetRaStatusCDMasterList();
         List<RAStatusEntity> raStatusEntities = sheetRAStatusEntityList.stream().filter(p -> p.getStage() == rosterSheetProcessStage).collect(Collectors.toList());
