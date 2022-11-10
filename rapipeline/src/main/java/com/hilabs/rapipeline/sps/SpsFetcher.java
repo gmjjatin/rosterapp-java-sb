@@ -46,7 +46,7 @@ public class SpsFetcher implements JobRetriever {
     public List<Task> refillQueue(Integer tasks) {
         log.info("SpsFetcher started - tasks {}", tasks);
         try {
-            List<RASheetDetails> raSheetDetailsList = spsTaskService.getEligibleRAFileDetailsListAndUpdate(tasks);
+            List<RASheetDetails> raSheetDetailsList = spsTaskService.getEligibleRASheetDetailsListAndUpdate(tasks);
             log.info("raSheetDetailsList size {}", raSheetDetailsList.size());
             List<Task> executors = new ArrayList<>();
             List<Long> inCompatibleFileIdList = new ArrayList<>();

@@ -20,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rapipeline.service.FileSystemUtilService.downloadUsingNIO;
+import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.hasIntersection;
+import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.isSubset;
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 
 @Service
@@ -103,5 +105,41 @@ public class DartUITaskService {
                     validationFileId, filePath, filePath, ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             throw ex;
         }
+    }
+
+    public boolean consolidateDartUIValidation(Long raFileDetailsId) {
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
+        log.info("consolidateDartUIValidation for raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId,
+                new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId())));
+        List<Integer> sheetCodes = raSheetDetailsList.stream().map(s -> s.getStatusCode()).collect(Collectors.toList());
+        if (sheetCodes.stream().anyMatch(Objects::isNull)) {
+            log.error("One of the status codes is null for raFileDetailsId {}", raFileDetailsId);
+            //TODO
+            return false;
+        }
+        if (sheetCodes.size() == 0) {
+            log.error("Zero status codes for raFileDetailsId {}", raFileDetailsId);
+            //TODO
+            return false;
+        }
+        //153 - ISF Conversion Failed
+        //111 - Roster Sheet Processing not Required
+        //119 - Roster Sheet Need to be Processed Manually
+        //131 - Post Column Mapping Normalization processing Not required
+        //139 - Post Column Mapping Normalization Manual action
+        //155 - ISF Conversion Completed
+        //145 - Post Column Mapping Normalization completed
+        //35 - Roster ISF Generation Completed
+        //33 - Roster ISF Generation Failed
+        if (hasIntersection(Arrays.asList(173), sheetCodes)) {
+            //TODO demo
+            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 33);
+            return false;
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 179))) {
+            //TODO demo - change file status code
+            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 35);
+            return false;
+        }
+        return true;
     }
 }

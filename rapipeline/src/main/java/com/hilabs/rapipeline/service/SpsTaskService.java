@@ -42,11 +42,11 @@ public class SpsTaskService {
 
     public static ConcurrentHashMap<Long, Boolean> spsTaskRunningMap = new ConcurrentHashMap<>();
 
-    public List<RASheetDetails> getEligibleRAFileDetailsListAndUpdate(int count) {
-        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(spsFileStatusCodes,
+    public List<RASheetDetails> getEligibleRASheetDetailsListAndUpdate(int count) {
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(readyForSpsSheetStatusCode,
                 Collections.singletonList(145), Collections.singletonList(0), count);
         List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
-        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, 150, "SYSTEM", new Date());
+        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, , "SYSTEM", new Date());
         return raSheetDetailsList;
     }
 
