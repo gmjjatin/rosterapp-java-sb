@@ -70,7 +70,7 @@ public class DartUITask extends Task {
                     || status.equalsIgnoreCase("Ready for Review"));
 
             if (!isValidationCompleted) {
-                log.error("Status for raSheetDetails {} is {} - so skipping dart ui task", gson.toJson(raSheetDetails), status);
+                log.info("Status for raSheetDetails {} is {} - so skipping dart ui task", gson.toJson(raSheetDetails), status);
                 raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
                         dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
@@ -86,6 +86,7 @@ public class DartUITask extends Task {
             raSheetDetails.setStatusCode(dartUIFeedbackReceived);
             raSheetDetailsRepository.save(raSheetDetails);
             dartUITaskService.invokePythonProcessForDartUITask(raSheetDetails);
+            dartUITaskService.consolidateDartUIValidation(raSheetDetails.getRaFileDetailsId());
             log.debug("DartUITask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
             try {

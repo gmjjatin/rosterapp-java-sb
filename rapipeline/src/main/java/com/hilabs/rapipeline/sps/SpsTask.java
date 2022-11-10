@@ -5,20 +5,29 @@ import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
 import com.hilabs.rapipeline.service.SpsTaskService;
 import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.repository.RASheetDetailsRepository;
 import com.hilabs.roster.service.DartRASystemErrorsService;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import javax.swing.text.html.Option;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.hilabs.rapipeline.service.SpsTaskService.spsTaskRunningMap;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationInProgressSheetStatusCode;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.readyForSpsSheetStatusCode;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 
 @Slf4j
 public class SpsTask extends Task {
     private DartRASystemErrorsService dartRASystemErrorsService;
     private SpsTaskService spsTaskService;
+    private RASheetDetailsRepository raSheetDetailsRepository;
 
     private static final Gson gson = new Gson();
 
@@ -29,6 +38,7 @@ public class SpsTask extends Task {
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.dartRASystemErrorsService = (DartRASystemErrorsService) applicationContext.getBean("dartRASystemErrorsService");
         this.spsTaskService = (SpsTaskService) applicationContext.getBean("spsTaskService");
+        this.raSheetDetailsRepository = (RASheetDetailsRepository) applicationContext.getBean("RASheetDetailsRepository");
     }
 
     @Override
@@ -40,6 +50,13 @@ public class SpsTask extends Task {
         }
         try {
             spsTaskRunningMap.put(raSheetDetails.getId(), true);
+            Optional<String> filePathOptional = checkAndGetSpsResponseFilePathIfExists(raSheetDetails);
+            if (!filePathOptional.isPresent()) {
+                log.info("Response file doesn't exist for raSheetDetails {} - so skipping sps task", gson.toJson(raSheetDetails));
+                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
+                        readyForSpsSheetStatusCode, "SYSTEM", new Date());
+                return;
+            }
             //TODO change it
             spsTaskService.invokePythonProcessForSpsTask(raSheetDetails);
             log.debug("SpsTask done for {}", gson.toJson(getTaskData()));
@@ -74,5 +91,13 @@ public class SpsTask extends Task {
             return null;
         }
         return (RASheetDetails) taskData.get("data");
+    }
+
+    public Optional<String> checkAndGetSpsResponseFilePathIfExists(RASheetDetails raSheetDetails) {
+        throw new RuntimeException("Yet to be implemented");
+    }
+
+    public void copySpsResponseFileToDestination(RASheetDetails raSheetDetails) {
+        throw new RuntimeException("Yet to be implemented");
     }
 }

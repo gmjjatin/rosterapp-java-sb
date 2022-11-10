@@ -23,6 +23,8 @@ public class PipelineStatusCodeUtil {
     //TODO demo
     public static Integer spsInQueueSheetStatusCode = 1001;
 
+    public static Integer spsInProgressFileStatusCode = 1002;
+
 
 
 }

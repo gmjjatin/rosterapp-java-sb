@@ -1,7 +1,6 @@
 package com.hilabs.roster.repository;
 
 import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RASheetDetails;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

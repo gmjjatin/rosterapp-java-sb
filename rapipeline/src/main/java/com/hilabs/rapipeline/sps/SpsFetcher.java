@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.spsInProgressFileStatusCode;
+
 @Component
 @Slf4j
 public class SpsFetcher implements JobRetriever {
@@ -53,7 +55,8 @@ public class SpsFetcher implements JobRetriever {
             List<Long> pickedFileIdList = new ArrayList<>();
             List<Long> newlyAddedSheetIdList = new ArrayList<>();
             for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-                raFileDetailsService.updateRAFileDetailsStatus(raSheetDetails.getRaFileDetailsId(), 31);
+                //TODO demo confirm??
+                raFileDetailsService.updateRAFileDetailsStatus(raSheetDetails.getRaFileDetailsId(), spsInProgressFileStatusCode);
                 Map<String, Object> taskData = new HashMap<>();
                 taskData.put("data", raSheetDetails);
                 SpsTask spsTask = new SpsTask(taskData);

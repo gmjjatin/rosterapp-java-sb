@@ -9,14 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.spsFileStatusCodes;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 
 @Service
 @Slf4j
@@ -43,10 +40,10 @@ public class SpsTaskService {
     public static ConcurrentHashMap<Long, Boolean> spsTaskRunningMap = new ConcurrentHashMap<>();
 
     public List<RASheetDetails> getEligibleRASheetDetailsListAndUpdate(int count) {
-        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(readyForSpsSheetStatusCode,
-                Collections.singletonList(145), Collections.singletonList(0), count);
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedOnSheetStatusCodesForUpdate(Arrays.asList(readyForSpsSheetStatusCode), count);
         List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
-        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, , "SYSTEM", new Date());
+        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds,
+                spsInQueueSheetStatusCode, "SYSTEM", new Date());
         return raSheetDetailsList;
     }
 
