@@ -29,4 +29,13 @@ public class RosterConfig implements Serializable {
 
     @Value("${raTargetFolder}")
     private String raTargetFolder;
+
+    @Value("${raTrackerFileFolder}")
+    private String raTrackerFileFolder;
+
+    @Value("${dartFileFolder}")
+    private String dartFileFolder;
+
+    @Value("${isfFileFolder}")
+    private String isfFileFolder;
 }

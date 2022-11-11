@@ -10,8 +10,8 @@ import java.util.List;
 public class RAFileAndStats extends RosterStats {
     private long raFileDetailsId;
     private String fileName;
-    private int noOfSheets;
-    private long fileReceivedTime;
+    private Long noOfSheets;
+    private Long fileReceivedTime;
 
     private String lob;
     private String market;
@@ -32,7 +32,7 @@ public class RAFileAndStats extends RosterStats {
     }
 
     public void addSheetDetails(RASheetAndStats raSheetAndStats) {
-        noOfSheets += 1;
+        noOfSheets = (noOfSheets == null ? 0 : noOfSheets) + 1;
         sheetStatsList.add(raSheetAndStats);
         increment(raSheetAndStats);
     }

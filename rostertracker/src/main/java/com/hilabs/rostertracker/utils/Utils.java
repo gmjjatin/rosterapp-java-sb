@@ -8,7 +8,7 @@ public class Utils {
     public static long MILLIS_IN_DAY = MILLIS_IN_HOUR * 24;
 
     public static LimitAndOffset getLimitAndOffsetFromPageInfo(Integer pageNo, Integer pageSize) {
-        return new LimitAndOffset(pageSize, pageNo <= 0 ? 0 : (pageNo - 1) * pageSize);
+        return new LimitAndOffset(pageSize, pageNo <= 0 ? 0 : pageNo * pageSize);
     }
 
 

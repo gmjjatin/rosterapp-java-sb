@@ -1,6 +1,10 @@
 package com.hilabs.rostertracker.model;
 
+import com.hilabs.roster.dto.RAFalloutErrorInfo;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class RASheetProgressInfo {
@@ -9,26 +13,40 @@ public class RASheetProgressInfo {
     private String standardizedFileName;
     private long receivedTime;
 
+    private String dartFileName;
+
+    private RosterReceivedStageInfo rosterReceived;
+
     private AutoMappedStageInfo autoMapped;
 
     private ISFStageInfo isf;
     private ConvertedDartStageInfo convertedDart;
     private SpsLoadStageInfo spsLoad;
 
-    public RASheetProgressInfo(long raSheetDetailsId, String sheetName, String standardizedFileName, long receivedTime) {
+    private List<RAFalloutErrorInfo> errorSummary;
+
+
+
+    public RASheetProgressInfo(long raSheetDetailsId, String sheetName, String standardizedFileName,
+                               long receivedTime, String dartFileName) {
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
         this.standardizedFileName = standardizedFileName;
         this.receivedTime = receivedTime;
+        this.dartFileName = dartFileName;
+        this.rosterReceived = new RosterReceivedStageInfo();
         this.autoMapped = new AutoMappedStageInfo();
         this.isf = new ISFStageInfo();
         this.convertedDart = new ConvertedDartStageInfo();
         this.spsLoad = new SpsLoadStageInfo();
+        this.errorSummary = new ArrayList<>();
     }
 
     public RASheetProgressInfo(long raSheetDetailsId, String sheetName,
                                String standardizedFileName,
                                long receivedTime,
+                               String dartFileName,
+                               RosterReceivedStageInfo rosterReceivedStageInfo,
                                AutoMappedStageInfo autoMapped,
                                ISFStageInfo isf,
                                ConvertedDartStageInfo convertedDart,
@@ -37,9 +55,12 @@ public class RASheetProgressInfo {
         this.sheetName = sheetName;
         this.standardizedFileName = standardizedFileName;
         this.receivedTime = receivedTime;
+        this.dartFileName = dartFileName;
+        this.rosterReceived = rosterReceivedStageInfo;
         this.autoMapped = autoMapped;
         this.isf = isf;
         this.convertedDart = convertedDart;
         this.spsLoad = spsLoad;
+        this.errorSummary = new ArrayList<>();
     }
 }

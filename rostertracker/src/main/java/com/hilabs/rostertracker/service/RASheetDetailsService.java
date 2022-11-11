@@ -60,22 +60,6 @@ public class RASheetDetailsService {
         return sheetDetailsList;
     }
 
-//    private static List<RASheetDetails> filterAutomatedAndTermRASheetDetailsList(List<RASheetDetails> raSheetDetailsList) {
-//        List<RASheetDetails> filteredRaSheetDetailsList = new ArrayList<>();
-//        for (RASheetDetails raSheetDetails : raSheetDetailsList) {
-//            if (raSheetDetails.getType() == null) {
-//                continue;
-//            }
-//            //TODO demo
-//            List<String> automatedAndTermRASheetTypes = Arrays.asList("NON_TERM", "TERM", "Automated", "Data");
-//            String type = raSheetDetails.getType();
-//            if (automatedAndTermRASheetTypes.stream().anyMatch(p -> p.equalsIgnoreCase(type))) {
-//                filteredRaSheetDetailsList.add(raSheetDetails);
-//            }
-//        }
-//        return filteredRaSheetDetailsList;
-//    }
-
 
     public RASheetReport getRASheetReport(RAFileDetails raFileDetails, RASheetDetails raSheetDetails) {
         RASheetReport raSheetReport = new RASheetReport();

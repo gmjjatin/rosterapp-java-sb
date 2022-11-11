@@ -49,6 +49,12 @@ public class RAFileDetailsService {
     }
 
     public void updateRAFileDetailsStatus(Long raFileDetailsId, Integer status) {
-        raFileDetailsRepository.updateRAFileDetailsStatus(raFileDetailsId, status);
+        Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository.findById(raFileDetailsId);
+        if (!optionalRAFileDetails.isPresent()) {
+            return;
+        }
+        RAFileDetails raFileDetails = optionalRAFileDetails.get();
+        raFileDetails.setStatusCode(status);
+        raFileDetailsRepository.save(raFileDetails);
     }
 }

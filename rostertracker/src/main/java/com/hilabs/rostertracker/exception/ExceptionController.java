@@ -11,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.nio.file.NoSuchFileException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -36,6 +37,13 @@ public class ExceptionController {
         log.error("exception {}", exception.getMessage());
         ErrorResponse errorResponse = new ErrorResponse("INTERNAL_SERVER_ERROR", "stackTrace" + ExceptionUtils.getStackTrace(exception));
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(value = NoSuchFileException.class)
+    public ResponseEntity<ErrorResponse> exception(NoSuchFileException exception) {
+        log.error("exception {}", exception.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse("INTERNAL_SERVER_ERROR", exception.getMessage() + "stackTrace" + ExceptionUtils.getStackTrace(exception));
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = ObjectOptimisticLockingFailureException.class)

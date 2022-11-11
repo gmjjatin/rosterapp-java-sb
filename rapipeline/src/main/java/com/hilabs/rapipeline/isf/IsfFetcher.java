@@ -67,7 +67,7 @@ public class IsfFetcher implements JobRetriever {
             return executors;
         } catch (Exception ex) {
             log.error("Error IsfFetcher {}", ex.getMessage());
-            throw ex;
+            return new ArrayList<>();
         }
     }
 

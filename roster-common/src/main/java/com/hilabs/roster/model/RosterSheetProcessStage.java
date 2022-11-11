@@ -25,4 +25,25 @@ public enum RosterSheetProcessStage {
     public static List<RosterSheetProcessStage> getValidRosterFileProcessStageListInOrder() {
         return Arrays.asList(ROSTER_RECEIVED, AUTO_MAPPED, ISF_GENERATED, CONVERTED_DART, SPS_LOAD);
     }
+
+    public static RosterSheetProcessStage getRosterSheetProcessStageFromStr(String type) {
+        try {
+            return RosterSheetProcessStage.valueOf(type);
+        } catch (Exception ignored) {
+
+        }
+        //TODO fix it
+        if (type.toLowerCase().endsWith("ingestion")) {
+            return ROSTER_RECEIVED;
+        } else if (type.toLowerCase().endsWith("processing")) {
+            return AUTO_MAPPED;
+        } else if (type.toLowerCase().startsWith("isf")) {
+            return ISF_GENERATED;
+        } else if (type.toLowerCase().startsWith("dart") && type.toLowerCase().endsWith("generation")) {
+            return CONVERTED_DART;
+        } else if (type.toLowerCase().startsWith("dart") && type.toLowerCase().endsWith("ui")) {
+            return SPS_LOAD;
+        }
+        return ROSTER_RECEIVED;
+    }
 }

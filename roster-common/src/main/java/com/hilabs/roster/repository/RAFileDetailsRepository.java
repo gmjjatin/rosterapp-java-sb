@@ -18,23 +18,6 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     Optional<RAFileDetails> findRAFileDetailsById(Long id);
 
-//    @Modifying
-//    @Transactional
-//    @Query(value = "update RA_RT_FILE_DETAILS set ra_provider_details_id = :raProvDetailsId, market = :market, lob = :lob," +
-//            " orgnl_file_nm = :originalFileName, stndrdzd_file_nm = :standardizedFileName, plm_ticket_id = :plmTicketId," +
-//            " file_location = :fileLocation, file_system = :fileSystem, last_updt_user_id = :lastUpdateUserId," +
-//            " last_updt_dt = sysdate " +
-//            "where id = :raProvDetailsId", nativeQuery = true)
-//    void updateRAFileDetails(@Param("raProvDetailsId") Long raProvDetailsId,
-//                             @Param("market") String market,
-//                             @Param("lob") String lob,
-//                             @Param("originalFileName") String originalFileName,
-//                             @Param("standardizedFileName") String standardizedFileName,
-//                             @Param("plmTicketId") String plmTicketId,
-//                             @Param("fileLocation") String fileLocation,
-//                             @Param("fileSystem") String fileSystem,
-//                             @Param("lastUpdateUserId") Long lastUpdateUserId);
-
     //TODO is fileName unique
     @Query(value = "select * from RA_RT_FILE_DETAILS where orgnl_file_nm = :fileName order by creat_dt desc fetch next 1 rows only",
             nativeQuery = true)
@@ -82,7 +65,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where market = :market and RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
@@ -93,7 +76,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where market = :market and RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
@@ -104,7 +87,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
@@ -115,7 +98,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS_LOB, RA_RT_FILE_DETAILS" +
             " where RA_RT_FILE_DETAILS_LOB.ra_file_details_id = RA_RT_FILE_DETAILS.id and " +
             "RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            "and UPPER(lob) like '%' || UPPER(:lineOfBusiness) || '%' and status_cd in (:statusCodes) " +
+            "and lob = :lineOfBusiness and status_cd in (:statusCodes) " +
             " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
             " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
             "and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
@@ -149,16 +132,6 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
             "offset :offset rows fetch next :limit rows only", nativeQuery = true)
     List<RAFileDetails> findFileDetailsByStatusCodes(List<Integer> statusCodes, int limit, int offset);
 
-    @Modifying
-    @Transactional
-    @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode where id = :raFileDetailsId", nativeQuery = true)
-    void updateRAFileDetailsStatus(Long raFileDetailsId, Integer statusCode);
-
-    @Modifying
-    @Transactional
-    @Query(value = "update RA_RT_FILE_DETAILS set MANUAL_ACTN_REQ = :manualActionRequired where id = :raFileDetailsId", nativeQuery = true)
-    void updateManualActionRequiredInRAFileDetails(Long raFileDetailsId, Integer manualActionRequired);
-
     @Query(value = "select * from RA_RT_FILE_DETAILS where id = :raFileDetailsId and version = :version", nativeQuery = true)
     Optional<RAFileDetails> findByRAFileDetailsIdByVersion(@Param("raFileDetailsId") Long raFileDetailsId, Long version);
     @Query(value = "select * from RA_RT_FILE_DETAILS where status_cd in (:statusCodes) " +
@@ -167,6 +140,7 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
 
     @Modifying
     @Transactional
-    @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode where id in (:raFileDetailsIdList)", nativeQuery = true)
-    void updateRAFileDetailsStatusByIds(List<Long> raFileDetailsIdList, Integer statusCode);
+    @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode, last_updt_user_id = :username, last_updt_dt = :lastUpdatedDate " +
+            " where id in (:raFileDetailsIdList)", nativeQuery = true)
+    void updateRAFileDetailsStatusByIds(List<Long> raFileDetailsIdList, Integer statusCode, String username, Date lastUpdatedDate);
 }

@@ -21,7 +21,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.hilabs.rostertracker.service.RAFileDetailsService.getStatusCodes;
 import static com.hilabs.rostertracker.service.RAFileStatsService.getRosterReceivedTime;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.dataTypeList;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.isDataSheet;
@@ -54,7 +53,7 @@ public class ProgressTrackingController {
 
 
     @GetMapping("/file-stats-list")
-    public ResponseEntity<List<RAFileAndStats>> getRosterTrackerFileStatsList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<CollectionResponse<RAFileAndStats>> getRosterTrackerFileStatsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                             @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                             @RequestParam(defaultValue = "") String market,
                                                                                             @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -71,12 +70,12 @@ public class ProgressTrackingController {
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
                     .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
-                            startTime, endTime, getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true,
+                            startTime, endTime, raFileDetailsService.getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true,
                             0, false);
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse<RAFileAndStats> collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
-            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, fileName, startTime, endTime);
@@ -139,7 +138,7 @@ public class ProgressTrackingController {
     }
 
     @GetMapping("/non-compatible-file-list")
-    public ResponseEntity<List<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "1") Integer pageNo,
+    public ResponseEntity<CollectionResponse<InCompatibleRosterDetails>> getNonCompatibleFileList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                     @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                     @RequestParam(defaultValue = "") String market,
                                                                                     @RequestParam(defaultValue = "") String lineOfBusiness,
@@ -148,7 +147,7 @@ public class ProgressTrackingController {
                                                                                     @RequestParam(defaultValue = "-1") long startTime,
                                                                                     @RequestParam(defaultValue = "-1") long endTime) {
         try {
-            List<Integer> statusCodes = getStatusCodes(RosterFilterType.NON_COMPATIBLE);
+            List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.NON_COMPATIBLE);
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             int offset = limitAndOffset.getOffset();
@@ -156,7 +155,7 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId,
-                    market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 0, false);
+                    market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 0, true);
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
 
@@ -171,12 +170,14 @@ public class ProgressTrackingController {
                 //TODO need to fix it
                 List<String> fileErrorCodes = raFileErrorCodeDetailsList.stream().map(p -> p.getErrorCode()).distinct().collect(Collectors.toList());
                 List<String> sheetErrorCodes = new ArrayList<>();
-                Integer rosterRecordCount = 0;
+                Integer rosterRecordCount = null;
                 for (RASheetDetails raSheetDetails : raFileDetailsWithSheets.getRaSheetDetailsList()) {
                     List<RASheetErrorCodeDetails> raSheetErrorCodeDetailsList = raSheetErrorCodeDetailRepository
                             .findByRASheetDetailsId(raSheetDetails.getId());
                     sheetErrorCodes.addAll(raSheetErrorCodeDetailsList.stream().map(RASheetErrorCodeDetails::getErrorCode).collect(Collectors.toList()));
-                    rosterRecordCount += raSheetDetails.getRosterRecordCount();
+                    if (raSheetDetails.getRosterRecordCount() != null) {
+                        rosterRecordCount = (rosterRecordCount == null ? 0 : rosterRecordCount) + raSheetDetails.getRosterRecordCount();
+                    }
                 }
                 sheetErrorCodes = sheetErrorCodes.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
                 RaErrorCodeDetailsService.ErrorCodesAndDescription errorCodesAndDescription = raErrorCodeDetailsService.getErrorString(fileErrorCodes, sheetErrorCodes);
@@ -190,8 +191,9 @@ public class ProgressTrackingController {
                         String.join(", ", errorCodesAndDescription.errorCodes), lob, raFileDetails.getMarket(), filePlmTicketId);
                 inCompatibleRosterDetails.add(details);
             }
-            CollectionResponse<InCompatibleRosterDetails> collectionResponse = new CollectionResponse<InCompatibleRosterDetails>(pageNo, pageSize, inCompatibleRosterDetails, 1000L);
-            return new ResponseEntity<>(collectionResponse.getItems(), HttpStatus.OK);
+            CollectionResponse<InCompatibleRosterDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize, inCompatibleRosterDetails,
+                    raFileDetailsWithSheetsListResponse.getTotalCount());
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} market {} lineOfBusiness {} raFileDetailsId {} startTime {} endTime {}",
                     pageNo, pageSize, market, lineOfBusiness, fileName, startTime, endTime);

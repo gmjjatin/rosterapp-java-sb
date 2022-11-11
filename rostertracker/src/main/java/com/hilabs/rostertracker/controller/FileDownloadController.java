@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.Optional;
 
 import static com.hilabs.rostertracker.utils.Utils.removeFileExtensionFromExcelFile;
@@ -81,8 +82,33 @@ public class FileDownloadController {
                 standardizedFileName = removeFileExtensionFromExcelFile(raFileDetails.getStandardizedFileName());
             }
             String trackerFileName = String.format("%s_%s_Tracker.xlsx", standardizedFileName, raSheetDetails.getId());
-            File file = new File(rosterConfig.getRaTargetFolder(), trackerFileName);
+            File file = new File(rosterConfig.getRaTrackerFileFolder(), trackerFileName);
             return getDownloadFileResponseEntity(file);
+        } catch (Exception ex) {
+            log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
+        }
+    }
+
+    @RequestMapping(path = "/download-dart-report", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> downloadDartReport(@RequestParam() Long raSheetDetailsId) throws IOException {
+        try {
+            Optional<RASheetDetails> optionalRASheetDetails = raSheetDetailsService.findRASheetDetailsById(raSheetDetailsId);
+            if (!optionalRASheetDetails.isPresent()) {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+            RASheetDetails raSheetDetails = optionalRASheetDetails.get();
+            String outFileName = raSheetDetails.getOutFileName();
+            File file = null;
+            if (outFileName != null && outFileName.contains("/")) {
+                file = new File(raSheetDetails.getOutFileName());
+            } else {
+                file = new File(rosterConfig.getDartFileFolder(), raSheetDetails.getOutFileName());
+            }
+            return getDownloadFileResponseEntity(file);
+        }  catch (NoSuchFileException ex) {
+            log.error("NoSuchFileException Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
         } catch (Exception ex) {
             log.error("Error in download sheet report - ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             throw ex;

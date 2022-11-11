@@ -70,7 +70,7 @@ public class DartTaskService {
         List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(dartStatusCodes,
                 Collections.singletonList(155), Collections.singletonList(0), count);
         List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
-        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, 160);
+        raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, 160, "SYSTEM", new Date());
         return raSheetDetailsList;
     }
 
