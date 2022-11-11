@@ -128,7 +128,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-        if(path.startsWith("/api/") && !"OPTIONS".equals(request.getMethod())){
+        if((path.startsWith("/api/") || path.startsWith("/refreshtoken")) && !"OPTIONS".equals(request.getMethod())){
             validateJWT(request);
         }
 
