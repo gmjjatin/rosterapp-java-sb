@@ -8,6 +8,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 @Component
 @Log4j2
+
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -36,9 +38,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
+
+
+    private void validateJWT(HttpServletRequest request){
         final String requestTokenHeader = request.getHeader("Authorization");
         String username = null;
         String jwtToken = null;
@@ -49,20 +51,25 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
                 log.error("Unable to get JWT Token");
+                throw new BadCredentialsException("Invalid JWT Token..");
             } catch (ExpiredJwtException e) {
-                String isRefreshToken = request.getHeader("isRefreshToken");
-                String requestURL = request.getRequestURL().toString();
-                // allow for Refresh Token creation if following conditions are true.
-                if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
-                    allowForRefreshToken(e, request);
-                } else {
-                    request.setAttribute("exception", e);
-                    log.error("JWT Token has expired");
-                }
+//                String isRefreshToken = request.getHeader("isRefreshToken");
+//                String requestURL = request.getRequestURL().toString();
+//                // allow for Refresh Token creation if following conditions are true.
+//                if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
+//                    allowForRefreshToken(e, request);
+//                } else {
+//                    request.setAttribute("exception", e);
+//                    log.error("JWT Token has expired");
+//                }
+
+                log.error("JWT Token has expired");
+                throw new BadCredentialsException("Access Token has expired. Please relogin.");
 
             }
         } else {
             log.warn("JWT Token does not begin with Bearer String");
+            throw new BadCredentialsException("No Bearer token in request.");
         }
 
         //Once we get the token validate it.
@@ -87,30 +94,44 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 String requestMethod = request.getMethod();
 
                 Optional<RAAuthPrivilege> matchingPrivilege = userPrivileges.stream()
-                                                    .filter(userPrivilege -> requestMethod.equals(userPrivilege.getOperationType()) && isUrlMatchingWithPattern(userPrivilege.getResourceLocation(),requestURI)).findFirst();
+                        .filter(userPrivilege -> requestMethod.equals(userPrivilege.getOperationType()) && isUrlMatchingWithPattern(userPrivilege.getResourceLocation(),requestURI)).findFirst();
                 if(matchingPrivilege.isPresent()){
 
                     JWTAuthentication jwtAuthentication = new JWTAuthentication(new User(username,"",new ArrayList<>()),
-                                                                                jwtTokenUtil.getAllClaimsFromToken(jwtToken),
-                                                                                null
-                            );
+                            jwtTokenUtil.getAllClaimsFromToken(jwtToken),
+                            null
+                    );
                     jwtAuthentication.setAuthenticated(true);
                     SecurityContextHolder.getContext().setAuthentication(jwtAuthentication);
                     //UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                     //        userDetails, null, userDetails.getAuthorities());
                     //usernamePasswordAuthenticationToken
-                     //       .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    //       .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     // After setting the Authentication in the context, we specify
                     // that the current user is authenticated. So it passes the Spring Security Configurations successfully.
                     //SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }
                 else{
                     //throw new NullPointerException("Testing");
-                    throw new UnAuthorizedException("User does not have access for requested resource.");
+                    throw new BadCredentialsException("User does not have access for requested resource.");
                 }
 
             }
+            else{
+                throw new BadCredentialsException("Invalid JWT Token");
+            }
         }
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+
+        String path = request.getServletPath();
+        if(path.startsWith("/api/") && !"OPTIONS".equals(request.getMethod())){
+            validateJWT(request);
+        }
+
 
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Credentials", "true");
