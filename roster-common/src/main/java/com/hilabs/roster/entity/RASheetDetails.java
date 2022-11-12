@@ -61,7 +61,7 @@ public class RASheetDetails extends BaseEntity {
     private String outFileName;
 
     @Column(name = "VLDTN_FILE_ID")
-    private Long validationFileId;
+    private String validationFileId;
 
     @Column(name = "VLDTN_FILE_NM")
     private String validationFileName;

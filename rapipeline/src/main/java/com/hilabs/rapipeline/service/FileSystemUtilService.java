@@ -45,6 +45,10 @@ public class FileSystemUtilService {
         return Paths.get(appPropertiesConfig.getDartUIResponseFolder(), fileName).toString();
     }
 
+    public String getDartUIResponseFolderPath() {
+        return appPropertiesConfig.getDartUIResponseFolder();
+    }
+
     public boolean copyPasswordProtectedXlsFileToDest(String srcPath, String destPath, String password) {
         try {
             //https://www.codejava.net/coding/java-example-to-read-password-protected-excel-files-using-apache-poi

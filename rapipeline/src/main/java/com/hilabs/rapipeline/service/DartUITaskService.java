@@ -9,12 +9,18 @@ import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -29,6 +35,9 @@ import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 public class DartUITaskService {
     @Value("${dartUIHost}")
     private String dartUIHost;
+
+    @Value("${dartUIToken}")
+    private String dartUIToken;
     private static Gson gson = new Gson();
     @Autowired
     private RAFileDetailsService raFileDetailsService;
@@ -84,10 +93,16 @@ public class DartUITaskService {
     }
 
     //TODO demo
-    public DartStatusCheckResponse checkDartUIStatusOfSheet(Long validationFileId) {
+    public DartStatusCheckResponse checkDartUIStatusOfSheet(String validationFileId) {
         try {
             String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/v1/file-status/%s", validationFileId));
-            ResponseEntity<DartStatusCheckResponse> response = restTemplate.getForEntity(url, DartStatusCheckResponse.class);
+            HttpHeaders headers = new HttpHeaders();
+
+            headers.set("Authorization", "Bearer " + dartUIToken); //accessToken can be the secret key you generate.
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            String requestJson = "";
+            HttpEntity<String> entity = new HttpEntity <> (requestJson, headers);
+            ResponseEntity<DartStatusCheckResponse> response = restTemplate.exchange(url, HttpMethod.GET, entity, DartStatusCheckResponse.class);
             return response.getBody();
         } catch (Exception ex) {
             log.error("Error in checkDartUIStatusOfSheet for validationFileId {} ex {} stackTrace {}",
@@ -96,13 +111,27 @@ public class DartUITaskService {
         }
     }
 
-    public void downloadDartUIResponseFile(Long validationFileId, String filePath, String fileType) throws IOException  {
+    public String downloadDartUIResponseFile(String validationFileId, String folderPath, String fileType) throws IOException  {
         try {
-            String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/v1/file-download/%s?type=%s", validationFileId, fileType));
-            downloadUsingNIO(url, filePath);
+            String urlString = getUrl(dartUIHost, String.format("dart-core-service/file-validation/v1/file-download/%s?type=%s", validationFileId, fileType));
+            URL url = new URL(urlString);
+            URLConnection con = url.openConnection();
+            con.setRequestProperty("Authorization", "Bearer " + dartUIToken);
+            String fieldValue = con.getHeaderField("Content-Disposition");
+            if (fieldValue == null || ! fieldValue.contains("filename=\"")) {
+                log.error("No filename for validationFileId {} fileType {} urlString {}", validationFileId, fileType, urlString);
+                return null;
+            }
+            String filename = fieldValue.substring(fieldValue.indexOf("filename=\"") + 10, fieldValue.length() - 1);
+            File download = new File(folderPath, filename);
+            ReadableByteChannel rbc = Channels.newChannel(con.getInputStream());
+            try (FileOutputStream fos = new FileOutputStream(download)) {
+                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            }
+            return filename;
         } catch (Exception ex) {
-            log.error("Error in downloadDartUIResponseFile for validationFileId {} filePath {} fileType {} ex {} stackTrace {}",
-                    validationFileId, filePath, filePath, ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            log.error("Error in downloadDartUIResponseFile for validationFileId {} folderPath {} fileType {} ex {} stackTrace {}",
+                    validationFileId, folderPath, fileType, ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             throw ex;
         }
     }

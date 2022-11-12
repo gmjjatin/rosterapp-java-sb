@@ -61,21 +61,21 @@ public class AppConfig {
 //                .registerJobRetrievers(testFetcher)
 //                .build();
 
-        new BatchConfig(ingestionConfigPath)
-                .registerJobRetrievers(ingestionFetcher)
-                .build();
-
-        new BatchConfig(preProcessingConfigPath)
-                .registerJobRetrievers(preProcessingFetcher)
-                .build();
-
-        new BatchConfig(isfConfigPath)
-                .registerJobRetrievers(isfFetcher)
-                .build();
-
-        new BatchConfig(dartConfigPath)
-                .registerJobRetrievers(dartFetcher)
-                .build();
+//        new BatchConfig(ingestionConfigPath)
+//                .registerJobRetrievers(ingestionFetcher)
+//                .build();
+//
+//        new BatchConfig(preProcessingConfigPath)
+//                .registerJobRetrievers(preProcessingFetcher)
+//                .build();
+//
+//        new BatchConfig(isfConfigPath)
+//                .registerJobRetrievers(isfFetcher)
+//                .build();
+//
+//        new BatchConfig(dartConfigPath)
+//                .registerJobRetrievers(dartFetcher)
+//                .build();
 
         new BatchConfig(dartUIConfigPath)
                 .registerJobRetrievers(dartUIFetcher)
