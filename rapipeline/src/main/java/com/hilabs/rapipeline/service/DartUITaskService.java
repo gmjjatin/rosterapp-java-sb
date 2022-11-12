@@ -86,7 +86,7 @@ public class DartUITaskService {
     //TODO demo
     public DartStatusCheckResponse checkDartUIStatusOfSheet(Long validationFileId) {
         try {
-            String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/file-status/%s", validationFileId));
+            String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/v1/file-status/%s", validationFileId));
             ResponseEntity<DartStatusCheckResponse> response = restTemplate.getForEntity(url, DartStatusCheckResponse.class);
             return response.getBody();
         } catch (Exception ex) {
@@ -98,7 +98,7 @@ public class DartUITaskService {
 
     public void downloadDartUIResponseFile(Long validationFileId, String filePath, String fileType) throws IOException  {
         try {
-            String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/file-download/%s?type=%s", validationFileId, fileType));
+            String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/v1/file-download/%s?type=%s", validationFileId, fileType));
             downloadUsingNIO(url, filePath);
         } catch (Exception ex) {
             log.error("Error in downloadDartUIResponseFile for validationFileId {} filePath {} fileType {} ex {} stackTrace {}",
