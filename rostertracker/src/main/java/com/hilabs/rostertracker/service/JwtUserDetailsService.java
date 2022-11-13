@@ -5,6 +5,7 @@ import com.hilabs.roster.repository.RAAuthPrivilegeRepository;
 import com.hilabs.rostertracker.config.JwtTokenUtil;
 import com.hilabs.rostertracker.dto.RAAuthPrivilegeDTO;
 import com.hilabs.rostertracker.model.LoginDetails;
+import io.jsonwebtoken.impl.DefaultClaims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -79,8 +81,8 @@ public class JwtUserDetailsService implements UserDetailsService {
     }
 
 
-    public String generateRefreshToken(Map<String, Object> claims, String subject) {
-        return jwtTokenUtil.doGenerateRefreshToken(claims, subject);
+    public String generateRefreshToken(String jwtToken){
+        return jwtTokenUtil.doGenerateRefreshToken(jwtToken);
     }
 
     public static String stringNullCheck(Object result) {

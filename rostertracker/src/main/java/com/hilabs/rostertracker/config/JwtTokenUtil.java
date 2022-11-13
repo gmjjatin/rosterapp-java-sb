@@ -3,6 +3,7 @@ package com.hilabs.rostertracker.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -78,6 +79,21 @@ public class JwtTokenUtil implements Serializable {
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_REFRESH_TOKEN_VALIDITY*60*1000))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
+    }
+
+    public String doGenerateRefreshToken(String jwtToken){
+        DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) this.getAllClaimsFromToken(jwtToken);
+
+        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        if(claims != null){
+            for (Map.Entry<String, Object> entry : claims.entrySet()) {
+                expectedMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        String token = this.doGenerateRefreshToken(claims, expectedMap.get("sub").toString());
+
+        return token;
     }
 
     public Boolean canTokenBeRefreshed(String token) {

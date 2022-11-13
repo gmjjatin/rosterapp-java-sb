@@ -1,9 +1,11 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAAuthPrivilege;
+import com.hilabs.rostertracker.config.JwtTokenUtil;
 import com.hilabs.rostertracker.config.RosterConfig;
 import com.hilabs.rostertracker.dto.CollectionResponse;
 import com.hilabs.rostertracker.dto.JWTAuthentication;
+import com.hilabs.rostertracker.exception.UnAuthorizedException;
 import com.hilabs.rostertracker.model.LoginDetails;
 import com.hilabs.rostertracker.model.jwt.JwtRequest;
 import com.hilabs.rostertracker.service.JwtUserDetailsService;
@@ -126,13 +128,29 @@ public class JwtAuthenticationController {
     @RequestMapping(value = "/refreshtoken", method = RequestMethod.GET)
     public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
         // From the HttpRequest get the claims
-        DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+        final String requestTokenHeader = request.getHeader("Authorization");
+        String jwtToken = null;
+        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+            jwtToken = requestTokenHeader.substring(7);
+            String token = jwtUserDetailsService.generateRefreshToken(jwtToken);
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            return ResponseEntity.ok(response);
 
-        Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
-        String token = jwtUserDetailsService.generateRefreshToken(expectedMap, expectedMap.get("sub").toString());
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        return ResponseEntity.ok(response);
+        }
+
+        throw new UnAuthorizedException("User does not have access for requested resource..");
+
+
+
+
+//        DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+//
+//        Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
+//        String token = jwtUserDetailsService.generateRefreshToken(expectedMap, expectedMap.get("sub").toString());
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("token", token);
+//        return ResponseEntity.ok(response);
     }
 
     public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {

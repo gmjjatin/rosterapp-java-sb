@@ -64,6 +64,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // dont authenticate this particular request
                 .authorizeRequests()
                 .antMatchers("/authenticate").permitAll()
+                .antMatchers("/refreshtoken").permitAll()
                 .antMatchers("/register").permitAll()
                 .antMatchers("/app/**").permitAll()
                 .antMatchers("/static/**").permitAll()
