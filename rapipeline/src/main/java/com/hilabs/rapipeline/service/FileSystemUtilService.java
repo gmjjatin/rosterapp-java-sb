@@ -11,10 +11,10 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -36,6 +36,14 @@ public class FileSystemUtilService {
 
     public String getArchiveFilePath(String fileName) {
         return Paths.get(appPropertiesConfig.getArchiveFolder(), fileName).toString();
+    }
+
+    public String getDartUIResponseFilePath(String fileName) {
+        return Paths.get(appPropertiesConfig.getDartUIResponseFolder(), fileName).toString();
+    }
+
+    public String getDartUIResponseFolderPath() {
+        return appPropertiesConfig.getDartUIResponseFolder();
     }
 
     public boolean copyPasswordProtectedXlsFileToDest(String srcPath, String destPath, String password) {
@@ -91,5 +99,25 @@ public class FileSystemUtilService {
                     srcPath, destPath, ex.getMessage());
             return false;
         }
+    }
+
+    public static void downloadUsingNIO(String urlStr, String file) throws IOException {
+        URL url = new URL(urlStr);
+        ReadableByteChannel rbc = Channels.newChannel(url.openStream());
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        fos.close();
+        rbc.close();
+    }
+
+    public static String[] getListOfFilesInFolder(String folderPath, String prefix, String suffix) {
+        File dir = new File(folderPath);
+        FilenameFilter filter = (dir1, name) -> {
+            if (prefix != null && prefix.length() > 0 && !name.startsWith(prefix)) {
+                return false;
+            }
+            return suffix == null || suffix.length() == 0 || name.endsWith(suffix);
+        };
+        return dir.list(filter);
     }
 }

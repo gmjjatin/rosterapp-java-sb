@@ -1,11 +1,15 @@
 package com.hilabs.rapipeline.config;
 
 import lombok.Data;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Data
-@Component
+@Configuration
 public class AppPropertiesConfig {
     @Value("${raSourceFolder}")
     private String sourceFolder;
@@ -28,9 +32,23 @@ public class AppPropertiesConfig {
     @Value("${dart_wrapper}")
     private String dartWrapper;
 
+    @Value("${dart_ui_wrapper}")
+    private String dartUIWrapper;
+
+    @Value("${sps_wrapper}")
+    private String spsWrapper;
+
     @Value("${envConfigs}")
     private String envConfigs;
 
     @Value("${rootPath}")
     private String rootPath;
+
+    @Value("${dartUIResponseFolder}")
+    private String dartUIResponseFolder;
+
+    @Bean
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
 }

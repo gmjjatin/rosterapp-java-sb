@@ -2,6 +2,7 @@ package com.hilabs.rapipeline.config;
 
 import com.hilabs.mcheck.config.BatchConfig;
 import com.hilabs.mcheck.exception.ApplicationException;
+import com.hilabs.rapipeline.dartui.DartUIFetcher;
 import com.hilabs.rapipeline.ingestion.IngestionFetcher;
 import com.hilabs.rapipeline.dart.DartFetcher;
 import com.hilabs.rapipeline.isf.IsfFetcher;
@@ -34,6 +35,9 @@ public class AppConfig {
     @Autowired
     private DartFetcher dartFetcher;
 
+    @Autowired
+    private DartUIFetcher dartUIFetcher;
+
     @Value("${ingestionConfigPath}")
     private String ingestionConfigPath;
 
@@ -45,6 +49,9 @@ public class AppConfig {
 
     @Value("${dartConfigPath}")
     private String dartConfigPath;
+
+    @Value("${dartUIConfigPath}")
+    private String dartUIConfigPath;
 
     @PostConstruct
     public void initialize() throws SchedulerException, ApplicationException {
@@ -68,6 +75,10 @@ public class AppConfig {
 
         new BatchConfig(dartConfigPath)
                 .registerJobRetrievers(dartFetcher)
+                .build();
+
+        new BatchConfig(dartUIConfigPath)
+                .registerJobRetrievers(dartUIFetcher)
                 .build();
     }
 }
