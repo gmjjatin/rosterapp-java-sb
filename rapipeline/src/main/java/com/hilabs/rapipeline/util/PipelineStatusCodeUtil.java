@@ -15,6 +15,7 @@ public class PipelineStatusCodeUtil {
 
 
     public static Integer dartUIValidationInProgressSheetStatusCode = 171;
+    public static Integer dartUIValidationFailedSheetStatusCode = 173;
     public static Integer dartUIFeedbackInQueueSheetStatusCode = 174;
     public static Integer dartUIFeedbackReceived  = 175;
 

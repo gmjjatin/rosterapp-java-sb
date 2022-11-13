@@ -93,7 +93,7 @@ public class DartUITaskService {
     }
 
     //TODO demo
-    public DartStatusCheckResponse checkDartUIStatusOfSheet(String validationFileId) {
+    public Optional<DartStatusCheckResponse> checkDartUIStatusOfSheet(String validationFileId) {
         try {
             String url = getUrl(dartUIHost, String.format("dart-core-service/dart/file-validation/v1/file-status/%s", validationFileId));
             HttpHeaders headers = new HttpHeaders();
@@ -103,7 +103,11 @@ public class DartUITaskService {
             String requestJson = "";
             HttpEntity<String> entity = new HttpEntity <> (requestJson, headers);
             ResponseEntity<DartStatusCheckResponse> response = restTemplate.exchange(url, HttpMethod.GET, entity, DartStatusCheckResponse.class);
-            return response.getBody();
+            HttpStatus httpStatus =  response.getStatusCode();
+            if (httpStatus.value() != 200) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(response.getBody());
         } catch (Exception ex) {
             log.error("Error in checkDartUIStatusOfSheet for validationFileId {} ex {} stackTrace {}",
                     validationFileId, ex.getMessage(), ExceptionUtils.getStackTrace(ex));

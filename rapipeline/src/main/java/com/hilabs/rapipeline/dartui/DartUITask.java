@@ -17,10 +17,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.hilabs.rapipeline.service.DartUITaskService.dartUITaskRunningMap;
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIFeedbackReceived;
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationInProgressSheetStatusCode;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 
 @Slf4j
@@ -64,7 +64,14 @@ public class DartUITask extends Task {
                 return;
             }
             //TODO handle with and without bad file
-            DartStatusCheckResponse dartStatusCheckResponse = dartUITaskService.checkDartUIStatusOfSheet(validationFileId);
+            Optional<DartStatusCheckResponse> optionalDartStatusCheckResponse = dartUITaskService.checkDartUIStatusOfSheet(validationFileId);
+            if (!optionalDartStatusCheckResponse.isPresent()) {
+                log.error("Skipping dart ui task - received non 200 status -  for raSheetDetails {}", gson.toJson(raSheetDetails));
+                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
+                        dartUIValidationFailedSheetStatusCode, "SYSTEM", new Date());
+                return;
+            }
+            DartStatusCheckResponse dartStatusCheckResponse = optionalDartStatusCheckResponse.get();
             String status = dartStatusCheckResponse.getReviewStatus();
             boolean isValidationCompleted = (status != null) && (status.equalsIgnoreCase("Ready to Submit")
                     || status.equalsIgnoreCase("Ready for Review"));
