@@ -89,7 +89,8 @@ public class IngestionTaskService {
         if (!raFileMetaData.getFileName().endsWith(".xlsx")) {
             errorList.add("File name doesn't end with .xlsx");
         }
-        if (raFileMetaData.getLob() != null && raFileMetaData.getCntState() != null) {
+        boolean isPriorityProv = raFileMetaData.getPriorityProvYN() != null && raFileMetaData.getPriorityProvYN().equals("Y");
+        if (!isPriorityProv && raFileMetaData.getLob() != null && raFileMetaData.getCntState() != null) {
             String market = raFileMetaData.getCntState();
             String lob = raFileMetaData.getLob();
             List<RARTMarketLobVald> marketLobValds = rartMarketLobValdRepository.getByMarket(market);
