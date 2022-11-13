@@ -56,7 +56,7 @@ public class SpsFetcher implements JobRetriever {
             List<Long> newlyAddedSheetIdList = new ArrayList<>();
             for (RASheetDetails raSheetDetails : raSheetDetailsList) {
                 //TODO demo confirm??
-                raFileDetailsService.updateRAFileDetailsStatus(raSheetDetails.getRaFileDetailsId(), spsInProgressFileStatusCode);
+//                raFileDetailsService.updateRAFileDetailsStatus(raSheetDetails.getRaFileDetailsId(), spsInProgressFileStatusCode);
                 Map<String, Object> taskData = new HashMap<>();
                 taskData.put("data", raSheetDetails);
                 SpsTask spsTask = new SpsTask(taskData);

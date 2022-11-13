@@ -58,19 +58,19 @@ public class DartUITask extends Task {
             String validationFileId = raSheetDetails.getValidationFileId();
             //TODO confirm
             if (validationFileId == null) {
-                log.error("validationFileId is null for raSheetDetails {} so skipping dart ui task", gson.toJson(raSheetDetails));
+                log.error("Skipping dart ui task - validationFileId is null for raSheetDetails {}", gson.toJson(raSheetDetails));
                 raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
                         dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
             }
             //TODO handle with and without bad file
             DartStatusCheckResponse dartStatusCheckResponse = dartUITaskService.checkDartUIStatusOfSheet(validationFileId);
-            String status = dartStatusCheckResponse.getStatus();
+            String status = dartStatusCheckResponse.getReviewStatus();
             boolean isValidationCompleted = (status != null) && (status.equalsIgnoreCase("Ready to Submit")
                     || status.equalsIgnoreCase("Ready for Review"));
 
             if (!isValidationCompleted) {
-                log.info("Status for raSheetDetails {} is {} - so skipping dart ui task", gson.toJson(raSheetDetails), status);
+                log.info("Skipping dart ui task - isValidationCompleted false - Status for raSheetDetails {} is {}", gson.toJson(raSheetDetails), status);
                 raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
                         dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
@@ -81,7 +81,7 @@ public class DartUITask extends Task {
                 String dartUIFileName = dartUITaskService.downloadDartUIResponseFile(validationFileId,
                         fileSystemUtilService.getDartUIResponseFolderPath(), fileType);
                 if (dartUIFileName == null) {
-                    log.error("downloadDartUIResponseFile is not successful for raSheetDetails {} so skipping dart ui task", gson.toJson(raSheetDetails));
+                    log.info("Skipping dart ui task - downloadDartUIResponseFile is not successful - raSheetDetails {}", gson.toJson(raSheetDetails));
                     raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
                             dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                     return;

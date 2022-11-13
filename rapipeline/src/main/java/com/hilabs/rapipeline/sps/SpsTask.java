@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.hilabs.rapipeline.service.FileSystemUtilService.getListOfFilesInFolder;
 import static com.hilabs.rapipeline.service.SpsTaskService.spsTaskRunningMap;
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationInProgressSheetStatusCode;
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.readyForSpsSheetStatusCode;
@@ -50,7 +51,7 @@ public class SpsTask extends Task {
         }
         try {
             spsTaskRunningMap.put(raSheetDetails.getId(), true);
-            Optional<String> filePathOptional = checkAndGetSpsResponseFilePathIfExists(raSheetDetails);
+            Optional<String> filePathOptional = spsTaskService.checkAndGetSpsResponseFilePathIfExists(raSheetDetails);
             if (!filePathOptional.isPresent()) {
                 log.info("Response file doesn't exist for raSheetDetails {} - so skipping sps task", gson.toJson(raSheetDetails));
                 raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
@@ -58,6 +59,7 @@ public class SpsTask extends Task {
                 return;
             }
             //TODO change it
+            spsTaskService.copySpsResponseFileToDestination(filePathOptional.get());
             spsTaskService.invokePythonProcessForSpsTask(raSheetDetails);
             log.debug("SpsTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
@@ -91,13 +93,5 @@ public class SpsTask extends Task {
             return null;
         }
         return (RASheetDetails) taskData.get("data");
-    }
-
-    public Optional<String> checkAndGetSpsResponseFilePathIfExists(RASheetDetails raSheetDetails) {
-        throw new RuntimeException("Yet to be implemented");
-    }
-
-    public void copySpsResponseFileToDestination(RASheetDetails raSheetDetails) {
-        throw new RuntimeException("Yet to be implemented");
     }
 }

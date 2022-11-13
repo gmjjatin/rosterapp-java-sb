@@ -95,7 +95,7 @@ public class DartUITaskService {
     //TODO demo
     public DartStatusCheckResponse checkDartUIStatusOfSheet(String validationFileId) {
         try {
-            String url = getUrl(dartUIHost, String.format("dart-core-service/file-validation/v1/file-status/%s", validationFileId));
+            String url = getUrl(dartUIHost, String.format("dart-core-service/dart/file-validation/v1/file-status/%s", validationFileId));
             HttpHeaders headers = new HttpHeaders();
 
             headers.set("Authorization", "Bearer " + dartUIToken); //accessToken can be the secret key you generate.
@@ -113,7 +113,7 @@ public class DartUITaskService {
 
     public String downloadDartUIResponseFile(String validationFileId, String folderPath, String fileType) throws IOException  {
         try {
-            String urlString = getUrl(dartUIHost, String.format("dart-core-service/file-validation/v1/file-download/%s?type=%s", validationFileId, fileType));
+            String urlString = getUrl(dartUIHost, String.format("dart-core-service/dart/file-validation/v1/file-download/%s?fileType=%s", validationFileId, fileType));
             URL url = new URL(urlString);
             URLConnection con = url.openConnection();
             con.setRequestProperty("Authorization", "Bearer " + dartUIToken);
@@ -136,7 +136,7 @@ public class DartUITaskService {
         }
     }
 
-    public boolean consolidateDartUIValidation(Long raFileDetailsId) {
+    public void consolidateDartUIValidation(Long raFileDetailsId) {
         List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
         log.info("consolidateDartUIValidation for raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId,
                 new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId())));
@@ -144,31 +144,38 @@ public class DartUITaskService {
         if (sheetCodes.stream().anyMatch(Objects::isNull)) {
             log.error("One of the status codes is null for raFileDetailsId {}", raFileDetailsId);
             //TODO
-            return false;
+            return;
         }
         if (sheetCodes.size() == 0) {
             log.error("Zero status codes for raFileDetailsId {}", raFileDetailsId);
             //TODO
-            return false;
+            return;
         }
-        //153 - ISF Conversion Failed
+
         //111 - Roster Sheet Processing not Required
         //119 - Roster Sheet Need to be Processed Manually
         //131 - Post Column Mapping Normalization processing Not required
         //139 - Post Column Mapping Normalization Manual action
         //155 - ISF Conversion Completed
         //145 - Post Column Mapping Normalization completed
-        //35 - Roster ISF Generation Completed
-        //33 - Roster ISF Generation Failed
-        if (hasIntersection(Arrays.asList(173), sheetCodes)) {
-            //TODO demo
-            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 33);
-            return false;
-        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 179))) {
-            //TODO demo - change file status code
-            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 35);
-            return false;
+
+        //179 - Dart UI validation completed
+
+        //53 - Failed DART UI validation (All file)
+        //55 - All sheeets pass dart ui validation
+        //57 - partially completed for dart ui validation.
+
+        if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 179))) {
+            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 55);
+            return;
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 179, 178, 173))) {
+            if (hasIntersection(sheetCodes, Collections.singletonList(179))) {
+                raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 57);
+                return;
+            } else {
+                raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 53);
+                return;
+            }
         }
-        return true;
     }
 }
