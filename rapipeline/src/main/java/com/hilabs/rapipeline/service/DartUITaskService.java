@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -64,7 +65,7 @@ public class DartUITaskService {
 
     public List<RASheetDetails> getEligibleRASheetDetailsListAndUpdate(int count) {
         List<Integer> dartUIValidationInProgressSheetStatusCodeList = Collections.singletonList(dartUIValidationInProgressSheetStatusCode);
-        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedOnSheetStatusCodesForUpdate(dartUIValidationInProgressSheetStatusCodeList,
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsBasedOnSheetStatusCodesWithFileIdForUpdate(dartUIValidationInProgressSheetStatusCodeList,
                 count);
         List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
         //TODO demo
@@ -119,8 +120,13 @@ public class DartUITaskService {
         try {
             String urlString = getUrl(dartUIHost, String.format("dart-core-service/dart/file-validation/v1/file-download/%s?fileType=%s", validationFileId, fileType));
             URL url = new URL(urlString);
-            URLConnection con = url.openConnection();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestProperty("Authorization", "Bearer " + dartUIToken);
+            int statusCode = con.getResponseCode();
+            if (statusCode != 200) {
+                log.error("Non 200 status code for validationFileId {} fileType {} urlString {}", validationFileId, fileType, urlString);
+                return null;
+            }
             String fieldValue = con.getHeaderField("Content-Disposition");
             if (fieldValue == null || ! fieldValue.contains("filename=\"")) {
                 log.error("No filename for validationFileId {} fileType {} urlString {}", validationFileId, fileType, urlString);
