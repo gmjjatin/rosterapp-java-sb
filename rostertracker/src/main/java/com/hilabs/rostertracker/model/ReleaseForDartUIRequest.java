@@ -8,4 +8,5 @@ import java.util.List;
 @Data
 public class ReleaseForDartUIRequest implements Serializable {
     private Long raFileDetailsId;
+    private Long version;
 }

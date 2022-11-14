@@ -68,7 +68,7 @@ public class DartUITask extends Task {
             if (!optionalDartStatusCheckResponse.isPresent()) {
                 log.error("Skipping dart ui task - received non 200 status -  for raSheetDetails {}", gson.toJson(raSheetDetails));
                 raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
-                        dartUIValidationFailedSheetStatusCode, "SYSTEM", new Date());
+                        dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
             }
             DartStatusCheckResponse dartStatusCheckResponse = optionalDartStatusCheckResponse.get();

@@ -5,16 +5,21 @@ import com.hilabs.roster.dto.RAFalloutErrorInfo;
 import com.hilabs.roster.entity.*;
 import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
+import com.hilabs.roster.service.RAUserActionAuditService;
 import com.hilabs.rostertracker.dto.*;
+import com.hilabs.rostertracker.exception.InvalidRosterStatusException;
 import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,6 +37,8 @@ import static com.hilabs.rostertracker.utils.SheetTypeUtils.isDataSheet;
 @Log4j2
 @CrossOrigin(origins = "*")
 public class ProgressTrackingController {
+    public static final String RELEASED_TO_DART_UI_OBJECT_TYPE = "ROSTER";
+    public static final String RELEASED_TO_DART_UI_ACTION = "RELEASED_TO_DART_UI";
     @Autowired
     RAFileStatsService raFileStatsService;
 
@@ -52,6 +59,9 @@ public class ProgressTrackingController {
 
     @Autowired
     RASheetErrorCodeDetailRepository raSheetErrorCodeDetailRepository;
+
+    @Autowired
+    RAUserActionAuditService raUserActionAuditService;
 
 
     @GetMapping("/file-stats-list")
@@ -110,8 +120,17 @@ public class ProgressTrackingController {
                     .get(raFileDetails.getId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
             String plmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
             Long fileReceivedTime = getRosterReceivedTime(raFileDetails);
+            List<RAUserActionAudit> raUserActionAuditList = raUserActionAuditService.findRAUserActionAuditList(String.valueOf(raFileDetailsId), RELEASED_TO_DART_UI_OBJECT_TYPE, RELEASED_TO_DART_UI_ACTION);
+            Long lastReleasedTime = null;
+            String lastReleasedBy = null;
+            if (raUserActionAuditList.size() > 0) {
+                RAUserActionAudit firstRAUserActionAudit = raUserActionAuditList.get(0);
+                lastReleasedTime = firstRAUserActionAudit.getCreatedDate() != null ? firstRAUserActionAudit.getCreatedDate().getTime() : null;
+                lastReleasedBy = firstRAUserActionAudit.getCreatedUserId();
+            }
             RosterFileProgressInfoListResponse rosterFileProgressInfoListResponse = new RosterFileProgressInfoListResponse(raFileDetails.getOriginalFileName(),
-                    fileReceivedTime, lob, raFileDetails.getMarket(), plmTicketId, raFileDetails.getStatusCode(), raSheetProgressInfoList);
+                    fileReceivedTime, lob, raFileDetails.getMarket(), plmTicketId, raFileDetails.getStatusCode(), raFileDetails.getVersion(),
+                    raSheetProgressInfoList, lastReleasedTime, lastReleasedBy);
             return new ResponseEntity<>(rosterFileProgressInfoListResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRosterFileProgressInfoList raFileDetailsId {}", raFileDetailsId);
@@ -217,6 +236,7 @@ public class ProgressTrackingController {
     @PostMapping("/release-for-dart-ui")
     public ResponseEntity<Map<String, String>> releaseForDartUI(@RequestBody ReleaseForDartUIRequest releaseForDartUIRequest) {
         try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
             if (releaseForDartUIRequest == null || releaseForDartUIRequest.getRaFileDetailsId() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "raFileDetailsId missing");
             }
@@ -227,14 +247,32 @@ public class ProgressTrackingController {
             }
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
             if (!Objects.equals(raFileDetails.getStatusCode(), DART_GENERATED_STATUS_CODE)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("raFileDetailsId %s not eligible for dart ui release", raFileDetailsId));
+                throw new InvalidRosterStatusException(String.format("raFileDetailsId %s not eligible for dart ui release", raFileDetailsId));
             }
-            raFileDetails.setStatusCode(RELEASED_FOR_DART_UI_STATUS_CODE);
-            raFileDetailsService.saveRAFileDetails(raFileDetails);
+            releaseForDartUIWithLock(releaseForDartUIRequest, username, raFileDetails);
             //TODO return better response
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in releaseForDartUI releaseForDartUIRequest {}", releaseForDartUIRequest);
+            throw ex;
+        }
+    }
+
+    @Transactional
+    public void releaseForDartUIWithLock(ReleaseForDartUIRequest releaseForDartUIRequest, String username, RAFileDetails raFileDetails) {
+        try {
+            if (releaseForDartUIRequest.getVersion() == null || !raFileDetails.getVersion().equals(releaseForDartUIRequest.getVersion())) {
+                throw new OptimisticLockingFailureException("Old version key");
+            }
+            raUserActionAuditService.saveRAUserActionAudit(raFileDetails.getLastUpdatedUserId(), RELEASED_TO_DART_UI_OBJECT_TYPE,
+                    RELEASED_TO_DART_UI_ACTION, new Date(), username);
+            raFileDetails.setStatusCode(RELEASED_FOR_DART_UI_STATUS_CODE);
+            raFileDetailsService.saveRAFileDetails(raFileDetails);
+        } catch (ObjectOptimisticLockingFailureException | ResponseStatusException ex) {
+            log.warn("Error in releaseForDartUIWithLock releaseForDartUIRequest {}", releaseForDartUIRequest);
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Error in releaseForDartUIWithLock releaseForDartUIRequest {}", releaseForDartUIRequest);
             throw ex;
         }
     }

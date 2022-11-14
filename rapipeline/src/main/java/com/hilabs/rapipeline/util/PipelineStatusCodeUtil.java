@@ -15,7 +15,7 @@ public class PipelineStatusCodeUtil {
 
 
     public static Integer dartUIValidationInProgressSheetStatusCode = 171;
-    public static Integer dartUIValidationFailedSheetStatusCode = 173;
+//    public static Integer dartUIValidationFailedSheetStatusCode = 173;
     public static Integer dartUIFeedbackInQueueSheetStatusCode = 174;
     public static Integer dartUIFeedbackReceived  = 175;
 
@@ -25,10 +25,8 @@ public class PipelineStatusCodeUtil {
 
     public static Integer dartUIValidationCompleteFileStatusCode = 55;
     //TODO demo
-    public static Integer readyForSpsSheetStatusCode = 1000;
-    public static Integer spsInQueueSheetStatusCode = 1001;
-
-    public static Integer spsInProgressFileStatusCode = 1002;
+    public static Integer readyForSpsSheetStatusCode = 179;
+    public static Integer spsInQueueSheetStatusCode = 180;
 
 
 

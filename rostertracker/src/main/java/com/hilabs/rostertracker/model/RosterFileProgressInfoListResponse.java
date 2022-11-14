@@ -14,5 +14,8 @@ public class RosterFileProgressInfoListResponse {
     private String market;
     private String plmTicketId;
     private Integer fileStatusCode;
+    private Long version;
     private List<RASheetProgressInfo> progressInfoList;
+    private Long releasedOn;
+    private String releasedBy;
 }

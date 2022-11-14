@@ -43,6 +43,8 @@ public enum RosterSheetProcessStage {
             return CONVERTED_DART;
         } else if (type.toLowerCase().startsWith("dart") && type.toLowerCase().endsWith("ui")) {
             return SPS_LOAD;
+        } else if (type.toLowerCase().startsWith("sps")) {
+            return SPS_LOAD;
         }
         return ROSTER_RECEIVED;
     }

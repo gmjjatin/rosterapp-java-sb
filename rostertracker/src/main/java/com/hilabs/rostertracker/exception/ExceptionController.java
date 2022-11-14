@@ -70,4 +70,12 @@ public class ExceptionController {
         ErrorResponse errorResponse = new ErrorResponse(exception.getStatus().name(), exception.getMessage());
         return new ResponseEntity<>(errorResponse, exception.getStatus());
     }
+
+    @ExceptionHandler(value = InvalidRosterStatusException.class)
+    public ResponseEntity<ErrorResponse> exception(InvalidRosterStatusException exception) {
+        log.error("InvalidRosterStatusException {}", exception.getMessage());
+        ErrorResponse errorResponse =  new ErrorResponse("INVALID_ROSTER_STATUS",
+                "InvalidRosterStatusException " + exception.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
 }
