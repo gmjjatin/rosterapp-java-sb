@@ -7,6 +7,7 @@ import com.hilabs.roster.repository.RAFileErrorCodeDetailRepository;
 import com.hilabs.roster.repository.RASheetErrorCodeDetailRepository;
 import com.hilabs.roster.service.RAUserActionAuditService;
 import com.hilabs.rostertracker.dto.*;
+import com.hilabs.rostertracker.exception.InvalidRosterStatusException;
 import com.hilabs.rostertracker.model.*;
 import com.hilabs.rostertracker.service.*;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
@@ -246,7 +247,7 @@ public class ProgressTrackingController {
             }
             RAFileDetails raFileDetails = optionalRAFileDetails.get();
             if (!Objects.equals(raFileDetails.getStatusCode(), DART_GENERATED_STATUS_CODE)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("raFileDetailsId %s not eligible for dart ui release", raFileDetailsId));
+                throw new InvalidRosterStatusException(String.format("raFileDetailsId %s not eligible for dart ui release", raFileDetailsId));
             }
             releaseForDartUIWithLock(releaseForDartUIRequest, username, raFileDetails);
             //TODO return better response

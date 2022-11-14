@@ -16,6 +16,6 @@ public class RosterFileProgressInfoListResponse {
     private Integer fileStatusCode;
     private Long version;
     private List<RASheetProgressInfo> progressInfoList;
-    private Long lastReleasedTime;
-    private String lastReleasedBy;
+    private Long releasedOn;
+    private String releasedBy;
 }
