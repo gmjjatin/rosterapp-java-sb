@@ -171,7 +171,7 @@ public class RAFileStatsService {
     }
 
     public RosterFileProcessIntermediateStageInfo getRosterFileProcessIntermediateStageInfo(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage, RosterStageState rosterStageState,
-                                                                                            int recordCount, List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, long fileReceivedTime) {
+                                                                                            Integer recordCount, List<RARTConvProcessingDurationStats> raConvProcessingDurationStatsList, long fileReceivedTime) {
         ProcessDurationInfo processDurationInfo = null;
         if (rosterSheetProcessStage == RosterSheetProcessStage.ROSTER_RECEIVED) {
             processDurationInfo = new ProcessDurationInfo(fileReceivedTime, fileReceivedTime, 0);

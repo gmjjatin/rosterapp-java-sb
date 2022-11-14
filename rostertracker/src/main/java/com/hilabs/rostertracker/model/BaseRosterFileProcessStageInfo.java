@@ -14,7 +14,7 @@ public class BaseRosterFileProcessStageInfo {
     private RosterSheetProcessStage fileProcessStage;
     private RosterStageState state;
 
-    private int noOfRecords;
+    private Integer noOfRecords;
 
     private long timeTakenInMillis;
     private long endTime;

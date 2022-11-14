@@ -6,7 +6,7 @@ import lombok.Data;
 public class RosterFileErrorInfo {
     private String errorType;
     private String errorCode;
-    private int noOfRecords;
+    private Integer noOfRecords;
     private String description;
     public RosterFileErrorInfo(String errorType, String errorCode, String description) {
         this.errorType = errorType;
@@ -14,7 +14,10 @@ public class RosterFileErrorInfo {
         this.description = description;
     }
 
-    public void incrementNoOfRecords(int n) {
+    public void incrementNoOfRecords(Integer n) {
+        if (n == null) {
+            return;
+        }
         this.noOfRecords += n;
     }
 }
