@@ -4,6 +4,7 @@ package com.hilabs.rapipeline.dartui;
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.Task;
 import com.hilabs.rapipeline.model.DartStatusCheckResponse;
+import com.hilabs.rapipeline.model.DartUIAuthResponse;
 import com.hilabs.rapipeline.service.DartUITaskService;
 import com.hilabs.rapipeline.service.FileSystemUtilService;
 import com.hilabs.roster.entity.RASheetDetails;
@@ -63,8 +64,17 @@ public class DartUITask extends Task {
                         dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
             }
+            Optional<DartUIAuthResponse> optionalDartUIAuthResponse = dartUITaskService.getDartUIJwtToken();
+            if (!optionalDartUIAuthResponse.isPresent() || optionalDartUIAuthResponse.get().getToken() == null) {
+                log.error("Skipping dart ui task - received non 200 status from auth api -  for raSheetDetails {}", gson.toJson(raSheetDetails));
+                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
+                        dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
+                return;
+            }
+            DartUIAuthResponse dartUIAuthResponse = optionalDartUIAuthResponse.get();
+            String dartUIToken = dartUIAuthResponse.getToken();
             //TODO handle with and without bad file
-            Optional<DartStatusCheckResponse> optionalDartStatusCheckResponse = dartUITaskService.checkDartUIStatusOfSheet(validationFileId);
+            Optional<DartStatusCheckResponse> optionalDartStatusCheckResponse = dartUITaskService.checkDartUIStatusOfSheet(validationFileId, dartUIToken);
             if (!optionalDartStatusCheckResponse.isPresent()) {
                 log.error("Skipping dart ui task - received non 200 status -  for raSheetDetails {}", gson.toJson(raSheetDetails));
                 raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
@@ -82,11 +92,13 @@ public class DartUITask extends Task {
                         dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
             }
+
+
             //TODO
             if (status.equalsIgnoreCase("Ready for Review")) {
                 String fileType = "Reviewed";
                 String dartUIFileName = dartUITaskService.downloadDartUIResponseFile(validationFileId,
-                        fileSystemUtilService.getDartUIResponseFolderPath(), fileType);
+                        fileSystemUtilService.getDartUIResponseFolderPath(), fileType, dartUIToken);
                 if (dartUIFileName == null) {
                     log.info("Skipping dart ui task - downloadDartUIResponseFile is not successful - raSheetDetails {}", gson.toJson(raSheetDetails));
                     raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),

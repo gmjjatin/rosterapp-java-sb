@@ -3,6 +3,7 @@ package com.hilabs.rapipeline.service;
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.config.AppPropertiesConfig;
 import com.hilabs.rapipeline.model.DartStatusCheckResponse;
+import com.hilabs.rapipeline.model.DartUIAuthResponse;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
@@ -36,9 +37,6 @@ import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 public class DartUITaskService {
     @Value("${dartUIHost}")
     private String dartUIHost;
-
-    @Value("${dartUIToken}")
-    private String dartUIToken;
     private static Gson gson = new Gson();
     @Autowired
     private RAFileDetailsService raFileDetailsService;
@@ -93,8 +91,30 @@ public class DartUITaskService {
         return String.format("%s%s", host, path);
     }
 
+    public Optional<DartUIAuthResponse> getDartUIJwtToken() {
+        try {
+            String url = getUrl(dartUIHost, "dart-core-service/authenticate");
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            Map<String, String> credentials = new HashMap<>();
+            credentials.put("username", "ah86455");
+            credentials.put("password", "DartTesting");
+            String requestJson = gson.toJson(credentials);
+            HttpEntity<String> entity = new HttpEntity <>(requestJson, headers);
+            ResponseEntity<DartUIAuthResponse> response = restTemplate.postForEntity(url, entity, DartUIAuthResponse.class);
+            HttpStatus httpStatus =  response.getStatusCode();
+            if (httpStatus.value() != 200) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(response.getBody());
+        } catch (Exception ex) {
+            log.error("Error in getDartUIJwtToken for ex {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
+            throw ex;
+        }
+    }
+
     //TODO demo
-    public Optional<DartStatusCheckResponse> checkDartUIStatusOfSheet(String validationFileId) {
+    public Optional<DartStatusCheckResponse> checkDartUIStatusOfSheet(String validationFileId, String dartUIToken) {
         try {
             String url = getUrl(dartUIHost, String.format("dart-core-service/dart/file-validation/v1/file-status/%s", validationFileId));
             HttpHeaders headers = new HttpHeaders();
@@ -116,7 +136,7 @@ public class DartUITaskService {
         }
     }
 
-    public String downloadDartUIResponseFile(String validationFileId, String folderPath, String fileType) throws IOException  {
+    public String downloadDartUIResponseFile(String validationFileId, String folderPath, String fileType, String dartUIToken) throws IOException  {
         try {
             String urlString = getUrl(dartUIHost, String.format("dart-core-service/dart/file-validation/v1/file-download/%s?fileType=%s", validationFileId, fileType));
             URL url = new URL(urlString);
