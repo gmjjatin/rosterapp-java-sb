@@ -7,6 +7,7 @@ import com.hilabs.rapipeline.ingestion.IngestionFetcher;
 import com.hilabs.rapipeline.dart.DartFetcher;
 import com.hilabs.rapipeline.isf.IsfFetcher;
 import com.hilabs.rapipeline.preprocessing.PreProcessingFetcher;
+import com.hilabs.rapipeline.sps.SpsFetcher;
 import com.hilabs.rapipeline.test.TestFetcher;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
@@ -38,6 +39,9 @@ public class AppConfig {
     @Autowired
     private DartUIFetcher dartUIFetcher;
 
+    @Autowired
+    private SpsFetcher spsFetcher;
+
     @Value("${ingestionConfigPath}")
     private String ingestionConfigPath;
 
@@ -52,6 +56,9 @@ public class AppConfig {
 
     @Value("${dartUIConfigPath}")
     private String dartUIConfigPath;
+
+    @Value("${spsConfigPath}")
+    private String spsConfigPath;
 
     @PostConstruct
     public void initialize() throws SchedulerException, ApplicationException {
@@ -79,6 +86,10 @@ public class AppConfig {
 
         new BatchConfig(dartUIConfigPath)
                 .registerJobRetrievers(dartUIFetcher)
+                .build();
+
+        new BatchConfig(spsConfigPath)
+                .registerJobRetrievers(spsFetcher)
                 .build();
     }
 }
