@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hilabs.rapipeline.service.SpsTaskService.removeFileExtensionFromExcelFile;
+
 @Component
 @Slf4j
 public class SpsFetcher implements JobRetriever {

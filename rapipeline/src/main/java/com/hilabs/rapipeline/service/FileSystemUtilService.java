@@ -118,6 +118,7 @@ public class FileSystemUtilService {
             }
             return suffix == null || suffix.length() == 0 || name.endsWith(suffix);
         };
-        return dir.list(filter);
+        String[] files = dir.list(filter);
+        return files == null ? new String[0] : files;
     }
 }

@@ -169,7 +169,7 @@ public class DartUITaskService {
     public void consolidateDartUIValidation(Long raFileDetailsId) {
         List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
         log.info("consolidateDartUIValidation for raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId,
-                new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId())));
+                new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList())));
         List<Integer> sheetCodes = raSheetDetailsList.stream().map(s -> s.getStatusCode()).collect(Collectors.toList());
         if (sheetCodes.stream().anyMatch(Objects::isNull)) {
             log.error("One of the status codes is null for raFileDetailsId {}", raFileDetailsId);

@@ -70,8 +70,20 @@ public class SpsTaskService {
         }
     }
 
+    public static String removeFileExtensionFromExcelFile(String fileName) {
+        if (fileName == null) {
+            return null;
+        }
+        fileName = fileName.replaceAll(".xlsx", "");
+        fileName = fileName.replaceAll(".xlsm", "");
+        fileName = fileName.replaceAll(".xls", "");
+        return fileName;
+    }
+
     public Optional<String> checkAndGetSpsResponseFilePathIfExists(RASheetDetails raSheetDetails) {
-        String[] fileList = getListOfFilesInFolder(spsSrcFolder, raSheetDetails.getOutFileName(), "");
+        String fileNameWithoutExt = removeFileExtensionFromExcelFile(raSheetDetails.getOutFileName());
+        log.info("Searching in spsSrcFolder {} fileNameWithoutExt {}", spsSrcFolder, fileNameWithoutExt);
+        String[] fileList = getListOfFilesInFolder(spsSrcFolder, fileNameWithoutExt, "");
         if (fileList.length == 0) {
             return Optional.empty();
         }

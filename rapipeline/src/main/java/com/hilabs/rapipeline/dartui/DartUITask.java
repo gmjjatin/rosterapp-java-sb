@@ -92,23 +92,20 @@ public class DartUITask extends Task {
                         dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
                 return;
             }
-
-
-            //TODO
-            if (status.equalsIgnoreCase("Ready for Review")) {
-                String fileType = "Reviewed";
-                String dartUIFileName = dartUITaskService.downloadDartUIResponseFile(validationFileId,
-                        fileSystemUtilService.getDartUIResponseFolderPath(), fileType, dartUIToken);
-                if (dartUIFileName == null) {
-                    log.info("Skipping dart ui task - downloadDartUIResponseFile is not successful - raSheetDetails {}", gson.toJson(raSheetDetails));
-                    raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
-                            dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
-                    return;
-                }
-                raSheetDetails.setValidationFileName(dartUIFileName);
+            String fileType = "Reviewed";
+            String dartUIFileName = dartUITaskService.downloadDartUIResponseFile(validationFileId,
+                    fileSystemUtilService.getDartUIResponseFolderPath(), fileType, dartUIToken);
+            if (dartUIFileName == null) {
+                log.info("Skipping dart ui task - downloadDartUIResponseFile is not successful - raSheetDetails {}", gson.toJson(raSheetDetails));
+                raSheetDetailsRepository.updateRASheetDetailsStatusByIds(Collections.singletonList(raSheetDetails.getId()),
+                        dartUIValidationInProgressSheetStatusCode, "SYSTEM", new Date());
+                return;
             }
+            raSheetDetails.setValidationFileName(dartUIFileName);
             raSheetDetails.setStatusCode(dartUIFeedbackReceived);
-            raSheetDetailsRepository.save(raSheetDetails);
+            log.info("Saving raSheetDetails {}", gson.toJson(raSheetDetails));
+            raSheetDetails = raSheetDetailsRepository.save(raSheetDetails);
+            log.info("raSheetDetails saved {}", gson.toJson(raSheetDetails));
             dartUITaskService.invokePythonProcessForDartUITask(raSheetDetails);
             dartUITaskService.consolidateDartUIValidation(raSheetDetails.getRaFileDetailsId());
             log.debug("DartUITask done for {}", gson.toJson(getTaskData()));

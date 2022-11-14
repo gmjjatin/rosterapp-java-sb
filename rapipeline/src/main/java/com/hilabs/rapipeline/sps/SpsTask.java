@@ -58,8 +58,10 @@ public class SpsTask extends Task {
                         readyForSpsSheetStatusCode, "SYSTEM", new Date());
                 return;
             }
+            log.info("Response file exist for raSheetDetails {} filePath {}", gson.toJson(raSheetDetails), filePathOptional.get());
             //TODO change it
             spsTaskService.copySpsResponseFileToDestination(filePathOptional.get());
+            log.info("copySpsResponseFileToDestination done for raSheetDetails {} filePath {}", gson.toJson(raSheetDetails), filePathOptional.get());
             spsTaskService.invokePythonProcessForSpsTask(raSheetDetails);
             log.debug("SpsTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
