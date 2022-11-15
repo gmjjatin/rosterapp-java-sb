@@ -104,7 +104,7 @@ public class DartUITask extends Task {
             raSheetDetails.setValidationFileName(dartUIFileName);
             raSheetDetails.setStatusCode(dartUIFeedbackReceived);
             log.info("Saving raSheetDetails {}", gson.toJson(raSheetDetails));
-            raSheetDetails = raSheetDetailsRepository.save(raSheetDetails);
+            raSheetDetails = raSheetDetailsRepository.saveAndFlush(raSheetDetails);
             log.info("raSheetDetails saved {}", gson.toJson(raSheetDetails));
             dartUITaskService.invokePythonProcessForDartUITask(raSheetDetails);
             dartUITaskService.consolidateDartUIValidation(raSheetDetails.getRaFileDetailsId());

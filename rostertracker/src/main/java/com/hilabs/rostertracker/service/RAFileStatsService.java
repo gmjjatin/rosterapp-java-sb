@@ -150,14 +150,14 @@ public class RAFileStatsService {
             Integer falloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(), "DART Validation");
             //TODO
             return new FalloutReportInfo(Arrays.asList(
-                    new FalloutReportElement("DART Records", raSheetDetails.getOutRowCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRowCount())),
-                    new FalloutReportElement("Roster Records", raSheetDetails.getOutRecordCount() == null ? "-" : String.valueOf(raSheetDetails.getOutRecordCount())),
-                    new FalloutReportElement("DART Validation Failed", falloutRowCount == null ? "-" : String.valueOf(falloutRowCount)),
-                    new FalloutReportElement("Roster Records Failed", falloutRecordCount == null ? "-" : String.valueOf(falloutRecordCount))
+                    new FalloutReportElement("DART Records", getStringOrDefault(raSheetDetails.getOutRowCount(), "-")),
+                    new FalloutReportElement("Roster Records", getStringOrDefault(raSheetDetails.getOutRecordCount(), "-")),
+                    new FalloutReportElement("DART Validation Failed", getStringOrDefault(falloutRowCount, "-")),
+                    new FalloutReportElement("Roster Records Failed", getStringOrDefault(falloutRecordCount, "-"))
             ), falloutRowCount != null && falloutRowCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.SPS_LOAD) {
             return new FalloutReportInfo(Arrays.asList(
-                    new FalloutReportElement("DART rows submitted by DART UI", "-"),
+                    new FalloutReportElement("DART rows submitted by DART UI", getStringOrDefault(raSheetDetails.getOutRowCount(), "-")),
                     new FalloutReportElement("DART UI fallouts", "-"),
                     new FalloutReportElement("SPS transactions", "-"),
                     new FalloutReportElement("Successful transactions", "-"),
@@ -168,6 +168,10 @@ public class RAFileStatsService {
             ), false);
         }
         return new FalloutReportInfo(Arrays.asList(), false);
+    }
+
+    public static String getStringOrDefault(Integer num, String defaultStr) {
+        return num == null ? defaultStr : String.valueOf(num);
     }
 
     public RosterFileProcessIntermediateStageInfo getRosterFileProcessIntermediateStageInfo(RASheetDetails raSheetDetails, RosterSheetProcessStage rosterSheetProcessStage, RosterStageState rosterStageState,

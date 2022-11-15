@@ -5,16 +5,22 @@ import com.hilabs.rapipeline.config.AppPropertiesConfig;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rapipeline.service.FileSystemUtilService.getListOfFilesInFolder;
+import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.hasIntersection;
+import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.isSubset;
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 
 @Service
@@ -55,6 +61,7 @@ public class SpsTaskService {
         List<Long> raSheetDetailsIds = raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList());
         raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds,
                 spsInQueueSheetStatusCode, "SYSTEM", new Date());
+        raSheetDetailsList.stream().forEach(p -> p.setStatusCode(spsInQueueSheetStatusCode));
         return raSheetDetailsList;
     }
 
@@ -87,12 +94,63 @@ public class SpsTaskService {
         if (fileList.length == 0) {
             return Optional.empty();
         }
-        return Optional.of(fileList[0]);
+        String fileName = fileList[0];
+        return Optional.of(new File(spsSrcFolder, fileName).getPath());
     }
 
-    public void copySpsResponseFileToDestination(String filePath) {
+    public static String getFileNameFromPath(String filePath) {
         String[] parts = filePath.split("/");
-        String fileName = parts[parts.length - 1];
-        fileSystemUtilService.copyFileToDest(filePath, new File(spsDestFolder, fileName).getPath());
+        return parts[parts.length - 1];
+    }
+
+    public void copySpsResponseFileToDestination(String filePath) throws IOException  {
+        String fileName = getFileNameFromPath(filePath);
+        File file = new File(filePath);
+        InputStream dataStream = Files.newInputStream(file.toPath());
+        FileUtils.copyInputStreamToFile(dataStream, new File(spsDestFolder, fileName));
+    }
+
+    public void consolidateSpsValidation(Long raFileDetailsId) {
+        List<RASheetDetails> raSheetDetailsList = raSheetDetailsRepository.getSheetDetailsForAFileId(raFileDetailsId);
+        log.info("consolidateDartUIValidation for raFileDetailsId {} raSheetDetailsList {}", raFileDetailsId,
+                new Gson().toJson(raSheetDetailsList.stream().map(p -> p.getId()).collect(Collectors.toList())));
+        List<Integer> sheetCodes = raSheetDetailsList.stream().map(s -> s.getStatusCode()).collect(Collectors.toList());
+        if (sheetCodes.stream().anyMatch(Objects::isNull)) {
+            log.error("One of the status codes is null for raFileDetailsId {}", raFileDetailsId);
+            //TODO
+            return;
+        }
+        if (sheetCodes.size() == 0) {
+            log.error("Zero status codes for raFileDetailsId {}", raFileDetailsId);
+            //TODO
+            return;
+        }
+
+        //111 - Roster Sheet Processing not Required
+        //119 - Roster Sheet Need to be Processed Manually
+        //131 - Post Column Mapping Normalization processing Not required
+        //139 - Post Column Mapping Normalization Manual action
+        //155 - ISF Conversion Completed
+        //145 - Post Column Mapping Normalization completed
+
+        //179 - Dart UI validation completed
+
+        //53 - Failed DART UI validation (All file)
+        //55 - All sheeets pass dart ui validation
+        //57 - partially completed for dart ui validation.
+        int spsSuccessStatusCode = 189;
+        int spsFailedStatusCode = 188;
+        if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, spsSuccessStatusCode))) {
+            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 65);
+            return;
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, spsSuccessStatusCode, spsFailedStatusCode))) {
+            if (hasIntersection(sheetCodes, Collections.singletonList(spsSuccessStatusCode))) {
+                raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 67);
+                return;
+            } else {
+                raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 63);
+                return;
+            }
+        }
     }
 }

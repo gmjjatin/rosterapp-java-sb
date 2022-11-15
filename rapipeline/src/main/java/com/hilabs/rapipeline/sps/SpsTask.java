@@ -19,9 +19,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.hilabs.rapipeline.service.FileSystemUtilService.getListOfFilesInFolder;
+import static com.hilabs.rapipeline.service.SpsTaskService.getFileNameFromPath;
 import static com.hilabs.rapipeline.service.SpsTaskService.spsTaskRunningMap;
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.dartUIValidationInProgressSheetStatusCode;
-import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.readyForSpsSheetStatusCode;
+import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 import static com.hilabs.rapipeline.util.Utils.trimToNChars;
 
 @Slf4j
@@ -62,7 +62,15 @@ public class SpsTask extends Task {
             //TODO change it
             spsTaskService.copySpsResponseFileToDestination(filePathOptional.get());
             log.info("copySpsResponseFileToDestination done for raSheetDetails {} filePath {}", gson.toJson(raSheetDetails), filePathOptional.get());
+
+
+            raSheetDetails.setTargetResponseFileName(getFileNameFromPath(filePathOptional.get()));
+            log.info("Saving raSheetDetails {}", gson.toJson(raSheetDetails));
+            raSheetDetails = raSheetDetailsRepository.saveAndFlush(raSheetDetails);
+            log.info("Saved raSheetDetails {}", gson.toJson(raSheetDetails));
+
             spsTaskService.invokePythonProcessForSpsTask(raSheetDetails);
+            spsTaskService.consolidateSpsValidation(raSheetDetails.getRaFileDetailsId());
             log.debug("SpsTask done for {}", gson.toJson(getTaskData()));
         } catch (Exception | Error ex) {
             try {

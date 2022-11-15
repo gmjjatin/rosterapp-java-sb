@@ -91,5 +91,7 @@ public class AppConfig {
         new BatchConfig(spsConfigPath)
                 .registerJobRetrievers(spsFetcher)
                 .build();
+
+        log.info("Scheduler Initiated");
     }
 }

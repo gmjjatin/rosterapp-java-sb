@@ -66,6 +66,9 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "VLDTN_FILE_NM")
     private String validationFileName;
 
+    @Column(name = "TRGT_RSPNS_FILE_NM")
+    private String targetResponseFileName;
+
     public RASheetDetails() {
     }
 
@@ -79,7 +82,7 @@ public class RASheetDetails extends BaseEntity {
                           final Integer isfRowCount, final Integer outRowCount, final Integer outRecordCount,
                           final Integer targetSuccessfulRecordCount, final Integer manualReviewRecordCount,
                           final Integer targetLoadTransactionCount, final Integer targetLoadSuccessTransactionCount, final String isfFileName,
-                          final String outFileName, final String validationFileName) {
+                          final String outFileName, final String validationFileName, final  String targetResponseFileName) {
         super();
         this.raFileDetailsId = raFileDetailsId;
         this.statusCode = statusCode;
@@ -98,5 +101,6 @@ public class RASheetDetails extends BaseEntity {
         this.isfFileName = isfFileName;
         this.outFileName = outFileName;
         this.validationFileName = validationFileName;
+        this.targetResponseFileName = targetResponseFileName;
     }
 }

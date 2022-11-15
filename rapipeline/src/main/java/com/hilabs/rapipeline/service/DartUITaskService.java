@@ -69,6 +69,7 @@ public class DartUITaskService {
         //TODO demo
         raSheetDetailsRepository.updateRASheetDetailsStatusByIds(raSheetDetailsIds, dartUIFeedbackInQueueSheetStatusCode,
                 "SYSTEM", new Date());
+        raSheetDetailsList.forEach(p -> p.setStatusCode(dartUIFeedbackInQueueSheetStatusCode));
         return raSheetDetailsList;
     }
 

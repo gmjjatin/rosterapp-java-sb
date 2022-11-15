@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hilabs.rapipeline.service.FileSystemUtilService.getListOfFilesInFolder;
 import static com.hilabs.rapipeline.service.SpsTaskService.removeFileExtensionFromExcelFile;
 
 @Component
