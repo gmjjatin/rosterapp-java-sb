@@ -2,6 +2,7 @@ package com.hilabs.rostertracker;
 
 import java.util.Arrays;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Repository;
 @EntityScan({"com.hilabs.*"})
 @EnableJpaRepositories("com.hilabs.*")
 @EnableJpaAuditing
+@EnableEncryptableProperties
 public class RostertrackerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RostertrackerApplication.class, args);
