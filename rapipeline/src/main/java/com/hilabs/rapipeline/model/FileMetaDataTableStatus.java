@@ -7,5 +7,6 @@ public enum FileMetaDataTableStatus {
     PENDING,
     FILE_NOT_FOUND,
     IN_PROGRESS,
-    IN_QUEUE
+    IN_QUEUE,
+    FAILED
 }

@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.FAILED;
 import static com.hilabs.rapipeline.service.FileSystemUtilService.getListOfFilesInFolder;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.hasIntersection;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.isSubset;
@@ -49,6 +50,9 @@ public class SpsTaskService {
 
     @Autowired
     private FileSystemUtilService fileSystemUtilService;
+
+    @Autowired
+    private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
 
     @Autowired
     private AppPropertiesConfig appPropertiesConfig;
@@ -148,6 +152,11 @@ public class SpsTaskService {
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 67);
                 return;
             } else {
+                try {
+                    raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
+                } catch (Exception ex) {
+                    log.error("Error in updatePlmStatusForFileDetailsId with failed status for raFileDetailsId {}", raFileDetailsId);
+                }
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 63);
                 return;
             }

@@ -12,5 +12,10 @@ public interface RARTFileAltIdsRepository extends JpaRepository<RARTFileAltIds, 
     @Query(value = "select * from RA_RT_FILE_ALT_IDS where ra_file_details_id in (:raFileDetailsIdList)",
             nativeQuery = true)
     List<RARTFileAltIds> findByRAFileDetailsIdList(@Param("raFileDetailsIdList") List<Long> raFileDetailsIdList);
+
+    @Query(value = "select * from RA_RT_FILE_ALT_IDS where ra_file_details_id in (:raFileDetailsIdList) and alt_id_type = :altIdType",
+            nativeQuery = true)
+    List<RARTFileAltIds> findByRAFileDetailsIdList(@Param("raFileDetailsIdList") List<Long> raFileDetailsIdList,
+                                                   String altIdType);
 }
 

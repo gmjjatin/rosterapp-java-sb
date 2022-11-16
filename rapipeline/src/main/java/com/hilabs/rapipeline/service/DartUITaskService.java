@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.FAILED;
 import static com.hilabs.rapipeline.service.FileSystemUtilService.downloadUsingNIO;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.hasIntersection;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.isSubset;
@@ -55,6 +56,9 @@ public class DartUITaskService {
 
     @Autowired
     private RAFileStatusUpdatingService raFileStatusUpdatingService;
+
+    @Autowired
+    private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
 
     @Autowired
     private PythonInvocationService pythonInvocationService;
@@ -210,6 +214,11 @@ public class DartUITaskService {
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 57);
                 return;
             } else {
+                try {
+                    raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
+                } catch (Exception ex) {
+                    log.error("Error in updatePlmStatusForFileDetailsId with failed status for raFileDetailsId {}", raFileDetailsId);
+                }
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 53);
                 return;
             }

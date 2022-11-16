@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.FAILED;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.hasIntersection;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.isSubset;
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
@@ -33,6 +34,9 @@ public class DartTaskService {
 
     @Autowired
     private RAFileStatusUpdatingService raFileStatusUpdatingService;
+
+    @Autowired
+    private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
 
     @Autowired
     private PythonInvocationService pythonInvocationService;
@@ -82,6 +86,11 @@ public class DartTaskService {
         //49 - Dart generation completed with validation failure
         if (hasIntersection(Arrays.asList(163), sheetCodes)) {
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 43);
+            try {
+                raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
+            } catch (Exception ex) {
+                log.error("Error in updatePlmStatusForFileDetailsId with failed status for raFileDetailsId {}", raFileDetailsId);
+            }
             return false;
         } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165, 167))) {
             if (!hasIntersection(Collections.singletonList(165), sheetCodes)) {

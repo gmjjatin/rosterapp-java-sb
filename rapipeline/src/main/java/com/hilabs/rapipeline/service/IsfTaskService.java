@@ -2,7 +2,11 @@ package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.config.AppPropertiesConfig;
+import com.hilabs.rapipeline.repository.RAPlmRoFileDataRepository;
+import com.hilabs.roster.entity.RAPlmRoFileData;
+import com.hilabs.roster.entity.RARTFileAltIds;
 import com.hilabs.roster.entity.RASheetDetails;
+import com.hilabs.roster.repository.RARTFileAltIdsRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +17,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.FAILED;
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.IN_QUEUE;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.hasIntersection;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.isSubset;
 import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
+import static com.hilabs.roster.dto.AltIdType.PLM_RO_FILE_DATA_ID;
+import static com.hilabs.roster.dto.AltIdType.RO_ID;
 
 @Service
 @Slf4j
@@ -34,7 +42,16 @@ public class IsfTaskService {
     private RAFileStatusUpdatingService raFileStatusUpdatingService;
 
     @Autowired
+    private RAFileMetaDataDetailsService raFileMetaDataDetailsService;
+
+    @Autowired
     private PythonInvocationService pythonInvocationService;
+
+    @Autowired
+    private RARTFileAltIdsRepository rartFileAltIdsRepository;
+
+    @Autowired
+    private RAPlmRoFileDataRepository raPlmRoFileDataRepository;
 
     @Autowired
     private AppPropertiesConfig appPropertiesConfig;
@@ -112,6 +129,11 @@ public class IsfTaskService {
         //33 - Roster ISF Generation Failed
         //39 - ISF generation completed with validation failure
         if (hasIntersection(Arrays.asList(153), sheetCodes)) {
+            try {
+                raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
+            } catch (Exception ex) {
+                log.error("Error in updatePlmStatusForFileDetailsId with failed status for raFileDetailsId {}", raFileDetailsId);
+            }
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 33);
             return false;
         } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 155, 157))) {

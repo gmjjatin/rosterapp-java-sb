@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.*;
+import static com.hilabs.roster.dto.AltIdType.PLM_RO_FILE_DATA_ID;
 
 @Service
 @Slf4j
@@ -128,5 +129,35 @@ public class RAFileMetaDataDetailsService {
     }
 
     //TODO move to right file
+
+    public void updatePlmStatusForFileDetailsId(Long raFileDetailsId, FileMetaDataTableStatus fileMetaDataTableStatus) {
+        log.info("updatePlmStatusForFileDetailsId for raFileDetailsId {} fileMetaDataTableStatus {}", raFileDetailsId, fileMetaDataTableStatus);
+        if (fileMetaDataTableStatus == null) {
+            log.error("Can't update null status for raFileDetailsId {}", raFileDetailsId);
+            return;
+        }
+        List<RARTFileAltIds> rartFileAltIdsList = rartFileAltIdsRepository.findByRAFileDetailsIdList(Collections.singletonList(raFileDetailsId),
+                PLM_RO_FILE_DATA_ID.name());
+        Optional<RARTFileAltIds> optionalRARTFileAltIds = rartFileAltIdsList.stream().filter(p -> p.getAltId() != null).findFirst();
+        if (!optionalRARTFileAltIds.isPresent()) {
+            log.error("Can't find PLM_RO_FILE_DATA_ID for raFileDetailsId {}", raFileDetailsId);
+            return;
+        }
+        RARTFileAltIds rartFileAltIds = optionalRARTFileAltIds.get();
+        Long raPlmRoFileDataId = getLongFromStr(rartFileAltIds.getAltId());
+        if (raPlmRoFileDataId == null) {
+            log.error("Invalid raFileDetailsId {} altId {}", raFileDetailsId, rartFileAltIds.getAltId());
+            return;
+        }
+        raPlmRoFileDataRepository.updateRAPlmRoFileDataListWithStatus(fileMetaDataTableStatus.name(), Collections.singletonList(raPlmRoFileDataId));
+    }
+
+    public static Long getLongFromStr(String str) {
+        try {
+            return Long.parseLong(str);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 
 }
