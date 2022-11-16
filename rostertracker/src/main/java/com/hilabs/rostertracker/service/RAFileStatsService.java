@@ -156,14 +156,29 @@ public class RAFileStatsService {
                     new FalloutReportElement("Roster Records Failed", getStringOrDefault(falloutRecordCount, "-"))
             ), falloutRowCount != null && falloutRowCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.SPS_LOAD) {
+                //TODO hide "DART rows submitted by DART UI" for now
+            Integer dartUIFalloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(),
+                    "DART UI Validation");
+            Integer totalDartRowCount = raSheetDetails.getOutRowCount();
+            Integer dartRowsSubmittedByDartUI = (totalDartRowCount == null || dartUIFalloutRowCount == null) ? null : totalDartRowCount - dartUIFalloutRowCount;
+            String successPercentageStr = "-";
+            String failureCountStr = "-";
+            if (raSheetDetails.getTargetLoadTransactionCount() != null && raSheetDetails.getTargetLoadSuccessTransactionCount() != null) {
+                double successPercentage = 100.0 * raSheetDetails.getTargetLoadSuccessTransactionCount() / raSheetDetails.getTargetLoadTransactionCount();
+                successPercentage = Math.round(successPercentage * 100) / 100.0;
+                successPercentageStr = String.valueOf(successPercentage);
+                failureCountStr = String.valueOf(raSheetDetails.getTargetLoadTransactionCount() - raSheetDetails.getTargetLoadSuccessTransactionCount());
+            }
             return new FalloutReportInfo(Arrays.asList(
-                    new FalloutReportElement("DART rows submitted by DART UI", getStringOrDefault(raSheetDetails.getOutRowCount(), "-")),
-                    new FalloutReportElement("DART UI fallouts", "-"),
-                    new FalloutReportElement("SPS transactions", "-"),
-                    new FalloutReportElement("Successful transactions", "-"),
-                    new FalloutReportElement("Warning", "-"),
-                    new FalloutReportElement("Failure", "-"),
-                    new FalloutReportElement("Success %", "-")
+                    new FalloutReportElement("DART UI Success Records", getStringOrDefault(dartRowsSubmittedByDartUI, "-")),
+                    new FalloutReportElement("DART UI Fallouts", getStringOrDefault(dartUIFalloutRowCount, "-")),
+                    new FalloutReportElement("SPS Transactions", getStringOrDefault(raSheetDetails.getTargetLoadTransactionCount(),
+                            "-")),
+                    new FalloutReportElement("Failures", failureCountStr),
+                    new FalloutReportElement("Successes", getStringOrDefault(raSheetDetails.getTargetLoadSuccessTransactionCount(),
+                            "-")),
+//                    new FalloutReportElement("Warning", "-"),
+                    new FalloutReportElement("Success %", successPercentageStr)
                     //TODO demo fix
             ), false);
         }

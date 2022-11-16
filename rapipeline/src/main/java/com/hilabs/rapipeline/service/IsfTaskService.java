@@ -110,11 +110,16 @@ public class IsfTaskService {
         //145 - Post Column Mapping Normalization completed
         //35 - Roster ISF Generation Completed
         //33 - Roster ISF Generation Failed
+        //39 - ISF generation completed with validation failure
         if (hasIntersection(Arrays.asList(153), sheetCodes)) {
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 33);
             return false;
-        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 155))) {
-            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 35);
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 155, 157))) {
+            if (!hasIntersection(Collections.singletonList(155), sheetCodes)) {
+                raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 39);
+            } else {
+                raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 35);
+            }
             return false;
         }
         return true;

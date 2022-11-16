@@ -37,6 +37,12 @@ import static com.hilabs.rapipeline.util.PipelineStatusCodeUtil.*;
 public class DartUITaskService {
     @Value("${dartUIHost}")
     private String dartUIHost;
+
+    @Value("${dartUIUsername}")
+    private String dartUIUsername;
+
+    @Value("${dartUIPassword}")
+    private String dartUIPassword;
     private static Gson gson = new Gson();
     @Autowired
     private RAFileDetailsService raFileDetailsService;
@@ -98,8 +104,8 @@ public class DartUITaskService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             Map<String, String> credentials = new HashMap<>();
-            credentials.put("username", "ah86455");
-            credentials.put("password", "DartTesting");
+            credentials.put("username", dartUIUsername);
+            credentials.put("password", dartUIPassword);
             String requestJson = gson.toJson(credentials);
             HttpEntity<String> entity = new HttpEntity <>(requestJson, headers);
             ResponseEntity<DartUIAuthResponse> response = restTemplate.postForEntity(url, entity, DartUIAuthResponse.class);

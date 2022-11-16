@@ -77,11 +77,18 @@ public class DartTaskService {
             //TODO
             return false;
         }
+        //163 - Dart Generation failed
+        //165 - Dart Generated
+        //49 - Dart generation completed with validation failure
         if (hasIntersection(Arrays.asList(163), sheetCodes)) {
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 43);
             return false;
-        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165))) {
-            raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 45);
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165, 167))) {
+            if (!hasIntersection(Collections.singletonList(165), sheetCodes)) {
+                raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 49);
+            } else {
+                raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 45);
+            }
             return false;
         }
         return true;
