@@ -150,4 +150,29 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     @Query(value = "update RA_RT_FILE_DETAILS set status_cd = :statusCode, last_updt_user_id = :username, last_updt_dt = :lastUpdatedDate " +
             " where id in (:raFileDetailsIdList)", nativeQuery = true)
     void updateRAFileDetailsStatusByIds(List<Long> raFileDetailsIdList, Integer statusCode, String username, Date lastUpdatedDate);
+
+    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS where" +
+            " (LENGTH(:market) is null or market = :market) " +
+            " and (LENGTH(:lineOfBusiness) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob = :lineOfBusiness)) " +
+            " and RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
+            " and status_cd in (:statusCodes) " +
+            " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
+            " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
+            " and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount " +
+            " order by RA_RT_FILE_DETAILS.creat_dt desc offset :offset rows fetch next :limit rows only", nativeQuery = true)
+    List<RAFileDetails> findRAFileDetailsWithFilters(String fileName, String plmTicketId, String market, String lineOfBusiness, Date startDate, Date endDate,
+                                                      List<Integer> statusCodes, int limit, int offset, List<String> types, int minSheetCount, String businessStatus);
+
+    @Query(value = "select count(*) from RA_RT_FILE_DETAILS where " +
+            " (LENGTH(:market) is null or market = :market) " +
+            " and (LENGTH(:lineOfBusiness) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob = :lineOfBusiness)) " +
+            " and RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
+            " and status_cd in (:statusCodes) " +
+            " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
+            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
+            " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
+            " and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount",
+            nativeQuery = true)
+    Integer countRAFileDetailsWithFilters(String fileName, String plmTicketId, String market, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount, String businessStatus);
 }

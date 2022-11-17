@@ -78,25 +78,29 @@ public class RAFileDetailsService {
     public ListResponse<RAFileDetailsWithSheets> getRAFileDetailsWithSheetsList(String fileName, String plmTicketId, String market, String lineOfBusiness, Date startDate, Date endDate,
                                                     List<Integer> statusCodes, int limit, int offset, List<String> types,
                                                                                 int minSheetCount, boolean alsoConsiderEmptySheets, String businessStatus) {
-        List<RAFileDetails> raFileDetailsList = new ArrayList<>();
-        Integer count = 0;
-        //TODO handle limit and offset
-        if ((market != null && !market.isEmpty()) && (lineOfBusiness != null && !lineOfBusiness.isEmpty())) {
-            raFileDetailsList = raFileDetailsRepository.findByMarketAndLineOfBusiness(fileName, plmTicketId, market, lineOfBusiness, startDate,
+
+
+        List<RAFileDetails> raFileDetailsList = raFileDetailsRepository.findRAFileDetailsWithFilters(fileName, plmTicketId, market, lineOfBusiness, startDate,
                     endDate, statusCodes, limit, offset, types, minSheetCount, businessStatus);
-            count = raFileDetailsRepository.countByMarketAndLineOfBusiness(fileName, plmTicketId, market, lineOfBusiness, startDate,
+        Integer count = raFileDetailsRepository.countRAFileDetailsWithFilters(fileName, plmTicketId, market, lineOfBusiness, startDate,
                     endDate, statusCodes, types, minSheetCount, businessStatus);
-        } else if (market != null && !market.isEmpty()) {
-            raFileDetailsList = raFileDetailsRepository.findByMarket(fileName, plmTicketId, market, startDate, endDate, statusCodes, limit, offset, types, minSheetCount, businessStatus);
-            count = raFileDetailsRepository.countByMarket(fileName, plmTicketId, market, startDate, endDate, statusCodes, types, minSheetCount, businessStatus);
-        } else if (lineOfBusiness != null && !lineOfBusiness.isEmpty()) {
-            raFileDetailsList = raFileDetailsRepository.findByLineOfBusiness(fileName, plmTicketId, lineOfBusiness, startDate, endDate, statusCodes, limit, offset, types, minSheetCount, businessStatus);
-            count = raFileDetailsRepository.countByLineOfBusiness(fileName, plmTicketId, lineOfBusiness, startDate, endDate, statusCodes, types, minSheetCount, businessStatus);
-        } else {
-            raFileDetailsList =  raFileDetailsRepository.findRAFileDetailsListBetweenDates(fileName, plmTicketId, startDate, endDate, statusCodes,
-                    limit, offset, types, minSheetCount, businessStatus);
-            count = raFileDetailsRepository.countRAFileDetailsListBetweenDates(fileName, plmTicketId, startDate, endDate, statusCodes, types, minSheetCount, businessStatus);
-        }
+        //TODO handle limit and offset
+//        if ((market != null && !market.isEmpty()) && (lineOfBusiness != null && !lineOfBusiness.isEmpty())) {
+//            raFileDetailsList = raFileDetailsRepository.findByMarketAndLineOfBusiness(fileName, plmTicketId, market, lineOfBusiness, startDate,
+//                    endDate, statusCodes, limit, offset, types, minSheetCount, businessStatus);
+//            count = raFileDetailsRepository.countByMarketAndLineOfBusiness(fileName, plmTicketId, market, lineOfBusiness, startDate,
+//                    endDate, statusCodes, types, minSheetCount, businessStatus);
+//        } else if (market != null && !market.isEmpty()) {
+//            raFileDetailsList = raFileDetailsRepository.findByMarket(fileName, plmTicketId, market, startDate, endDate, statusCodes, limit, offset, types, minSheetCount, businessStatus);
+//            count = raFileDetailsRepository.countByMarket(fileName, plmTicketId, market, startDate, endDate, statusCodes, types, minSheetCount, businessStatus);
+//        } else if (lineOfBusiness != null && !lineOfBusiness.isEmpty()) {
+//            raFileDetailsList = raFileDetailsRepository.findByLineOfBusiness(fileName, plmTicketId, lineOfBusiness, startDate, endDate, statusCodes, limit, offset, types, minSheetCount, businessStatus);
+//            count = raFileDetailsRepository.countByLineOfBusiness(fileName, plmTicketId, lineOfBusiness, startDate, endDate, statusCodes, types, minSheetCount, businessStatus);
+//        } else {
+//            raFileDetailsList =  raFileDetailsRepository.findRAFileDetailsListBetweenDates(fileName, plmTicketId, startDate, endDate, statusCodes,
+//                    limit, offset, types, minSheetCount, businessStatus);
+//            count = raFileDetailsRepository.countRAFileDetailsListBetweenDates(fileName, plmTicketId, startDate, endDate, statusCodes, types, minSheetCount, businessStatus);
+//        }
         List<RASheetDetails> raSheetDetailsListAll = raSheetDetailsRepository.findRASheetDetailsListForFileIdsList(raFileDetailsList.stream()
                 .map(RAFileDetails::getId).collect(Collectors.toList()), types);
         List<RASheetDetails> raSheetDetailsList = new ArrayList<>();
