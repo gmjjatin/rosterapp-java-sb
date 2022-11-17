@@ -66,6 +66,9 @@ public class RASheetDetails extends BaseEntity {
     @Column(name = "VLDTN_FILE_NM")
     private String validationFileName;
 
+    @Column(name = "VLDTN_FALLOUT_CNT")
+    private Integer validationFalloutCount;
+
     @Column(name = "TRGT_RSPNS_FILE_NM")
     private String targetResponseFileName;
 

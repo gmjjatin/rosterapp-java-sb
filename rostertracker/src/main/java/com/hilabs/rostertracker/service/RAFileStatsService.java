@@ -157,8 +157,9 @@ public class RAFileStatsService {
             ), falloutRowCount != null && falloutRowCount > 0);
         } else if (rosterSheetProcessStage == RosterSheetProcessStage.SPS_LOAD) {
                 //TODO hide "DART rows submitted by DART UI" for now
-            Integer dartUIFalloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(),
-                    "DART UI Validation");
+//            Integer dartUIFalloutRowCount = rartFalloutReportRepository.countRowsRAFalloutErrorInfo(raSheetDetails.getId(),
+//                    "DART UI Validation");
+            Integer dartUIFalloutRowCount = raSheetDetails.getValidationFalloutCount();
             Integer totalDartRowCount = raSheetDetails.getOutRowCount();
             Integer dartRowsSubmittedByDartUI = (totalDartRowCount == null || dartUIFalloutRowCount == null) ? null : totalDartRowCount - dartUIFalloutRowCount;
             String successPercentageStr = "-";
