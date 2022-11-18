@@ -11,6 +11,9 @@ import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.utils.RosterUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ConcurrentLruCache;
@@ -79,11 +82,11 @@ public class RAFileDetailsService {
                                                     List<Integer> statusCodes, int limit, int offset, List<String> types,
                                                                                 int minSheetCount, boolean alsoConsiderEmptySheets, String businessStatus) {
 
-
-        List<RAFileDetails> raFileDetailsList = raFileDetailsRepository.findRAFileDetailsWithFilters(fileName, plmTicketId, market, lineOfBusiness, startDate,
-                    endDate, statusCodes, limit, offset, types, minSheetCount, businessStatus);
-        Integer count = raFileDetailsRepository.countRAFileDetailsWithFilters(fileName, plmTicketId, market, lineOfBusiness, startDate,
-                    endDate, statusCodes, types, minSheetCount, businessStatus);
+        Sort sort = Sort.by(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
+        Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithFilters(fileName, plmTicketId, market, lineOfBusiness, startDate,
+                    endDate, statusCodes, types, minSheetCount, businessStatus, PageRequest.of(offset, limit, sort));
+        List<RAFileDetails> raFileDetailsList = raFileDetailsListPage.getContent();
+        Long count = raFileDetailsListPage.getTotalElements();
         //TODO handle limit and offset
 //        if ((market != null && !market.isEmpty()) && (lineOfBusiness != null && !lineOfBusiness.isEmpty())) {
 //            raFileDetailsList = raFileDetailsRepository.findByMarketAndLineOfBusiness(fileName, plmTicketId, market, lineOfBusiness, startDate,
