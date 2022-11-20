@@ -24,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.hilabs.rostertracker.service.RAFileStatsService.splitBySep;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.allTypeList;
 
 @RestController
@@ -70,8 +71,10 @@ public class ConfigUIController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             //TODO demo
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName,
-                    plmTicketId, market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 1, true, businessStatus);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
+                    .getRAFileDetailsWithSheetsList(splitBySep(fileName), splitBySep(plmTicketId), splitBySep(market), splitBySep(lineOfBusiness),
+                            startTime, endTime, statusCodes, limit, offset, true, 1, true,
+                            splitBySep(businessStatus));
             List<Long> raFileDetailsIdList = raFileDetailsWithSheetsListResponse.getItems().stream()
                     .map(p -> p.getRaFileDetails().getId()).collect(Collectors.toList());
             Map<Long, RAFileDetailsLob> raFileDetailsLobMap = raFileStatsService.getRAFileDetailsLobMap(raFileDetailsIdList);

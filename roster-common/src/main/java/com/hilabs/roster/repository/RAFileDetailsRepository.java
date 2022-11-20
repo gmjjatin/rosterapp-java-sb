@@ -1,6 +1,7 @@
 package com.hilabs.roster.repository;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RASheetDetails;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
@@ -154,36 +155,42 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     void updateRAFileDetailsStatusByIds(List<Long> raFileDetailsIdList, Integer statusCode, String username, Date lastUpdatedDate);
 
     @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS where" +
-            " (LENGTH(:market) is null or market = :market) " +
-            " and (LENGTH(:lineOfBusiness) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob = :lineOfBusiness)) " +
+            " (COALESCE(:marketList, NULL) is null or market in (:marketList)) " +
+            " and (COALESCE(:lineOfBusinessList, NULL) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob in (:lineOfBusinessList))) " +
             " and RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
             " and status_cd in (:statusCodes) " +
-            " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
-            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
-            " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
+            " and (COALESCE(:fileNameList, NULL) is null or orgnl_file_nm in (:fileNameList)) " +
+            " and (COALESCE(:businessStatusList, NULL) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status in (:businessStatusList))) " +
+            " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) " +
             " and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount",
             countQuery="select count(*) from RA_RT_FILE_DETAILS where " +
-                    " (LENGTH(:market) is null or market = :market) " +
-                    " and (LENGTH(:lineOfBusiness) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob = :lineOfBusiness)) " +
+                    " (COALESCE(:marketList, NULL) is null or market in (:marketList)) " +
+                    " and (COALESCE(:lineOfBusinessList, NULL) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob in (:lineOfBusinessList))) " +
                     " and RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
                     " and status_cd in (:statusCodes) " +
-                    " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
-                    " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
-                    " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
+                    " and (COALESCE(:fileNameList, NULL) is null or orgnl_file_nm in (:fileNameList)) " +
+                    " and (COALESCE(:businessStatusList, NULL) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status in (:businessStatusList))) " +
+                    " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) " +
                     " and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount",
                     nativeQuery = true)
-    Page<RAFileDetails> findRAFileDetailsWithFilters(String fileName, String plmTicketId, String market, String lineOfBusiness, Date startDate, Date endDate,
-                                                     List<Integer> statusCodes, List<String> types, int minSheetCount, String businessStatus, Pageable pageable);
+    Page<RAFileDetails> findRAFileDetailsWithFilters(List<String> fileNameList, List<String> plmTicketIdList, List<String> marketList, List<String> lineOfBusinessList, Date startDate, Date endDate,
+                                                     List<Integer> statusCodes, List<String> types, int minSheetCount, List<String> businessStatusList, Pageable pageable);
 
     @Query(value = "select count(*) from RA_RT_FILE_DETAILS where " +
-            " (LENGTH(:market) is null or market = :market) " +
-            " and (LENGTH(:lineOfBusiness) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob = :lineOfBusiness)) " +
+            " (COALESCE(:marketList, NULL) IS NULL or market in (:marketList)) " +
+            " and (COALESCE(:lineOfBusinessList, NULL) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob in (:lineOfBusinessList))) " +
             " and RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
             " and status_cd in (:statusCodes) " +
-            " and (LENGTH(:fileName) is null or orgnl_file_nm = :fileName) " +
-            " and (LENGTH(:businessStatus) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status = :businessStatus)) " +
-            " and (LENGTH(:plmTicketId) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID=:plmTicketId)) " +
+            " and (COALESCE(:fileNameList, NULL) is null or orgnl_file_nm in (:fileNameList)) " +
+            " and (COALESCE(:businessStatusList, NULL) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status in (:businessStatusList))) " +
+            " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) " +
             " and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount",
             nativeQuery = true)
-    Integer countRAFileDetailsWithFilters(String fileName, String plmTicketId, String market, String lineOfBusiness, Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount, String businessStatus);
+    Integer countRAFileDetailsWithFilters(List<String> fileNameList, List<String> plmTicketIdList, List<String> marketList, List<String> lineOfBusinessList,
+                                          Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount,
+                                          List<String> businessStatusList);
+
+//    @Query(value = "select * from RA_RT_FILE_DETAILS where COALESCE(:a, NULL) IS NULL and id = 1", nativeQuery = true)
+//    Optional<RAFileDetails> countTest(List<String> a);
+
 }
