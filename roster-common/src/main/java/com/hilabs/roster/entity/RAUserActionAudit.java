@@ -35,6 +35,8 @@ public class RAUserActionAudit {
     @CreatedBy
     private String createdUserId;
 
+    public RAUserActionAudit() {}
+
     public RAUserActionAudit(final String actionObjectId, final String actionObjectType, final String userAction, final Date createdDate,
                              final String createdUserId) {
         this.actionObjectId = actionObjectId;
