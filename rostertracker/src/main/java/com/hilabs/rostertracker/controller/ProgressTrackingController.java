@@ -265,7 +265,7 @@ public class ProgressTrackingController {
             if (releaseForDartUIRequest.getVersion() == null || !raFileDetails.getVersion().equals(releaseForDartUIRequest.getVersion())) {
                 throw new OptimisticLockingFailureException("Old version key");
             }
-            raUserActionAuditService.saveRAUserActionAudit(raFileDetails.getLastUpdatedUserId(), RELEASED_TO_DART_UI_OBJECT_TYPE,
+            raUserActionAuditService.saveRAUserActionAudit(String.valueOf(raFileDetails.getId()), RELEASED_TO_DART_UI_OBJECT_TYPE,
                     RELEASED_TO_DART_UI_ACTION, new Date(), username);
             raFileDetails.setStatusCode(RELEASED_FOR_DART_UI_STATUS_CODE);
             raFileDetailsService.saveRAFileDetails(raFileDetails);
