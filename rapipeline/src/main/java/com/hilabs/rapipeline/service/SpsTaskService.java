@@ -111,7 +111,11 @@ public class SpsTaskService {
         String fileName = getFileNameFromPath(filePath);
         File file = new File(filePath);
         InputStream dataStream = Files.newInputStream(file.toPath());
-        FileUtils.copyInputStreamToFile(dataStream, new File(spsDestFolder, fileName));
+        File destinationFile = new File(spsDestFolder, fileName);
+        if (spsSrcFolder != null && spsSrcFolder.equals(spsDestFolder)) {
+            return;
+        }
+        FileUtils.copyInputStreamToFile(dataStream, destinationFile);
     }
 
     public void consolidateSpsValidation(Long raFileDetailsId) {
