@@ -14,8 +14,9 @@ public class InCompatibleRosterDetails {
     private String lob;
     private String market;
     private String plmTicketId;
+    private Integer statusCode;
     public InCompatibleRosterDetails(Long raFileDetailsId, String fileName, long fileReceivedTime, Integer rosterRecordCount,
-                                     String error, String errorCode, String lob, String market, String plmTicketId) {
+                                     String error, String errorCode, String lob, String market, String plmTicketId, Integer statusCode) {
         this.rosterRecordCount = rosterRecordCount;
         this.raFileDetailsId = raFileDetailsId;
         this.fileName = fileName;
@@ -25,5 +26,6 @@ public class InCompatibleRosterDetails {
         this.lob = lob;
         this.market = market;
         this.plmTicketId = plmTicketId;
+        this.statusCode = statusCode;
     }
 }

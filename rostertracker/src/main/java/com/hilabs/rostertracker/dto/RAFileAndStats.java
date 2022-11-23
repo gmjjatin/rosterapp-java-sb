@@ -17,10 +17,12 @@ public class RAFileAndStats extends RosterStats {
     private String market;
     private String plmTicketId;
 
+    private Integer statusCode;
     private String status;
     private List<RASheetAndStats> sheetStatsList;
 
-    public RAFileAndStats(long raFileDetailsId, String fileName, long fileReceivedTime, String lob, String market, String plmTicketId, String status) {
+    public RAFileAndStats(long raFileDetailsId, String fileName, long fileReceivedTime, String lob, String market, String plmTicketId,
+                          String status, Integer statusCode) {
         this.raFileDetailsId = raFileDetailsId;
         this.fileName = fileName;
         this.fileReceivedTime = fileReceivedTime;
@@ -29,6 +31,7 @@ public class RAFileAndStats extends RosterStats {
         this.market = market;
         this.lob = lob;
         this.plmTicketId = plmTicketId;
+        this.statusCode = statusCode;
     }
 
     public void addSheetDetails(RASheetAndStats raSheetAndStats) {
