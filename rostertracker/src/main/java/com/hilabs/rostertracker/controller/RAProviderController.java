@@ -1,6 +1,7 @@
 package com.hilabs.rostertracker.controller;
 
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RAStatusCDMaster;
 import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.service.RAFileDetailsService;
 import com.hilabs.rostertracker.service.RosterStageService;
@@ -78,7 +79,7 @@ public class RAProviderController {
         try {
             List<Integer> statusCodes = raFileDetailsService.getStatusCodes(RosterFilterType.getRosterFilterTypeFromStr(type));
             List<String> statusList = rosterStageService.getSheetRAStatusCDMasterList(statusCodes).stream()
-                    .map(p -> p.getBusinessStatus()).collect(Collectors.toList());
+                    .map(RAStatusCDMaster::getBusinessStatus).distinct().collect(Collectors.toList());
             return new ResponseEntity<>(statusList, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getAllMarkets ex {}", ex.getMessage());

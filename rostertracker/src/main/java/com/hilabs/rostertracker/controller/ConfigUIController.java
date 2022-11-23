@@ -90,9 +90,9 @@ public class ConfigUIController {
                         .get(raFileDetails.getId()).stream().filter(p -> p.getAltIdType().equals(AltIdType.RO_ID.name())).collect(Collectors.toList()) : new ArrayList<>();
                 String filePlmTicketId = rartFileAltIdsList.size() > 0 ? rartFileAltIdsList.get(0).getAltId() : "-";
                 configUiFileDataList.add(new ConfigUiFileData(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
-                        raFileDetails.getCreatedDate().getTime(), status, optionalRAStatusEntity.map(RAStatusEntity::getStage).orElse(null),
-                        lob, raFileDetails.getMarket(), filePlmTicketId,
-                        isManualActionReq));
+                        raFileDetails.getCreatedDate().getTime(), status, raFileDetails.getStatusCode(),
+                        optionalRAStatusEntity.map(RAStatusEntity::getStage).orElse(null), lob, raFileDetails.getMarket(),
+                        filePlmTicketId, isManualActionReq));
             }
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, configUiFileDataList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
@@ -129,7 +129,7 @@ public class ConfigUIController {
         Long lastSavedTime = raFileDetails.getLastSavedDate() != null ? raFileDetails.getLastSavedDate().getTime() : -1;
         String lastSavedBy = raFileDetails.getLastSavedBy();
         String lastApprovedBy = raFileDetails.getLastApprovedBy();
-        return ResponseEntity.ok(new RosterSheetDetails(raFileDetailsId, sheetDetailsList, lob, raFileDetails.getMarket(),
+        return ResponseEntity.ok(new RosterSheetDetails(raFileDetailsId, raFileDetails.getStatusCode(), sheetDetailsList, lob, raFileDetails.getMarket(),
                 plmTicketId, lastSavedTime, lastSavedBy, lastApprovedTime, lastApprovedBy, raFileDetails.getVersion()));
     }
 

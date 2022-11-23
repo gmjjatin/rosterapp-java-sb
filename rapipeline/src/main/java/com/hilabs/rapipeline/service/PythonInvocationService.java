@@ -36,7 +36,7 @@ public class PythonInvocationService {
             commands.add("--envConfigs");
             commands.add(appPropertiesConfig.getEnvConfigs());
             commands.addAll(Arrays.asList(arguments));
-            log.info("Running command {}", commands.stream().collect(Collectors.joining(" ")));
+            log.info("Running command {}", String.join(" ", commands));
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();

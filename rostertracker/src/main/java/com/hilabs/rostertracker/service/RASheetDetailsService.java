@@ -55,7 +55,7 @@ public class RASheetDetailsService {
             //TODO demo check if mapping is available
             int count = rarcRosterISFMapService.countMappingCountForSheetDetailsId(raSheetDetails.getId());
             sheetDetailsList.add(new SheetDetails(raSheetDetails.getId(), raSheetDetails.getTabName(),
-                    raSheetDetails.getType(), raSheetDetails.getType(), count != 0));
+                    raSheetDetails.getType(), raSheetDetails.getType(), count != 0, raSheetDetails.getStatusCode()));
         }
         return sheetDetailsList;
     }

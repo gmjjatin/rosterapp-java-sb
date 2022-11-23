@@ -11,6 +11,7 @@ public class ConfigUiFileData {
     private String originalFileName;
     private Long rosterReceivedTime;
     private String status;
+    private Integer statusCode;
     private RosterSheetProcessStage stage;
     private String lob;
     private String market;

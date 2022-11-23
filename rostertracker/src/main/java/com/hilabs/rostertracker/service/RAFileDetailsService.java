@@ -84,8 +84,9 @@ public class RAFileDetailsService {
                                                                                 int minSheetCount, boolean alsoConsiderEmptySheets, List<String> businessStatusList) {
 
         Sort sort = Sort.by(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
+        int pageNo = offset / limit;
         Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithFilters(fileNameList, plmTicketIdList, marketList, lineOfBusinessList, startDate,
-                    endDate, statusCodes, types, minSheetCount, businessStatusList, PageRequest.of(offset, limit, sort));
+                    endDate, statusCodes, types, minSheetCount, businessStatusList, PageRequest.of(pageNo, limit, sort));
         List<RAFileDetails> raFileDetailsList = raFileDetailsListPage.getContent();
         Long count = raFileDetailsListPage.getTotalElements();
         //TODO handle limit and offset

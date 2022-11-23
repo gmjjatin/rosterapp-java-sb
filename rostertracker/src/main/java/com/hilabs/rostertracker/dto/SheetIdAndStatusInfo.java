@@ -6,10 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class RASheetAndStats extends RosterStats {
+public class SheetIdAndStatusInfo {
     private long raSheetDetailsId;
-    private String sheetName;
-    private String status;
     private Integer statusCode;
-    private String type;
 }

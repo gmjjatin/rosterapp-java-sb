@@ -9,6 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 public class RosterSheetDetails {
     private Long raFileDetailsId;
+    private Integer statusCode;
     private List<SheetDetails> sheetDetailsList;
     private String lob;
     private String market;
