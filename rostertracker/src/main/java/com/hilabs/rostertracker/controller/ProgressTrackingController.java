@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import static com.hilabs.roster.util.Constants.DART_GENERATED_STATUS_CODE;
 import static com.hilabs.roster.util.Constants.RELEASED_FOR_DART_UI_STATUS_CODE;
 import static com.hilabs.rostertracker.service.RAFileStatsService.getRosterReceivedTime;
+import static com.hilabs.rostertracker.service.RAFileStatsService.splitBySep;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.dataTypeList;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.isDataSheet;
 
@@ -82,9 +83,9 @@ public class ProgressTrackingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
-                    .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
+                    .getRAFileDetailsWithSheetsList(splitBySep(fileName), splitBySep(plmTicketId), splitBySep(market), splitBySep(lineOfBusiness),
                             startTime, endTime, raFileDetailsService.getStatusCodes(RosterFilterType.ROSTER_TRACKER), limit, offset, true,
-                            0, false, businessStatus);
+                            0, false, splitBySep(businessStatus));
             List<RAFileAndStats> raFileAndStatsList = raFileStatsService.getRAFileAndStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse<RAFileAndStats> collectionResponse = new CollectionResponse<RAFileAndStats>(pageNo, pageSize, raFileAndStatsList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
@@ -186,8 +187,8 @@ public class ProgressTrackingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId,
-                    market, lineOfBusiness, startTime, endTime, statusCodes, limit, offset, true, 0, true, businessStatus);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(splitBySep(fileName), splitBySep(plmTicketId),
+                    splitBySep(market), splitBySep(lineOfBusiness), startTime, endTime, statusCodes, limit, offset, true, 0, true, splitBySep(businessStatus));
             //TODO
             List<InCompatibleRosterDetails> inCompatibleRosterDetails = new ArrayList<>();
 
@@ -264,7 +265,7 @@ public class ProgressTrackingController {
             if (releaseForDartUIRequest.getVersion() == null || !raFileDetails.getVersion().equals(releaseForDartUIRequest.getVersion())) {
                 throw new OptimisticLockingFailureException("Old version key");
             }
-            raUserActionAuditService.saveRAUserActionAudit(raFileDetails.getLastUpdatedUserId(), RELEASED_TO_DART_UI_OBJECT_TYPE,
+            raUserActionAuditService.saveRAUserActionAudit(String.valueOf(raFileDetails.getId()), RELEASED_TO_DART_UI_OBJECT_TYPE,
                     RELEASED_TO_DART_UI_ACTION, new Date(), username);
             raFileDetails.setStatusCode(RELEASED_FOR_DART_UI_STATUS_CODE);
             raFileDetailsService.saveRAFileDetails(raFileDetails);

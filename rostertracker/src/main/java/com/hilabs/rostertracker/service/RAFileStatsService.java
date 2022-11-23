@@ -320,4 +320,11 @@ public class RAFileStatsService {
     public Integer computeFalloutRecordCount(RASheetDetails raSheetDetails) {
         return rartFalloutReportRepository.countRecordsRAFalloutErrorInfoForSheet(raSheetDetails.getId());
     }
+
+    public static List<String> splitBySep(String str) {
+        if (str == null || str.length() == 0) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(str.split("\\$\\$SEP\\$\\$"));
+    }
 }

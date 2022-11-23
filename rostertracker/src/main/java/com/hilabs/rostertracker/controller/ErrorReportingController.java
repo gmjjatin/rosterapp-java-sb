@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.hilabs.rostertracker.service.RAFileStatsService.splitBySep;
+
 @RestController
 @RequestMapping("/api/v1/error-reporting")
 @Log4j2
@@ -67,8 +69,8 @@ public class ErrorReportingController {
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
             ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService
-                    .getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset, true, 0, false, businessStatus);
+                    .getRAFileDetailsWithSheetsList(splitBySep(fileName), splitBySep(plmTicketId), splitBySep(market), splitBySep(lineOfBusiness),
+                            startTime, endTime, statusCodes, limit, offset, true, 0, false, splitBySep(businessStatus));
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raFileAndErrorStatsList,
                     raFileDetailsWithSheetsListResponse.getTotalCount());
@@ -100,8 +102,8 @@ public class ErrorReportingController {
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(startTime, endTime);
             startTime = startAndEndTime.startTime;
             endTime = startAndEndTime.endTime;
-            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(fileName, plmTicketId, market, lineOfBusiness,
-                            startTime, endTime, statusCodes, limit, offset, true, 0, false, businessStatus);
+            ListResponse<RAFileDetailsWithSheets> raFileDetailsWithSheetsListResponse = raFileDetailsService.getRAFileDetailsWithSheetsList(splitBySep(fileName), splitBySep(plmTicketId), splitBySep(market),
+                    splitBySep(lineOfBusiness), startTime, endTime, statusCodes, limit, offset, true, 0, false, splitBySep(businessStatus));
             List<RAFileAndErrorStats> raFileAndErrorStatsList = raFileStatsService.getRAFileAndErrorStats(raFileDetailsWithSheetsListResponse.getItems());
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {
