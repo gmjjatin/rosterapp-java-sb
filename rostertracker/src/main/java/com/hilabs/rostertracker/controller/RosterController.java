@@ -1,31 +1,27 @@
 package com.hilabs.rostertracker.controller;
 
 import com.google.gson.Gson;
-import com.hilabs.rostertracker.config.ApplicationConfig;
-import com.hilabs.rostertracker.model.RestoreRosterRequest;
-import com.hilabs.rostertracker.service.PythonInvocationService;
 import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
+import com.hilabs.rostertracker.config.ApplicationConfig;
 import com.hilabs.rostertracker.dto.SheetIdAndStatusInfo;
 import com.hilabs.rostertracker.dto.UpdateStatusRequestElement;
+import com.hilabs.rostertracker.model.RestoreRosterRequest;
+import com.hilabs.rostertracker.model.TargetPhaseType;
+import com.hilabs.rostertracker.service.PythonInvocationService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -46,14 +42,22 @@ public class RosterController {
     @PutMapping("/{rosterId}/restore")
     public ResponseEntity<Map<String, String>> restoreRoster(@RequestBody RestoreRosterRequest restoreRosterRequest, @PathVariable Long rosterId) {
         try {
-            File file = new File(applicationConfig.getRestoreWrapper());
-            pythonInvocationService.invokePythonProcess(file.getPath(), "--envConfigs", applicationConfig.getEnvConfigs(),
-                    "--fileDetailsId", "" + rosterId);
+            Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository.findById(rosterId);
+            if (!optionalRAFileDetails.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("raFileDetails not found with rosterId %s", rosterId));
+            }
+            TargetPhaseType targetPhaseType = TargetPhaseType.getTargetPhaseTypeFromStr(restoreRosterRequest.getTargetPhase());
+            if (targetPhaseType == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid targetPhase " + restoreRosterRequest.getTargetPhase());
+            }
+//            File file = new File(applicationConfig.getRestoreWrapper());
+//            pythonInvocationService.invokePythonProcess(file.getPath(), "--envConfigs", applicationConfig.getEnvConfigs(),
+//                    "--fileDetailsId", "" + rosterId);
             //TODO return better response
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
-        } catch (IOException ex) {
-            log.error("Error in restoreRoster restoreRosterRequest {} rosterId {}", gson.toJson(restoreRosterRequest), rosterId);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+//        } catch (IOException ex) {
+//            log.error("Error in restoreRoster restoreRosterRequest {} rosterId {}", gson.toJson(restoreRosterRequest), rosterId);
+//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         } catch (Exception ex) {
             log.error("Error in restoreRoster restoreRosterRequest {} rosterId {}", gson.toJson(restoreRosterRequest), rosterId);
             throw ex;
