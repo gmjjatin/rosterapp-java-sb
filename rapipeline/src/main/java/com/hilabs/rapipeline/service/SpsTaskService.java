@@ -2,6 +2,7 @@ package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.config.AppPropertiesConfig;
+import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.FAILED;
+import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.RESOLVED;
 import static com.hilabs.rapipeline.service.FileSystemUtilService.getListOfFilesInFolder;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.hasIntersection;
 import static com.hilabs.rapipeline.service.RAFileStatusUpdatingService.isSubset;
@@ -148,21 +150,25 @@ public class SpsTaskService {
         //57 - partially completed for dart ui validation.
         int spsSuccessStatusCode = 189;
         int spsFailedStatusCode = 188;
+        FileMetaDataTableStatus fileMetaDataTableStatus = null;
         if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, spsSuccessStatusCode))) {
+            fileMetaDataTableStatus = RESOLVED;
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 65);
-            return;
         } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, spsSuccessStatusCode, spsFailedStatusCode))) {
             if (hasIntersection(sheetCodes, Collections.singletonList(spsSuccessStatusCode))) {
+                fileMetaDataTableStatus = FAILED;
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 67);
-                return;
             } else {
-                try {
-                    raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
-                } catch (Exception ex) {
-                    log.error("Error in updatePlmStatusForFileDetailsId with failed status for raFileDetailsId {}", raFileDetailsId);
-                }
+                fileMetaDataTableStatus = FAILED;
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 63);
-                return;
+            }
+        }
+        if (fileMetaDataTableStatus != null) {
+            try {
+                raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, fileMetaDataTableStatus);
+            } catch (Exception ex) {
+                log.error("Error in updatePlmStatusForFileDetailsId with failed status for raFileDetailsId {} fileMetaDataTableStatus {}",
+                        raFileDetailsId, fileMetaDataTableStatus);
             }
         }
     }
