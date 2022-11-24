@@ -10,5 +10,6 @@ public class RASheetAndStats extends RosterStats {
     private long raSheetDetailsId;
     private String sheetName;
     private String status;
+    private Integer statusCode;
     private String type;
 }

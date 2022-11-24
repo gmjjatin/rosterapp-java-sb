@@ -8,9 +8,12 @@ public class RASheetAndErrorStats extends RosterErrorStats {
     private long raSheetDetailsId;
     private String sheetName;
 
-    public RASheetAndErrorStats(long raSheetDetailsId, String sheetName, RASheetAndStats raSheetAndStats) {
+    private Integer statusCode;
+
+    public RASheetAndErrorStats(long raSheetDetailsId, String sheetName, Integer statusCode, RASheetAndStats raSheetAndStats) {
         super(raSheetAndStats);
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
+        this.statusCode = statusCode;
     }
 }

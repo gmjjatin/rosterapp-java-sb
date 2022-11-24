@@ -256,7 +256,7 @@ public class RAFileStatsService {
 
     public RAFileAndErrorStats getRAFileAndErrorStatsFromSheetDetailsList(RAFileDetails raFileDetails, List<RASheetDetails> raSheetDetailsList) {
         RAFileAndErrorStats raFileAndErrorStats = new RAFileAndErrorStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
-                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1);
+                raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1, raFileDetails.getStatusCode());
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
             RASheetAndErrorStats raSheetAndErrorStats = getRASheetAndErrorStats(raSheetDetails,
                     raStatusService.getDisplayStatus(raSheetDetails.getStatusCode()));
@@ -268,7 +268,7 @@ public class RAFileStatsService {
     public RAFileAndStats getRAFileAndStatsFromSheetDetailsList(RAFileDetails raFileDetails, String lob, String plmTicketId, List<RASheetDetails> raSheetDetailsList) {
         RAFileAndStats raFileAndStats = new RAFileAndStats(raFileDetails.getId(), raFileDetails.getOriginalFileName(),
                 raFileDetails.getCreatedDate() != null ? raFileDetails.getCreatedDate().getTime() : -1, lob, raFileDetails.getMarket(), plmTicketId,
-                raStatusService.getDisplayStatus(raFileDetails.getStatusCode()));
+                raStatusService.getDisplayStatus(raFileDetails.getStatusCode()), raFileDetails.getStatusCode());
         for (RASheetDetails raSheetDetails : raSheetDetailsList) {
             RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, raStatusService.getDisplayStatus(raSheetDetails.getStatusCode()));
             raFileAndStats.addSheetDetails(raSheetAndStats);
@@ -279,7 +279,7 @@ public class RAFileStatsService {
     public RASheetAndErrorStats getRASheetAndErrorStats(RASheetDetails raSheetDetails, String status) {
         RASheetAndStats raSheetAndStats = getRASheetAndStats(raSheetDetails, status);
         RASheetAndErrorStats raSheetAndErrorStats = new RASheetAndErrorStats(raSheetDetails.getId(),
-                raSheetDetails.getTabName(), raSheetAndStats);
+                raSheetDetails.getTabName(), raSheetDetails.getStatusCode(), raSheetAndStats);
         raSheetAndErrorStats.setSpsLoadTransactionCount(raSheetDetails.getTargetLoadTransactionCount());
         raSheetAndErrorStats.setSpsLoadSuccessTransactionCount(raSheetDetails.getTargetLoadSuccessTransactionCount());
         raSheetAndErrorStats.setSpsLoadFailedTransactionCount(raSheetDetails.getTargetLoadTransactionCount() - raSheetDetails.getTargetLoadSuccessTransactionCount());
@@ -291,7 +291,7 @@ public class RAFileStatsService {
 
     public RASheetAndStats getRASheetAndStats(RASheetDetails raSheetDetails, String status) {
         RASheetAndStats raSheetAndStats = new RASheetAndStats(raSheetDetails.getId(),
-                raSheetDetails.getTabName(), status, raSheetDetails.getType());
+                raSheetDetails.getTabName(), status, raSheetDetails.getStatusCode(), raSheetDetails.getType());
         raSheetAndStats.setRosterRecordCount(raSheetDetails.getRosterRecordCount());
         raSheetAndStats.setSuccessfulRecordCount(raSheetDetails.getTargetSuccessfulRecordCount());
         raSheetAndStats.setFalloutRecordCount(computeFalloutRecordCount(raSheetDetails));

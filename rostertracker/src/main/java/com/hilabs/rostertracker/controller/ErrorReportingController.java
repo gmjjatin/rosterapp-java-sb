@@ -108,7 +108,8 @@ public class ErrorReportingController {
             List<RASheetAndColumnErrorStats> raSheetAndColumnErrorStatsList = new ArrayList<>();
             for (RAFileAndErrorStats raFileAndErrorStats : raFileAndErrorStatsList) {
                 for (RASheetAndErrorStats raSheetAndErrorStats : raFileAndErrorStats.getSheetStatsList()) {
-                    raSheetAndColumnErrorStatsList.add(new RASheetAndColumnErrorStats(raSheetAndErrorStats.getRaSheetDetailsId(), raSheetAndErrorStats.getSheetName()));
+                    raSheetAndColumnErrorStatsList.add(new RASheetAndColumnErrorStats(raSheetAndErrorStats.getRaSheetDetailsId(),
+                            raSheetAndErrorStats.getSheetName(), raSheetAndErrorStats.getStatusCode()));
                 }
             }
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raSheetAndColumnErrorStatsList, 1000L);
