@@ -27,7 +27,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/v1/roster")
 @Log4j2
-@CrossOrigin(origins = "*", methods = {RequestMethod.PUT, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.GET})
+@CrossOrigin(origins = "*")
 public class RosterController {
     public static Gson gson = new Gson();
     @Autowired
@@ -50,14 +50,14 @@ public class RosterController {
             if (targetPhaseType == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid targetPhase " + restoreRosterRequest.getTargetPhase());
             }
-//            File file = new File(applicationConfig.getRestoreWrapper());
-//            pythonInvocationService.invokePythonProcess(file.getPath(), "--envConfigs", applicationConfig.getEnvConfigs(),
-//                    "--fileDetailsId", "" + rosterId);
+            File file = new File(applicationConfig.getRestoreWrapper());
+            pythonInvocationService.invokePythonProcess(file.getPath(), "--envConfigs", applicationConfig.getEnvConfigs(),
+                    "--fileDetailsId", "" + rosterId, "--targetPhase", targetPhaseType.name());
             //TODO return better response
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
-//        } catch (IOException ex) {
-//            log.error("Error in restoreRoster restoreRosterRequest {} rosterId {}", gson.toJson(restoreRosterRequest), rosterId);
-//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        } catch (IOException ex) {
+            log.error("Error in restoreRoster restoreRosterRequest {} rosterId {}", gson.toJson(restoreRosterRequest), rosterId);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         } catch (Exception ex) {
             log.error("Error in restoreRoster restoreRosterRequest {} rosterId {}", gson.toJson(restoreRosterRequest), rosterId);
             throw ex;

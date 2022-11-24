@@ -9,4 +9,5 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class RestoreRosterRequest implements Serializable {
     private String targetPhase;
+    public RestoreRosterRequest() {}
 }

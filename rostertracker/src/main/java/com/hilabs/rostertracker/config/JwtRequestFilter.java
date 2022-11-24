@@ -135,7 +135,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Credentials", "true");
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT");
         response.setHeader("Access-Control-Allow-Headers", "*");
         response.setHeader("Cache-Control", "no-cache");
         chain.doFilter(request, response);
