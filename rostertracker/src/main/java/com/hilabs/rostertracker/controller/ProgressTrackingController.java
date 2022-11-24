@@ -221,7 +221,7 @@ public class ProgressTrackingController {
                 long rosterReceivedTime = getRosterReceivedTime(raFileDetails);
                 InCompatibleRosterDetails details = new InCompatibleRosterDetails(raFileDetailsId, raFileDetails.getOriginalFileName(), rosterReceivedTime,
                         rosterRecordCount, errorCodesAndDescription.errorDescription,
-                        String.join(", ", errorCodesAndDescription.errorCodes), lob, raFileDetails.getMarket(), filePlmTicketId);
+                        String.join(", ", errorCodesAndDescription.errorCodes), lob, raFileDetails.getMarket(), filePlmTicketId, raFileDetails.getStatusCode());
                 inCompatibleRosterDetails.add(details);
             }
             CollectionResponse<InCompatibleRosterDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize, inCompatibleRosterDetails,

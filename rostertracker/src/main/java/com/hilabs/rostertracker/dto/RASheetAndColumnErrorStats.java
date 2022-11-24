@@ -8,6 +8,8 @@ public class RASheetAndColumnErrorStats {
     private long raSheetDetailsId;
     private String sheetName;
 
+    private Integer statusCode;
+
     private int columnFalloutCount;
 
     private int manualReviewRecordCount;
@@ -19,9 +21,10 @@ public class RASheetAndColumnErrorStats {
     private int spsFalloutCount;
 
 
-    public RASheetAndColumnErrorStats(long raSheetDetailsId, String sheetName) {
+    public RASheetAndColumnErrorStats(long raSheetDetailsId, String sheetName, Integer statusCode) {
         this.raSheetDetailsId = raSheetDetailsId;
         this.sheetName = sheetName;
+        this.statusCode = statusCode;
         //TODO manikanta change names and hardcoding;
         this.columnFalloutCount = 3;
         this.manualReviewRecordCount = 0;

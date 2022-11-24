@@ -8,5 +8,6 @@ public enum FileMetaDataTableStatus {
     FILE_NOT_FOUND,
     IN_PROGRESS,
     IN_QUEUE,
-    FAILED
+    FAILED,
+    RESOLVED
 }
