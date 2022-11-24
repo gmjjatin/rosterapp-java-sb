@@ -27,7 +27,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/v1/roster")
 @Log4j2
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", methods = {RequestMethod.PUT, RequestMethod.POST, RequestMethod.OPTIONS, RequestMethod.GET})
 public class RosterController {
     public static Gson gson = new Gson();
     @Autowired
