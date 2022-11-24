@@ -44,9 +44,6 @@ public class ConfigUIController {
     private RARCRosterISFMapService raRcRosterISFMapService;
 
     @Autowired
-    private DummyDataService dummyDataService;
-
-    @Autowired
     private RAStatusService raStatusService;
 
     @Autowired
