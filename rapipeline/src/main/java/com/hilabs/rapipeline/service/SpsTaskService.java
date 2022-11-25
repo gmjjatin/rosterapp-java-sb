@@ -154,7 +154,7 @@ public class SpsTaskService {
         if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, spsSuccessStatusCode))) {
             fileMetaDataTableStatus = RESOLVED;
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 65);
-        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, spsSuccessStatusCode, spsFailedStatusCode))) {
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 157, 167, spsSuccessStatusCode, spsFailedStatusCode))) {
             if (hasIntersection(sheetCodes, Collections.singletonList(spsSuccessStatusCode))) {
                 fileMetaDataTableStatus = FAILED;
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 67);

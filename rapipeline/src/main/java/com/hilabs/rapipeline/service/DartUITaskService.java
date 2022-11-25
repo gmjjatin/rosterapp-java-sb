@@ -209,7 +209,7 @@ public class DartUITaskService {
         if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 179))) {
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 55);
             return;
-        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 179, 178, 173))) {
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 157, 167, 179, 178, 173))) {
             if (hasIntersection(sheetCodes, Collections.singletonList(179))) {
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 57);
                 return;

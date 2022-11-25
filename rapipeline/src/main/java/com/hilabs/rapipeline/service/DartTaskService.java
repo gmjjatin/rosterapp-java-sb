@@ -92,9 +92,10 @@ public class DartTaskService {
                 log.error("Error in updatePlmStatusForFileDetailsId with failed status for raFileDetailsId {}", raFileDetailsId);
             }
             return false;
-        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165, 167))) {
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165, 157, 167))) {
             if (!hasIntersection(Collections.singletonList(165), sheetCodes)) {
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 49);
+                raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
             } else {
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 45);
             }

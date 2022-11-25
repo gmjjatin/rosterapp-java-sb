@@ -139,6 +139,7 @@ public class IsfTaskService {
         } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 155, 157))) {
             if (!hasIntersection(Collections.singletonList(155), sheetCodes)) {
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 39);
+                raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
             } else {
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 35);
             }
