@@ -36,6 +36,9 @@ public class LdapService {
     @Value("${spring.ldap.password}")
     private String ldapPassword;
 
+    @Value("${restore_wrapper}")
+    private String restoreWrapper;
+
 
     private String getDistinguishedName(String username) {
         List<Attributes> attributesList = search("cn=" + username);

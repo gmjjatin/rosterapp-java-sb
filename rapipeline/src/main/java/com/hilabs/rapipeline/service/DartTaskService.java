@@ -84,7 +84,9 @@ public class DartTaskService {
         //163 - Dart Generation failed
         //165 - Dart Generated
         //49 - Dart generation completed with validation failure
-        if (hasIntersection(Arrays.asList(163), sheetCodes)) {
+        log.info("DART-VALIDATION:" + raFileDetailsId + " Consolidation:  Sheet codes  " +  " [" + sheetCodes.toString() + "]");
+        if (hasIntersection(Arrays.asList(163), sheetCodes)) {//Event if one fails
+            log.info("DART-VALIDATION:" + raFileDetailsId + " sheet with 163");
             raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 43);
             try {
                 raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
@@ -92,10 +94,15 @@ public class DartTaskService {
                 log.error("Error in updatePlmStatusForFileDetailsId with failed status for raFileDetailsId {}", raFileDetailsId);
             }
             return false;
-        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165, 167))) {
+        } else if (isSubset(sheetCodes, Arrays.asList(111, 119, 131, 139, 165, 157, 167))) {
+            log.info("DART-VALIDATION:" + raFileDetailsId + " inside subset check");
             if (!hasIntersection(Collections.singletonList(165), sheetCodes)) {
+                log.info("DART-VALIDATION:" + raFileDetailsId + " No 165, updating failure");
+                //No 165
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 49);
+                raFileMetaDataDetailsService.updatePlmStatusForFileDetailsId(raFileDetailsId, FAILED);
             } else {
+                log.info("DART-VALIDATION:" + raFileDetailsId + " found 165, updating success");
                 raFileDetailsService.updateRAFileDetailsStatus(raFileDetailsId, 45);
             }
             return false;
