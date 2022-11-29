@@ -175,21 +175,4 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     Page<RAFileDetails> findRAFileDetailsWithFilters(List<String> fileNameList, List<String> plmTicketIdList, List<String> marketList, List<String> lineOfBusinessList, Date startDate, Date endDate,
                                                      List<Integer> statusCodes, List<String> types, int minSheetCount, List<String> businessStatusList, Pageable pageable);
 
-    @Query(value = "select count(*) from RA_RT_FILE_DETAILS where " +
-            " (COALESCE(:marketList, NULL) IS NULL or market in (:marketList)) " +
-            " and (COALESCE(:lineOfBusinessList, NULL) is null or id in (select rLob.ra_file_details_id from RA_RT_FILE_DETAILS_LOB rLob where rLob.lob in (:lineOfBusinessList))) " +
-            " and RA_RT_FILE_DETAILS.creat_dt >= :startDate and RA_RT_FILE_DETAILS.creat_dt < :endDate " +
-            " and status_cd in (:statusCodes) " +
-            " and (COALESCE(:fileNameList, NULL) is null or orgnl_file_nm in (:fileNameList)) " +
-            " and (COALESCE(:businessStatusList, NULL) is null or exists (select * from RA_RT_STATUS_CD_MSTR mstr where mstr.status_cd = RA_RT_FILE_DETAILS.status_cd and mstr.bsns_status in (:businessStatusList))) " +
-            " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) " +
-            " and (select count(*) from RA_RT_SHEET_DETAILS where RA_RT_FILE_DETAILS.id = RA_RT_SHEET_DETAILS.ra_file_details_id and type in (:types)) >= :minSheetCount",
-            nativeQuery = true)
-    Integer countRAFileDetailsWithFilters(List<String> fileNameList, List<String> plmTicketIdList, List<String> marketList, List<String> lineOfBusinessList,
-                                          Date startDate, Date endDate, List<Integer> statusCodes, List<String> types, int minSheetCount,
-                                          List<String> businessStatusList);
-
-//    @Query(value = "select * from RA_RT_FILE_DETAILS where COALESCE(:a, NULL) IS NULL and id = 1", nativeQuery = true)
-//    Optional<RAFileDetails> countTest(List<String> a);
-
 }
