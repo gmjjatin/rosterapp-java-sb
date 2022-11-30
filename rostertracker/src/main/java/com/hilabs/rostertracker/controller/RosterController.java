@@ -123,7 +123,7 @@ public class RosterController {
             Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithFilters(new ArrayList<>(), Collections.singletonList(plmTicketId),
                     new ArrayList<>(), new ArrayList<>(), new Date(startTime),
                     new Date(endTime), new ArrayList<>(), allTypeList, 0, new ArrayList<>(), PageRequest.of(pageNo, limit, sort));
-            CollectionResponse collectionResponse = new CollectionResponse(pageNo, raFileDetailsListPage.getSize(),
+            CollectionResponse<RASheetDetails> collectionResponse = new CollectionResponse<RASheetDetails>(pageNo, raFileDetailsListPage.getSize(),
                     raFileDetailsListPage.getContent(), raFileDetailsListPage.getTotalElements());
             return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
