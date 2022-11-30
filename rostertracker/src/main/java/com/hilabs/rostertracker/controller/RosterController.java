@@ -7,12 +7,14 @@ import com.hilabs.roster.repository.RAFileDetailsRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import com.hilabs.rostertracker.config.ApplicationConfig;
 import com.hilabs.rostertracker.dto.*;
+import com.hilabs.rostertracker.model.FileUploadResponse;
 import com.hilabs.rostertracker.model.RestoreRosterRequest;
 import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.model.TargetPhaseType;
 import com.hilabs.rostertracker.service.PythonInvocationService;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
+import liquibase.repackaged.org.apache.commons.lang3.RandomStringUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,11 +24,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import static com.hilabs.rostertracker.service.RAFileStatsService.splitBySep;
@@ -109,28 +118,42 @@ public class RosterController {
         }
     }
 
-    @GetMapping("/sheet-details")
-    public ResponseEntity<CollectionResponse<RASheetDetails>> getSheetDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
-                                                                                @RequestParam(defaultValue = "100") Integer pageSize,
-                                                                                @RequestParam(defaultValue = "") String plmTicketId) {
-        try {
-            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
-            int limit = limitAndOffset.getLimit();
-            Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(-1, -1);
-            long startTime = startAndEndTime.startTime;
-            long endTime = startAndEndTime.endTime;
-            Sort sort = Sort.by(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
-            Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithFilters(new ArrayList<>(), Collections.singletonList(plmTicketId),
-                    new ArrayList<>(), new ArrayList<>(), new Date(startTime),
-                    new Date(endTime), new ArrayList<>(), allTypeList, 0, new ArrayList<>(), PageRequest.of(pageNo, limit, sort));
-            CollectionResponse<RASheetDetails> collectionResponse = new CollectionResponse<RASheetDetails>(pageNo, raFileDetailsListPage.getSize(),
-                    raFileDetailsListPage.getContent(), raFileDetailsListPage.getTotalElements());
-            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
-        } catch (Exception ex) {
-            log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
-            throw ex;
+    @PostMapping("/upload-roster")
+    public ResponseEntity<FileUploadResponse> upLoadRoster(@RequestParam("file") MultipartFile multipartFile) throws IOException {
+        if (multipartFile.getOriginalFilename() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OriginalFilename not found");
         }
+        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+        long size = multipartFile.getSize();
+        saveFile(fileName, multipartFile, applicationConfig.getRaSourceFolder());
+        FileUploadResponse response = new FileUploadResponse();
+        response.setFileName(fileName);
+        response.setSize(size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+//    @GetMapping("/sheet-details")
+//    public ResponseEntity<CollectionResponse<RASheetDetails>> getSheetDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
+//                                                                                @RequestParam(defaultValue = "100") Integer pageSize,
+//                                                                                @RequestParam(defaultValue = "") String plmTicketId) {
+//        try {
+//            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
+//            int limit = limitAndOffset.getLimit();
+//            Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(-1, -1);
+//            long startTime = startAndEndTime.startTime;
+//            long endTime = startAndEndTime.endTime;
+//            Sort sort = Sort.by(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
+//            Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithFilters(new ArrayList<>(), Collections.singletonList(plmTicketId),
+//                    new ArrayList<>(), new ArrayList<>(), new Date(startTime),
+//                    new Date(endTime), new ArrayList<>(), allTypeList, 0, new ArrayList<>(), PageRequest.of(pageNo, limit, sort));
+//            CollectionResponse<RASheetDetails> collectionResponse = new CollectionResponse<RASheetDetails>(pageNo, raFileDetailsListPage.getSize(),
+//                    raFileDetailsListPage.getContent(), raFileDetailsListPage.getTotalElements());
+//            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
+//        } catch (Exception ex) {
+//            log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
+//            throw ex;
+//        }
+//    }
 
     @Transactional
     private void updateStatusRequest(List<UpdateStatusRequestElement> updateStatusRequestElementList, String username) {
@@ -158,6 +181,20 @@ public class RosterController {
                 raSheetDetails.setLastUpdatedDate(lastUpdateDate);
                 raSheetDetailsRepository.save(raSheetDetails);
             }
+        }
+    }
+
+    public static void saveFile(String fileName, MultipartFile multipartFile, String uploadFolder)
+            throws IOException {
+        Path uploadPath = Paths.get(uploadFolder);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        try (InputStream inputStream = multipartFile.getInputStream()) {
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ioe) {
+            throw new IOException("Could not save file: " + fileName, ioe);
         }
     }
 }

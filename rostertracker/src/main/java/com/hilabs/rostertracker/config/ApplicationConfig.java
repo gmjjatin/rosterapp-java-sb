@@ -22,4 +22,7 @@ public class ApplicationConfig {
 
     @Value("${restore_wrapper}")
     private String restoreWrapper;
+
+    @Value("${raSourceFolder}")
+    private String raSourceFolder;
 }
