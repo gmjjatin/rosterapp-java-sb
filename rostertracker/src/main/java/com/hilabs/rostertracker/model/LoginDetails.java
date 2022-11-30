@@ -12,4 +12,5 @@ public class LoginDetails {
     private String username;
     private List<RAAuthPrivilegeDTO> privileges;
     private String firstName;
+    private String showLogo;
 }
