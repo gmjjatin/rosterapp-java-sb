@@ -9,7 +9,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class FileUploadResponse implements Serializable {
     private String fileName;
-    private String downloadUri;
     private long size;
 
     public FileUploadResponse() {}

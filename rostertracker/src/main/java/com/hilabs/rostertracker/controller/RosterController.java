@@ -9,12 +9,10 @@ import com.hilabs.rostertracker.config.ApplicationConfig;
 import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.FileUploadResponse;
 import com.hilabs.rostertracker.model.RestoreRosterRequest;
-import com.hilabs.rostertracker.model.RosterFilterType;
 import com.hilabs.rostertracker.model.TargetPhaseType;
 import com.hilabs.rostertracker.service.PythonInvocationService;
 import com.hilabs.rostertracker.utils.LimitAndOffset;
 import com.hilabs.rostertracker.utils.Utils;
-import liquibase.repackaged.org.apache.commons.lang3.RandomStringUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,7 +36,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
-import static com.hilabs.rostertracker.service.RAFileStatsService.splitBySep;
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.allTypeList;
 
 @RestController
@@ -98,8 +95,13 @@ public class RosterController {
     @GetMapping("/file-details")
     public ResponseEntity<CollectionResponse<RAFileDetails>> getFileDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                             @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                            @RequestParam(defaultValue = "-1") Long raFileDetailsId,
                                                                                             @RequestParam(defaultValue = "") String plmTicketId) {
         try {
+            if (raFileDetailsId != -1) {
+                Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository.findById(raFileDetailsId);
+                return optionalRAFileDetails.map(raFileDetails -> new ResponseEntity<>(new CollectionResponse<>(pageNo, pageSize, Collections.singletonList(raFileDetails), 1L), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(new CollectionResponse<>(pageNo, pageSize, Collections.emptyList(), 0L), HttpStatus.OK));
+            }
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(-1, -1);
@@ -119,7 +121,7 @@ public class RosterController {
     }
 
     @PostMapping("/upload-roster")
-    public ResponseEntity<FileUploadResponse> upLoadRoster(@RequestParam("file") MultipartFile multipartFile) throws IOException {
+    public ResponseEntity<FileUploadResponse> uploadRoster(@RequestParam("file") MultipartFile multipartFile) throws IOException {
         if (multipartFile.getOriginalFilename() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OriginalFilename not found");
         }
