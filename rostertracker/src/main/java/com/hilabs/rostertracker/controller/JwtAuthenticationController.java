@@ -50,6 +50,9 @@ public class JwtAuthenticationController {
     @Value("${isAuthenticationNeeded}")
     private String isAuthenticationNeeded;
 
+    @Value("${showLogo}")
+    private String showLogo;
+
 
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
@@ -75,6 +78,7 @@ public class JwtAuthenticationController {
         }
         final UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
         LoginDetails loginDetails = jwtUserDetailsService.getLoginDetails(userDetails,username);
+        loginDetails.setShowLogo(showLogo);
         return new ResponseEntity<>(loginDetails, HttpStatus.OK);
     }
 
