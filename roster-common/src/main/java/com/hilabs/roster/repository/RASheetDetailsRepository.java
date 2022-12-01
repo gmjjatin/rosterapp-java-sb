@@ -43,4 +43,5 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
     @Query(value = "select * from ra_rt_sheet_details where is_active = 1 and status_cd in (:sheetStatusCodes) " +
             " and ROWNUM <= :limit and VLDTN_FILE_ID IS NOT NULL for update", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsBasedOnSheetStatusCodesWithFileIdForUpdate(List<Integer> sheetStatusCodes, Integer limit);
+
 }
