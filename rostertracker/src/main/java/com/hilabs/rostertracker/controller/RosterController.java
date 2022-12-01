@@ -111,8 +111,8 @@ public class RosterController {
             Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithFilters(new ArrayList<>(), Collections.singletonList(plmTicketId),
                     new ArrayList<>(), new ArrayList<>(), new Date(startTime),
                     new Date(endTime), new ArrayList<>(), allTypeList, 0, new ArrayList<>(), PageRequest.of(pageNo, limit, sort));
-            CollectionResponse collectionResponse = new CollectionResponse(pageNo, raFileDetailsListPage.getSize(),
-                    raFileDetailsListPage.getContent(), raFileDetailsListPage.getTotalElements());
+            CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raFileDetailsListPage.getContent(),
+                    raFileDetailsListPage.getTotalElements());
             return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
@@ -121,7 +121,10 @@ public class RosterController {
     }
 
     @PostMapping("/upload-roster")
-    public ResponseEntity<FileUploadResponse> uploadRoster(@RequestParam("file") MultipartFile multipartFile) throws IOException {
+    public ResponseEntity<FileUploadResponse> uploadRoster(@RequestParam("file") MultipartFile multipartFile,
+                                                           @RequestParam("market") String market,
+                                                           @RequestParam("lineOfBusiness") String lineOfBusiness,
+                                                           @RequestParam("plmTicketId") String plmTicketId) throws IOException {
         if (multipartFile.getOriginalFilename() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OriginalFilename not found");
         }
@@ -134,28 +137,26 @@ public class RosterController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-//    @GetMapping("/sheet-details")
-//    public ResponseEntity<CollectionResponse<RASheetDetails>> getSheetDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
-//                                                                                @RequestParam(defaultValue = "100") Integer pageSize,
-//                                                                                @RequestParam(defaultValue = "") String plmTicketId) {
-//        try {
-//            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
-//            int limit = limitAndOffset.getLimit();
-//            Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(-1, -1);
-//            long startTime = startAndEndTime.startTime;
-//            long endTime = startAndEndTime.endTime;
-//            Sort sort = Sort.by(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
-//            Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithFilters(new ArrayList<>(), Collections.singletonList(plmTicketId),
-//                    new ArrayList<>(), new ArrayList<>(), new Date(startTime),
-//                    new Date(endTime), new ArrayList<>(), allTypeList, 0, new ArrayList<>(), PageRequest.of(pageNo, limit, sort));
-//            CollectionResponse<RASheetDetails> collectionResponse = new CollectionResponse<RASheetDetails>(pageNo, raFileDetailsListPage.getSize(),
-//                    raFileDetailsListPage.getContent(), raFileDetailsListPage.getTotalElements());
-//            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
-//        } catch (Exception ex) {
-//            log.error("Error in getRAProvAndStatsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
-//            throw ex;
-//        }
-//    }
+    @GetMapping("/sheet-details")
+    public ResponseEntity<CollectionResponse<RASheetDetails>> getSheetDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
+                                                                                @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                  @RequestParam(defaultValue = "-1") Long raSheetDetailsId,
+                                                                                @RequestParam(defaultValue = "") String plmTicketId) {
+        try {
+            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
+            int limit = limitAndOffset.getLimit();
+            Sort sort = Sort.by(Collections.singletonList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
+            List<Long> raSheetDetailsIdList = raSheetDetailsId != -1 ? Collections.singletonList(raSheetDetailsId) : Collections.emptyList();
+            Page<RASheetDetails> raSheetDetailsPage = raSheetDetailsRepository.findRASheetDetailsData(raSheetDetailsIdList,
+                    Collections.singletonList(plmTicketId), PageRequest.of(pageNo, limit, sort));
+            CollectionResponse<RASheetDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize,
+                    raSheetDetailsPage.getContent(), raSheetDetailsPage.getTotalElements());
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in getSheetDetailsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
+            throw ex;
+        }
+    }
 
     @Transactional
     private void updateStatusRequest(List<UpdateStatusRequestElement> updateStatusRequestElementList, String username) {

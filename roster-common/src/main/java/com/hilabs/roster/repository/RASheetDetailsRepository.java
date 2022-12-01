@@ -1,6 +1,9 @@
 package com.hilabs.roster.repository;
 
+import com.hilabs.roster.entity.RAFileDetails;
 import com.hilabs.roster.entity.RASheetDetails;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -43,4 +46,11 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
     @Query(value = "select * from ra_rt_sheet_details where is_active = 1 and status_cd in (:sheetStatusCodes) " +
             " and ROWNUM <= :limit and VLDTN_FILE_ID IS NOT NULL for update", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsBasedOnSheetStatusCodesWithFileIdForUpdate(List<Integer> sheetStatusCodes, Integer limit);
+
+    @Query(value = "select RA_RT_SHEET_DETAILS.* from RA_RT_SHEET_DETAILS where RA_RT_SHEET_DETAILS.is_active = 1 and " +
+            " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.ra_file_details_id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList)))",
+            countQuery="select count(*) from RA_RT_SHEET_DETAILS where RA_RT_SHEET_DETAILS.is_active = 1 and " +
+                    " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.ra_file_details_id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList)))",
+            nativeQuery = true)
+    Page<RASheetDetails> findRASheetDetailsData(List<Long> raSheetDetailsIdList, List<String> plmTicketIdList, Pageable pageable);
 }
