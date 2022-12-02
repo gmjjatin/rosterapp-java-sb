@@ -120,28 +120,32 @@ public class RosterController {
         }
     }
 
-    @PostMapping("/upload-roster")
-    public ResponseEntity<FileUploadResponse> uploadRoster(@RequestParam("file") MultipartFile multipartFile,
-                                                           @RequestParam("market") String market,
-                                                           @RequestParam("lineOfBusiness") String lineOfBusiness,
-                                                           @RequestParam("plmTicketId") String plmTicketId) throws IOException {
-        if (multipartFile.getOriginalFilename() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OriginalFilename not found");
-        }
-        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
-        long size = multipartFile.getSize();
-        saveFile(fileName, multipartFile, applicationConfig.getRaSourceFolder());
-        FileUploadResponse response = new FileUploadResponse();
-        response.setFileName(fileName);
-        response.setSize(size);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
     @GetMapping("/sheet-details")
     public ResponseEntity<CollectionResponse<RASheetDetails>> getSheetDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                 @RequestParam(defaultValue = "100") Integer pageSize,
                                                                                   @RequestParam(defaultValue = "-1") Long raSheetDetailsId,
                                                                                 @RequestParam(defaultValue = "") String plmTicketId) {
+        try {
+            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
+            int limit = limitAndOffset.getLimit();
+            Sort sort = Sort.by(Collections.singletonList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
+            List<Long> raSheetDetailsIdList = raSheetDetailsId != -1 ? Collections.singletonList(raSheetDetailsId) : Collections.emptyList();
+            Page<RASheetDetails> raSheetDetailsPage = raSheetDetailsRepository.findRASheetDetailsData(raSheetDetailsIdList,
+                    Collections.singletonList(plmTicketId), PageRequest.of(pageNo, limit, sort));
+            CollectionResponse<RASheetDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize,
+                    raSheetDetailsPage.getContent(), raSheetDetailsPage.getTotalElements());
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in getSheetDetailsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
+            throw ex;
+        }
+    }
+
+    @GetMapping("/file-meta-data")
+    public ResponseEntity<CollectionResponse<RASheetDetails>> getFileMetaDataList(@RequestParam(defaultValue = "0") Integer pageNo,
+                                                                                  @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                  @RequestParam(defaultValue = "-1") Long raSheetDetailsId,
+                                                                                  @RequestParam(defaultValue = "") String plmTicketId) {
         try {
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
@@ -185,6 +189,23 @@ public class RosterController {
                 raSheetDetailsRepository.save(raSheetDetails);
             }
         }
+    }
+
+    @PostMapping("/upload-roster")
+    public ResponseEntity<FileUploadResponse> uploadRoster(@RequestParam("file") MultipartFile multipartFile,
+                                                           @RequestParam("market") String market,
+                                                           @RequestParam("lineOfBusiness") String lineOfBusiness,
+                                                           @RequestParam("plmTicketId") String plmTicketId) throws IOException {
+        if (multipartFile.getOriginalFilename() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OriginalFilename not found");
+        }
+        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+        long size = multipartFile.getSize();
+        saveFile(fileName, multipartFile, applicationConfig.getRaSourceFolder());
+        FileUploadResponse response = new FileUploadResponse();
+        response.setFileName(fileName);
+        response.setSize(size);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     public static void saveFile(String fileName, MultipartFile multipartFile, String uploadFolder)

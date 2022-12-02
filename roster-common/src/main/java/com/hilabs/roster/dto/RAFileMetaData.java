@@ -1,4 +1,4 @@
-package com.hilabs.rapipeline.dto;
+package com.hilabs.roster.dto;
 
 import com.hilabs.roster.entity.RAPlmRoFileData;
 import com.hilabs.roster.entity.RAPlmRoProfData;

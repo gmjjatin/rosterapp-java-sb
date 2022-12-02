@@ -3,15 +3,15 @@ package com.hilabs.rapipeline.ingestion;
 import com.google.gson.Gson;
 import com.hilabs.mcheck.model.JobRetriever;
 import com.hilabs.mcheck.model.Task;
-import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.service.IngestionTaskService;
 import com.hilabs.rapipeline.service.RAFileDetailsService;
 import com.hilabs.rapipeline.service.RAFileMetaDataDetailsService;
+import com.hilabs.roster.dto.RAFileMetaData;
+import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class IngestionFetcher implements JobRetriever {
             log.info("IngestionFetcher started - tasks {}", tasks);
             List<Task> executors = new ArrayList<>();
             List<RAFileMetaData> raFileMetaDataList = raFileMetaDataDetailsService.getNewFileMetaDataDetailsAndUpdateToInQueue(tasks);
-            for (RAFileMetaData raFileMetaData : raFileMetaDataList) {
+                for (RAFileMetaData raFileMetaData : raFileMetaDataList) {
                 Map<String, Object> taskData = new HashMap<>();
                 taskData.put("data", raFileMetaData);
                 IngestionTask ingestionTask = new IngestionTask(taskData);

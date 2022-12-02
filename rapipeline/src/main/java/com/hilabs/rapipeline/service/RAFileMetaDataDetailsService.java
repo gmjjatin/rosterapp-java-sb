@@ -1,12 +1,15 @@
 package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
-import com.hilabs.rapipeline.dto.RAFileMetaData;
 import com.hilabs.rapipeline.model.FileMetaDataTableStatus;
 import com.hilabs.rapipeline.repository.RAPlmRoFileDataRepository;
 import com.hilabs.rapipeline.repository.RAPlmRoProfDataRepository;
+import com.hilabs.roster.dto.RAFileMetaData;
 import com.hilabs.roster.entity.*;
-import com.hilabs.roster.repository.*;
+import com.hilabs.roster.repository.RAFileDetailsLobRepository;
+import com.hilabs.roster.repository.RARTContactDetailsRepository;
+import com.hilabs.roster.repository.RARTFileAltIdsRepository;
+import com.hilabs.roster.repository.RAStatusCDMasterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

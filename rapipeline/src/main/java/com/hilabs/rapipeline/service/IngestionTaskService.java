@@ -2,8 +2,7 @@ package com.hilabs.rapipeline.service;
 
 import com.google.gson.Gson;
 import com.hilabs.rapipeline.dto.ErrorDetails;
-import com.hilabs.rapipeline.dto.RAFileMetaData;
-import com.hilabs.roster.entity.RAPlmRoFileData;
+import com.hilabs.roster.dto.RAFileMetaData;
 import com.hilabs.roster.entity.RARTMarketLobVald;
 import com.hilabs.roster.repository.RARTMarketLobValdRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +16,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.hilabs.rapipeline.model.FileMetaDataTableStatus.NEW;
 
 @Service
 @Slf4j
