@@ -84,7 +84,8 @@ public class DartUITask extends Task {
             DartStatusCheckResponse dartStatusCheckResponse = optionalDartStatusCheckResponse.get();
             String status = dartStatusCheckResponse.getReviewStatus();
             boolean isValidationCompleted = (status != null) && (status.equalsIgnoreCase("Ready to Submit")
-                    || status.equalsIgnoreCase("Ready for Review"));
+                    || status.equalsIgnoreCase("Ready for Review")
+                    || status.equalsIgnoreCase("Submitted"));
 
             if (!isValidationCompleted) {
                 log.info("Skipping dart ui task - isValidationCompleted false - Status for raSheetDetails {} is {}", gson.toJson(raSheetDetails), status);

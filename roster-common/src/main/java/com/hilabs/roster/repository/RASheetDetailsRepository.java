@@ -22,10 +22,10 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
     @Query(value = "select * from RA_RT_SHEET_DETAILS where RA_FILE_DETAILS_ID = :raFileDetailsId  and is_active = 1", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsForAFileId(Long raFileDetailsId);
 
-    @Query(value = "select ra_rt_sheet_details.* from ra_rt_sheet_details, ra_rt_file_details where ra_rt_sheet_details.ra_file_details_id = ra_rt_file_details.id " +
+    @Query(value = "select ra_rt_sheet_details.* from ra_rt_sheet_details , ra_rt_file_details  where ra_rt_sheet_details.ra_file_details_id = ra_rt_file_details.id " +
             "and ra_rt_sheet_details.is_active = 1 and  ra_rt_file_details.status_cd in (:fileStatusCodes) and ra_rt_sheet_details.status_cd in (:sheetStatusCodes)" +
             " and MANUAL_ACTN_REQ in (:manualActionRequiredList)" +
-            " and ROWNUM <= :limit for update", nativeQuery = true)
+            " and ROWNUM <= :limit order by ra_rt_sheet_details.last_updt_dt for update", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsBasedFileStatusAndSheetStatusCodesForUpdate(List<Integer> fileStatusCodes, List<Integer> sheetStatusCodes, List<Integer> manualActionRequiredList,
                                                                                 Integer limit);
 
@@ -41,6 +41,7 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
     List<RASheetDetails> getSheetDetailsBasedOnSheetStatusCodesForUpdate(List<Integer> sheetStatusCodes, Integer limit);
 
     @Query(value = "select * from ra_rt_sheet_details where is_active = 1 and status_cd in (:sheetStatusCodes) " +
-            " and ROWNUM <= :limit and VLDTN_FILE_ID IS NOT NULL for update", nativeQuery = true)
+            " and ROWNUM <= :limit and VLDTN_FILE_ID IS NOT NULL order by last_updt_dt for update", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsBasedOnSheetStatusCodesWithFileIdForUpdate(List<Integer> sheetStatusCodes, Integer limit);
+
 }
