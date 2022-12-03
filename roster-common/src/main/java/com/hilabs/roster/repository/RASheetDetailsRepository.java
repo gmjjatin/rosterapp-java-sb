@@ -47,10 +47,12 @@ public interface RASheetDetailsRepository extends JpaRepository<RASheetDetails, 
             " and ROWNUM <= :limit and VLDTN_FILE_ID IS NOT NULL order by last_updt_dt for update", nativeQuery = true)
     List<RASheetDetails> getSheetDetailsBasedOnSheetStatusCodesWithFileIdForUpdate(List<Integer> sheetStatusCodes, Integer limit);
 
-    @Query(value = "select RA_RT_SHEET_DETAILS.* from RA_RT_SHEET_DETAILS where RA_RT_SHEET_DETAILS.is_active = 1 and " +
-            " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.ra_file_details_id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList)))",
-            countQuery="select count(*) from RA_RT_SHEET_DETAILS where RA_RT_SHEET_DETAILS.is_active = 1 and " +
-                    " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.ra_file_details_id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList)))",
+    @Query(value = "select RA_RT_SHEET_DETAILS.* from RA_RT_SHEET_DETAILS where RA_RT_SHEET_DETAILS.is_active = 1 " +
+            " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_SHEET_DETAILS.ra_file_details_id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) " +
+            " and (COALESCE(:raSheetDetailsIdList, NULL) is null or id in (:raSheetDetailsIdList))",
+            countQuery="select count(*) from RA_RT_SHEET_DETAILS where RA_RT_SHEET_DETAILS.is_active = 1 " +
+                    " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_SHEET_DETAILS.ra_file_details_id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) " +
+                    " and (COALESCE(:raSheetDetailsIdList, NULL) is null or id in (:raSheetDetailsIdList))",
             nativeQuery = true)
     Page<RASheetDetails> findRASheetDetailsData(List<Long> raSheetDetailsIdList, List<String> plmTicketIdList, Pageable pageable);
 }

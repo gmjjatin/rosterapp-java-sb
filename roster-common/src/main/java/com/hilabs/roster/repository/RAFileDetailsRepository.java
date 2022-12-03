@@ -90,13 +90,15 @@ public interface RAFileDetailsRepository extends CrudRepository<RAFileDetails, L
     Page<RAFileDetails> findRAFileDetailsWithFilters(List<String> fileNameList, List<String> plmTicketIdList, List<String> marketList, List<String> lineOfBusinessList, Date startDate, Date endDate,
                                                      List<Integer> statusCodes, List<String> types, int minSheetCount, List<String> businessStatusList, Pageable pageable);
 
-    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS where RA_RT_FILE_DETAILS.is_active = 1 and " +
+    @Query(value = "select RA_RT_FILE_DETAILS.* from RA_RT_FILE_DETAILS where RA_RT_FILE_DETAILS.is_active = 1 " +
             " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS " +
-            "where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) ",
-            countQuery="select count(*) from RA_RT_FILE_DETAILS where RA_RT_FILE_DETAILS.is_active = 1 and " +
+            " where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) " +
+            " and (COALESCE(:raFileDetailsIdList, NULL) is null or id in (:raFileDetailsIdList))",
+            countQuery="select count(*) from RA_RT_FILE_DETAILS where RA_RT_FILE_DETAILS.is_active = 1 " +
                     " and (COALESCE(:plmTicketIdList, NULL) is null or RA_RT_FILE_DETAILS.id in (select ra_file_details_id from RA_RT_FILE_ALT_IDS " +
-                    "where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) ",
+                    " where RA_RT_FILE_ALT_IDS.is_active = 1 and ALT_ID_TYPE='RO_ID' and ALT_ID in (:plmTicketIdList))) " +
+                    " and (COALESCE(:raFileDetailsIdList, NULL) is null or id in (:raFileDetailsIdList))",
             nativeQuery = true)
-    Page<RAFileDetails> findRAFileDetailsWithData(List<Long> raFileDetailsIdList, List<String> plmTicketIdList);
+    Page<RAFileDetails> findRAFileDetailsWithData(List<Long> raFileDetailsIdList, List<String> plmTicketIdList, Pageable pageable);
 
 }

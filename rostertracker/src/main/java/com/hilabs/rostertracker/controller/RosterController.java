@@ -1,9 +1,14 @@
 package com.hilabs.rostertracker.controller;
 
 import com.google.gson.Gson;
+import com.hilabs.roster.dto.RAFileMetaData;
 import com.hilabs.roster.entity.RAFileDetails;
+import com.hilabs.roster.entity.RAPlmRoFileData;
+import com.hilabs.roster.entity.RAPlmRoProfData;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RAFileDetailsRepository;
+import com.hilabs.roster.repository.RAPlmRoFileDataRepository;
+import com.hilabs.roster.repository.RAPlmRoProfDataRepository;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
 import com.hilabs.rostertracker.config.ApplicationConfig;
 import com.hilabs.rostertracker.dto.*;
@@ -35,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.allTypeList;
 
@@ -52,6 +58,12 @@ public class RosterController {
     private RAFileDetailsRepository raFileDetailsRepository;
     @Autowired
     private RASheetDetailsRepository raSheetDetailsRepository;
+
+    @Autowired
+    private RAPlmRoProfDataRepository raPlmRoProfDataRepository;
+
+    @Autowired
+    private RAPlmRoFileDataRepository raPlmRoFileDataRepository;
 
     @PutMapping("/{rosterId}/restore")
     public ResponseEntity<Map<String, String>> restoreRoster(@RequestBody RestoreRosterRequest restoreRosterRequest, @PathVariable Long rosterId) {
@@ -95,22 +107,13 @@ public class RosterController {
     @GetMapping("/file-details")
     public ResponseEntity<CollectionResponse<RAFileDetails>> getFileDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                             @RequestParam(defaultValue = "100") Integer pageSize,
-                                                                                            @RequestParam(defaultValue = "-1") Long raFileDetailsId,
                                                                                             @RequestParam(defaultValue = "") String plmTicketId) {
         try {
-            if (raFileDetailsId != -1) {
-                Optional<RAFileDetails> optionalRAFileDetails = raFileDetailsRepository.findById(raFileDetailsId);
-                return optionalRAFileDetails.map(raFileDetails -> new ResponseEntity<>(new CollectionResponse<>(pageNo, pageSize, Collections.singletonList(raFileDetails), 1L), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(new CollectionResponse<>(pageNo, pageSize, Collections.emptyList(), 0L), HttpStatus.OK));
-            }
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
-            Utils.StartAndEndTime startAndEndTime = Utils.getAdjustedStartAndEndTime(-1, -1);
-            long startTime = startAndEndTime.startTime;
-            long endTime = startAndEndTime.endTime;
             Sort sort = Sort.by(Arrays.asList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
-            Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithFilters(new ArrayList<>(), Collections.singletonList(plmTicketId),
-                    new ArrayList<>(), new ArrayList<>(), new Date(startTime),
-                    new Date(endTime), new ArrayList<>(), allTypeList, 0, new ArrayList<>(), PageRequest.of(pageNo, limit, sort));
+            Page<RAFileDetails> raFileDetailsListPage = raFileDetailsRepository.findRAFileDetailsWithData(Collections.emptyList(),
+                    Collections.singletonList(plmTicketId), PageRequest.of(pageNo, limit, sort));
             CollectionResponse collectionResponse = new CollectionResponse(pageNo, pageSize, raFileDetailsListPage.getContent(),
                     raFileDetailsListPage.getTotalElements());
             return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
@@ -123,13 +126,12 @@ public class RosterController {
     @GetMapping("/sheet-details")
     public ResponseEntity<CollectionResponse<RASheetDetails>> getSheetDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                 @RequestParam(defaultValue = "100") Integer pageSize,
-                                                                                  @RequestParam(defaultValue = "-1") Long raSheetDetailsId,
                                                                                 @RequestParam(defaultValue = "") String plmTicketId) {
         try {
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             Sort sort = Sort.by(Collections.singletonList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
-            List<Long> raSheetDetailsIdList = raSheetDetailsId != -1 ? Collections.singletonList(raSheetDetailsId) : Collections.emptyList();
+            List<Long> raSheetDetailsIdList = Collections.emptyList();
             Page<RASheetDetails> raSheetDetailsPage = raSheetDetailsRepository.findRASheetDetailsData(raSheetDetailsIdList,
                     Collections.singletonList(plmTicketId), PageRequest.of(pageNo, limit, sort));
             CollectionResponse<RASheetDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize,
@@ -142,20 +144,27 @@ public class RosterController {
     }
 
     @GetMapping("/file-meta-data")
-    public ResponseEntity<CollectionResponse<RASheetDetails>> getFileMetaDataList(@RequestParam(defaultValue = "0") Integer pageNo,
+    public ResponseEntity<CollectionResponse<RAFileMetaData>> getFileMetaDataList(@RequestParam(defaultValue = "0") Integer pageNo,
                                                                                   @RequestParam(defaultValue = "100") Integer pageSize,
-                                                                                  @RequestParam(defaultValue = "-1") Long raSheetDetailsId,
                                                                                   @RequestParam(defaultValue = "") String plmTicketId) {
         try {
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
             Sort sort = Sort.by(Collections.singletonList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
-            List<Long> raSheetDetailsIdList = raSheetDetailsId != -1 ? Collections.singletonList(raSheetDetailsId) : Collections.emptyList();
-            Page<RASheetDetails> raSheetDetailsPage = raSheetDetailsRepository.findRASheetDetailsData(raSheetDetailsIdList,
-                    Collections.singletonList(plmTicketId), PageRequest.of(pageNo, limit, sort));
-            CollectionResponse<RASheetDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize,
-                    raSheetDetailsPage.getContent(), raSheetDetailsPage.getTotalElements());
-            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
+            Page<RAPlmRoFileData> raPlmRoFileDataPage =  raPlmRoFileDataRepository.findRAPlmRoFileDataList(plmTicketId, PageRequest.of(pageNo, limit, sort));
+            List<RAPlmRoProfData> raPlmRoProfDataList = raPlmRoProfDataRepository.findRAPlmRoProfDataByIds(raPlmRoFileDataPage.getContent().stream().map(RAPlmRoFileData::getRaPlmRoProfDataId).collect(Collectors.toList()), PageRequest.of(pageNo, limit, sort));
+            Map<Long, RAPlmRoProfData> raPlmRoProfDataMap = new HashMap<>();
+            for (RAPlmRoProfData raPlmRoProfData : raPlmRoProfDataList) {
+                raPlmRoProfDataMap.put(raPlmRoProfData.getRaPlmRoProfDataId(), raPlmRoProfData);
+            }
+
+            List<RAFileMetaData> raFileMetaDataList = new ArrayList<>();
+            for (RAPlmRoFileData raPlmRoFileData : raPlmRoFileDataPage.getContent()) {
+                raFileMetaDataList.add(new RAFileMetaData(raPlmRoProfDataMap.getOrDefault(raPlmRoFileData.getRaPlmRoProfDataId(), null),
+                        raPlmRoFileData));
+            }
+            CollectionResponse<RAFileMetaData> raFileMetaDataCollectionResponse = new CollectionResponse<>(pageNo, pageSize, raFileMetaDataList, raPlmRoFileDataPage.getTotalElements());
+            return new ResponseEntity<CollectionResponse<RAFileMetaData>>(raFileMetaDataCollectionResponse, HttpStatus.OK);
         } catch (Exception ex) {
             log.error("Error in getSheetDetailsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
             throw ex;

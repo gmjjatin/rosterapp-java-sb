@@ -31,26 +31,30 @@ public class RAFileMetaData  {
 
     String priorityProvYN;
     public RAFileMetaData(RAPlmRoProfData raPlmRoProfData, RAPlmRoFileData raPlmRoFileData) {
-        this.raPlmRoProfDataId = raPlmRoProfData.getRaPlmRoProfDataId();
-        this.roId = raPlmRoProfData.getRoId();
-        this.tCaseId = raPlmRoProfData.getTCaseId();
-        this.racdId = raPlmRoProfData.getRacdId();
-        this.ractId = raPlmRoProfData.getRactId();
-        this.racfId = raPlmRoProfData.getRacfId();
-        this.npi = raPlmRoProfData.getNpi();
-        this.taxId = raPlmRoProfData.getTaxId();
-        this.orgName = raPlmRoProfData.getOrgName();
-        this.cntState = raPlmRoProfData.getCntState();
-        this.lob = raPlmRoProfData.getLob();
-        this.corporateReceiptDate = raPlmRoProfData.getCorporateReceiptDate();
-        this.raPlmRoFileDataId = raPlmRoFileData.getRaPlmRoFileDataId();
-        this.fileName = raPlmRoFileData.getFileName();
-        this.dcnId = raPlmRoFileData.getDcnId();
-        this.fileSize = raPlmRoFileData.getFileSize();
-        this.rAFileProcessingStatus = raPlmRoFileData.getRaFileProcessingStatus();
-        this.reprocess = raPlmRoFileData.getReProcess();
-        this.depositDate = raPlmRoFileData.getDepositDate();
-        this.fileDocumentNumber = raPlmRoFileData.getFileDocumentNumber();
-        this.priorityProvYN = raPlmRoProfData.getPriorityProvYN();
+        if (raPlmRoProfData != null) {
+            this.raPlmRoProfDataId = raPlmRoProfData.getRaPlmRoProfDataId();
+            this.roId = raPlmRoProfData.getRoId();
+            this.tCaseId = raPlmRoProfData.getTCaseId();
+            this.racdId = raPlmRoProfData.getRacdId();
+            this.ractId = raPlmRoProfData.getRactId();
+            this.racfId = raPlmRoProfData.getRacfId();
+            this.npi = raPlmRoProfData.getNpi();
+            this.taxId = raPlmRoProfData.getTaxId();
+            this.orgName = raPlmRoProfData.getOrgName();
+            this.cntState = raPlmRoProfData.getCntState();
+            this.lob = raPlmRoProfData.getLob();
+            this.corporateReceiptDate = raPlmRoProfData.getCorporateReceiptDate();
+            this.priorityProvYN = raPlmRoProfData.getPriorityProvYN();
+        }
+        if (raPlmRoFileData != null) {
+            this.raPlmRoFileDataId = raPlmRoFileData.getRaPlmRoFileDataId();
+            this.fileName = raPlmRoFileData.getFileName();
+            this.dcnId = raPlmRoFileData.getDcnId();
+            this.fileSize = raPlmRoFileData.getFileSize();
+            this.rAFileProcessingStatus = raPlmRoFileData.getRaFileProcessingStatus();
+            this.reprocess = raPlmRoFileData.getReProcess();
+            this.depositDate = raPlmRoFileData.getDepositDate();
+            this.fileDocumentNumber = raPlmRoFileData.getFileDocumentNumber();
+        }
     }
 }
