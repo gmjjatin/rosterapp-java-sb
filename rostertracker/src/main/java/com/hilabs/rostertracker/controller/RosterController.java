@@ -2,14 +2,8 @@ package com.hilabs.rostertracker.controller;
 
 import com.google.gson.Gson;
 import com.hilabs.roster.dto.RAFileMetaData;
-import com.hilabs.roster.entity.RAFileDetails;
-import com.hilabs.roster.entity.RAPlmRoFileData;
-import com.hilabs.roster.entity.RAPlmRoProfData;
-import com.hilabs.roster.entity.RASheetDetails;
-import com.hilabs.roster.repository.RAFileDetailsRepository;
-import com.hilabs.roster.repository.RAPlmRoFileDataRepository;
-import com.hilabs.roster.repository.RAPlmRoProfDataRepository;
-import com.hilabs.roster.repository.RASheetDetailsRepository;
+import com.hilabs.roster.entity.*;
+import com.hilabs.roster.repository.*;
 import com.hilabs.rostertracker.config.ApplicationConfig;
 import com.hilabs.rostertracker.dto.*;
 import com.hilabs.rostertracker.model.FileUploadResponse;
@@ -24,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +38,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.hilabs.rostertracker.utils.SheetTypeUtils.allTypeList;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @RequestMapping("/api/v1/roster")
@@ -64,6 +60,15 @@ public class RosterController {
 
     @Autowired
     private RAPlmRoFileDataRepository raPlmRoFileDataRepository;
+
+    @Autowired
+    private RARCRosterISFMapRepository rarcRosterISFMapRepository;
+
+    @Autowired
+    private RAFileErrorCodeDetailRepository raFileErrorCodeDetailRepository;
+
+    @Autowired
+    private RASheetErrorCodeDetailRepository raSheetErrorCodeDetailRepository;
 
     @PutMapping("/{rosterId}/restore")
     public ResponseEntity<Map<String, String>> restoreRoster(@RequestBody RestoreRosterRequest restoreRosterRequest, @PathVariable Long rosterId) {
@@ -200,7 +205,64 @@ public class RosterController {
         }
     }
 
-    @PostMapping("/upload-roster")
+    @GetMapping("/mappings")
+    public ResponseEntity<CollectionResponse<RARCRosterISFMap>> getMappingsList(@RequestParam(defaultValue = "0") Integer pageNo,
+                                                                                  @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                  @RequestParam(defaultValue = "") String plmTicketId) {
+        try {
+            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
+            int limit = limitAndOffset.getLimit();
+            Sort sort = Sort.by(new Sort.Order(Sort.Direction.DESC, "RA_RT_SHEET_DETAILS.id"),
+                    new Sort.Order(Sort.Direction.DESC, "RA_RC_ROSTER_ISF_MAP.ROSTER_COLUMN_NM"));
+            Page<RARCRosterISFMap> rarcRosterISFMapPage = rarcRosterISFMapRepository.findRARCRosterISFMapData(Collections.singletonList(plmTicketId), PageRequest.of(pageNo, limit, sort));
+            CollectionResponse<RARCRosterISFMap> collectionResponse = new CollectionResponse<>(pageNo, pageSize,
+                    rarcRosterISFMapPage.getContent(), rarcRosterISFMapPage.getTotalElements());
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in getMappingsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
+            throw ex;
+        }
+    }
+
+    @GetMapping("/file-error-code-details")
+    public ResponseEntity<CollectionResponse<RAFileErrorCodeDetails>> getRAFileErrorCodeDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
+                                                                                @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                @RequestParam(defaultValue = "") String plmTicketId) {
+        try {
+            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
+            int limit = limitAndOffset.getLimit();
+            Sort sort = Sort.by(new Sort.Order(Sort.Direction.DESC, "RA_RT_FILE_DETAILS.id"));
+            Page<RAFileErrorCodeDetails> raFileErrorCodeDetailsPage = raFileErrorCodeDetailRepository.findRAFileErrorCodeDetailsData(Collections.singletonList(plmTicketId),
+                    PageRequest.of(pageNo, limit, sort));
+            CollectionResponse<RAFileErrorCodeDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize,
+                    raFileErrorCodeDetailsPage.getContent(), raFileErrorCodeDetailsPage.getTotalElements());
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in getMappingsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
+            throw ex;
+        }
+    }
+
+    @GetMapping("/sheet-error-code-details")
+    public ResponseEntity<CollectionResponse<RASheetErrorCodeDetails>> getRASheetErrorCodeDetailsList(@RequestParam(defaultValue = "0") Integer pageNo,
+                                                                                                    @RequestParam(defaultValue = "100") Integer pageSize,
+                                                                                                    @RequestParam(defaultValue = "") String plmTicketId) {
+        try {
+            LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
+            int limit = limitAndOffset.getLimit();
+            Sort sort = Sort.by(new Sort.Order(Sort.Direction.DESC, "RA_RT_SHEET_DETAILS.id"));
+            Page<RASheetErrorCodeDetails> raSheetErrorCodeDetailsPage = raSheetErrorCodeDetailRepository.findRASheetErrorCodeDetailsData(Collections.singletonList(plmTicketId),
+                    PageRequest.of(pageNo, limit, sort));
+            CollectionResponse<RASheetErrorCodeDetails> collectionResponse = new CollectionResponse<>(pageNo, pageSize,
+                    raSheetErrorCodeDetailsPage.getContent(), raSheetErrorCodeDetailsPage.getTotalElements());
+            return new ResponseEntity<>(collectionResponse, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in getMappingsList pageNo {} pageSize {} plmTicketId {}", pageNo, pageSize, plmTicketId);
+            throw ex;
+        }
+    }
+
+    @RequestMapping(path = "/upload-roster", method = POST, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<FileUploadResponse> uploadRoster(@RequestParam("file") MultipartFile multipartFile,
                                                            @RequestParam("market") String market,
                                                            @RequestParam("lineOfBusiness") String lineOfBusiness,
