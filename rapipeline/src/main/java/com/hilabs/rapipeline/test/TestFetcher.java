@@ -5,6 +5,7 @@ import com.hilabs.mcheck.model.JobRetriever;
 import com.hilabs.mcheck.model.Task;
 import com.hilabs.rapipeline.service.PreProcessingTaskService;
 import com.hilabs.roster.entity.RAFileDetails;
+import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -37,7 +38,7 @@ public class TestFetcher implements JobRetriever {
             totalTasksSubmitted += executors.size();
             return executors;
         } catch (Exception ex) {
-            log.error("Error PreProcessingFetcher {}", ex.getMessage());
+            log.error("Error PreProcessingFetcher {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             return new ArrayList<>();
         }
     }

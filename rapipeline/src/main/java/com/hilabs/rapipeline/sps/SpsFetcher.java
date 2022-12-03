@@ -6,6 +6,7 @@ import com.hilabs.mcheck.model.Task;
 import com.hilabs.rapipeline.service.*;
 import com.hilabs.roster.entity.RASheetDetails;
 import com.hilabs.roster.repository.RASheetDetailsRepository;
+import liquibase.repackaged.org.apache.commons.lang3.exception.ExceptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -70,7 +71,7 @@ public class SpsFetcher implements JobRetriever {
             log.info("SpsFetcher ended - tasks {} executors size {}", tasks, executors.size());
             return executors;
         } catch (Exception ex) {
-            log.error("Error SpsFetcher {}", ex.getMessage());
+            log.error("Error SpsFetcher {} stackTrace {}", ex.getMessage(), ExceptionUtils.getStackTrace(ex));
             return new ArrayList<>();
         }
     }
