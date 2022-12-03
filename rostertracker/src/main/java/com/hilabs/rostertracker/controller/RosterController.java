@@ -267,16 +267,33 @@ public class RosterController {
                                                            @RequestParam("market") String market,
                                                            @RequestParam("lineOfBusiness") String lineOfBusiness,
                                                            @RequestParam("plmTicketId") String plmTicketId) throws IOException {
-        if (multipartFile.getOriginalFilename() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OriginalFilename not found");
+        try {
+            if (multipartFile == null || multipartFile.getOriginalFilename() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OriginalFilename not found");
+            }
+            if (market == null || lineOfBusiness == null || plmTicketId == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "market or lineOfBusiness or plmTicketId not found");
+            }
+            String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+            long size = multipartFile.getSize();
+            saveFile(fileName, multipartFile, applicationConfig.getRaSourceFolder());
+            FileUploadResponse response = new FileUploadResponse();
+            response.setFileName(fileName);
+            response.setSize(size);
+            RAPlmRoProfData raPlmRoProfData = new RAPlmRoProfData();
+            raPlmRoProfData.setRoId(plmTicketId);
+            raPlmRoProfData.setCntState(market);
+            raPlmRoProfData.setLob(lineOfBusiness);
+            raPlmRoProfData = raPlmRoProfDataRepository.save(raPlmRoProfData);
+            RAPlmRoFileData raPlmRoFileData = new RAPlmRoFileData();
+            raPlmRoFileData.setRaPlmRoProfDataId(raPlmRoProfData.getRaPlmRoProfDataId());
+            raPlmRoFileData.setFileName(fileName);
+            raPlmRoFileDataRepository.save(raPlmRoFileData);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("Error in uploadRoster market {} lineOfBusiness {} plmTicketId {}", market, lineOfBusiness, plmTicketId);
+            throw ex;
         }
-        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
-        long size = multipartFile.getSize();
-        saveFile(fileName, multipartFile, applicationConfig.getRaSourceFolder());
-        FileUploadResponse response = new FileUploadResponse();
-        response.setFileName(fileName);
-        response.setSize(size);
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     public static void saveFile(String fileName, MultipartFile multipartFile, String uploadFolder)
