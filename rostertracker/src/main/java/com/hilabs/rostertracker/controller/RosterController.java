@@ -155,7 +155,7 @@ public class RosterController {
         try {
             LimitAndOffset limitAndOffset = Utils.getLimitAndOffsetFromPageInfo(pageNo, pageSize);
             int limit = limitAndOffset.getLimit();
-            Sort sort = Sort.by(Collections.singletonList(new Sort.Order(Sort.Direction.DESC, "creat_dt")));
+            Sort sort = Sort.by(Collections.singletonList(new Sort.Order(Sort.Direction.DESC, "ra_plm_ro_file_data.creat_dt")));
             Page<RAPlmRoFileData> raPlmRoFileDataPage =  raPlmRoFileDataRepository.findRAPlmRoFileDataList(plmTicketId, PageRequest.of(pageNo, limit, sort));
             List<RAPlmRoProfData> raPlmRoProfDataList = raPlmRoProfDataRepository.findRAPlmRoProfDataByIds(raPlmRoFileDataPage.getContent().stream().map(RAPlmRoFileData::getRaPlmRoProfDataId).collect(Collectors.toList()), PageRequest.of(pageNo, limit, sort));
             Map<Long, RAPlmRoProfData> raPlmRoProfDataMap = new HashMap<>();

@@ -42,6 +42,7 @@ public interface RAPlmRoFileDataRepository extends JpaRepository<RAPlmRoFileData
 
     @Query(value = "select ra_plm_ro_file_data.* from ra_plm_ro_file_data, ra_plm_ro_prof_data where ra_plm_ro_file_data.ra_plm_ro_prof_data_id = ra_plm_ro_prof_data.ra_plm_ro_prof_data_id " +
             " and ra_plm_ro_prof_data.ro_id = :roId",
-            countQuery="select count(*) from ra_plm_ro_prof_data where ro_id = :roId", nativeQuery = true)
+            countQuery="select count(*) from ra_plm_ro_file_data, ra_plm_ro_prof_data where ra_plm_ro_file_data.ra_plm_ro_prof_data_id = ra_plm_ro_prof_data.ra_plm_ro_prof_data_id " +
+            " and ra_plm_ro_prof_data.ro_id = :roId", nativeQuery = true)
     Page<RAPlmRoFileData> findRAPlmRoFileDataList(@Param("roId") String roId, Pageable pageable);
 }
