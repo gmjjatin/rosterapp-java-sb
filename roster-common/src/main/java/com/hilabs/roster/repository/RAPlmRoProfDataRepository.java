@@ -14,5 +14,5 @@ import java.util.List;
 
 public interface RAPlmRoProfDataRepository extends JpaRepository<RAPlmRoProfData, Long> {
     @Query(value = "select * from ra_plm_ro_prof_data where ra_plm_ro_prof_data_id in (:idList)", nativeQuery = true)
-    List<RAPlmRoProfData> findRAPlmRoProfDataByIds(@Param("idList") List<Long> idList, Pageable pageable);
+    List<RAPlmRoProfData> findRAPlmRoProfDataByIds(@Param("idList") List<Long> idList);
 }

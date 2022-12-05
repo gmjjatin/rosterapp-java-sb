@@ -41,8 +41,8 @@ public interface RAPlmRoFileDataRepository extends JpaRepository<RAPlmRoFileData
     List<RAPlmRoFileData> getRAPlmRoFileDataList(@Param("status") String status, @Param("limit") int limit);
 
     @Query(value = "select ra_plm_ro_file_data.* from ra_plm_ro_file_data, ra_plm_ro_prof_data where ra_plm_ro_file_data.ra_plm_ro_prof_data_id = ra_plm_ro_prof_data.ra_plm_ro_prof_data_id " +
-            " and ra_plm_ro_prof_data.ro_id = :roId",
+            " and (COALESCE(:roIdList, NULL) is null or ra_plm_ro_prof_data.ro_id in (:roIdList))",
             countQuery="select count(*) from ra_plm_ro_file_data, ra_plm_ro_prof_data where ra_plm_ro_file_data.ra_plm_ro_prof_data_id = ra_plm_ro_prof_data.ra_plm_ro_prof_data_id " +
-            " and ra_plm_ro_prof_data.ro_id = :roId", nativeQuery = true)
-    Page<RAPlmRoFileData> findRAPlmRoFileDataList(@Param("roId") String roId, Pageable pageable);
+                    " and (COALESCE(:roIdList, NULL) is null or ra_plm_ro_prof_data.ro_id in (:roIdList))", nativeQuery = true)
+    Page<RAPlmRoFileData> findRAPlmRoFileDataList(@Param("roIdList") List<String> roIdList, Pageable pageable);
 }
