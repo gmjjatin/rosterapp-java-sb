@@ -53,6 +53,9 @@ public class JwtAuthenticationController {
     @Value("${showLogo}")
     private String showLogo;
 
+    @Value("${allowRosterUpload}")
+    private String allowRosterUpload;
+
 
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
@@ -79,6 +82,7 @@ public class JwtAuthenticationController {
         final UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
         LoginDetails loginDetails = jwtUserDetailsService.getLoginDetails(userDetails,username);
         loginDetails.setShowLogo(showLogo);
+        loginDetails.setAllowRosterUpload(allowRosterUpload);
         return new ResponseEntity<>(loginDetails, HttpStatus.OK);
     }
 

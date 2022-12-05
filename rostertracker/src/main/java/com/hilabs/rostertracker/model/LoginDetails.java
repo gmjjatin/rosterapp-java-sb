@@ -13,4 +13,5 @@ public class LoginDetails {
     private List<RAAuthPrivilegeDTO> privileges;
     private String firstName;
     private String showLogo;
+    private String allowRosterUpload;
 }
